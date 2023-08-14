@@ -14,10 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::apiResource('homepage', 'Api\HomepageController')->only(['index', 'show']);
-Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show']);
-Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show']);
+Route::apiResource('homepage', 'Api\HomepageController')->only(['index']);
+Route::apiResource('movies', 'Api\MovieController')->only(['index']);
+Route::apiResource('tvshows', 'Api\TvshowController')->only(['index']);
