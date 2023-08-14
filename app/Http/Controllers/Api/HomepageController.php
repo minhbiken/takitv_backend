@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 
 class HomepageController extends Controller
 {
@@ -14,7 +13,6 @@ class HomepageController extends Controller
      */
     public function index()
     {
-
         $data = [
             'menus' => [
                 [
@@ -451,6 +449,454 @@ class HomepageController extends Controller
                         'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8.jpg 600w'
                     ],
                     [
+                        'year' => '2019',
+                        'genres' => [
+                            [
+                                'name' => '공포',
+                                'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
+                            ],
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                        ],
+                        'title' => '피를 빠는 인형 파생',
+                        'origin_title' => '血を吸う粘土 派生',
+                        'link' => 'movie/%ed%94%bc%eb%a5%bc-%eb%b9%a0%eb%8a%94-%ec%9d%b8%ed%98%95-%ed%8c%8c%ec%83%9d/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr.jpg 600w'
+                    ],
+                    [
+                        'year' => '2020',
+                        'genres' => [
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                        ],
+                        'title' => '비르 다스: 인도로 인도할게',
+                        'origin_title' => 'Vir Das: For India',
+                        'link' => 'movie/%eb%b9%84%eb%a5%b4-%eb%8b%a4%ec%8a%a4-%ec%9d%b8%eb%8f%84%eb%a1%9c-%ec%9d%b8%eb%8f%84%ed%95%a0%ea%b2%8c/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs.jpg 600w'
+                    ],
+                    [
+                        'year' => '2007',
+                        'genres' => [
+                            [
+                                'name' => '로맨스',
+                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                        ],
+                        'title' => '색즉시공 시즌 2',
+                        'origin_title' => 'Sex Is Zero 2',
+                        'link' => 'movie/%ec%83%89%ec%a6%89%ec%8b%9c%ea%b3%b5-%ec%8b%9c%ec%a6%8c-2/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl.jpg 600w'
+                    ],
+                    [
+                        'year' => '2023',
+                        'genres' => [
+                            [
+                                'name' => '드라마',
+                                'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
+                            ],
+                            [
+                                'name' => '스릴러',
+                                'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                            ],
+                            [
+                                'name' => '한국영화',
+                                'link' => 'movie-genre/kmovie/'
+                            ],
+                        ],
+                        'title' => '비닐하우스',
+                        'origin_title' => 'Greenhouse',
+                        'link' => 'movie/%eb%b9%84%eb%8b%90%ed%95%98%ec%9a%b0%ec%8a%a4/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf.jpg 600w'
+                    ],
+                    [
+                        'year' => '2019',
+                        'genres' => [
+                            [
+                                'name' => '다큐멘터리',
+                                'link' => 'movie-genre/%eb%8b%a4%ed%81%90%eb%a9%98%ed%84%b0%eb%a6%ac/'
+                            ],
+                            [
+                                'name' => '서양영화',
+                                'link' => 'movie-genre/wmovie/'
+                            ]
+                        ],
+                        'title' => '비닐하우스',
+                        'origin_title' => 'Brené Brown: The Call to Courage',
+                        'link' => 'movie/%eb%b8%8c%eb%a0%88%eb%84%a4-%eb%b8%8c%eb%9d%bc%ec%9a%b4-%eb%82%98%eb%a5%bc-%eb%b0%94%ea%be%b8%eb%8a%94-%ec%9a%a9%ea%b8%b0/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH.jpg 600w'
+                    ],
+                    [
+                        'year' => '2019',
+                        'genres' => [
+                            [
+                                'name' => '서양영화',
+                                'link' => 'movie-genre/wmovie/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ]
+                        ],
+                        'title' => '휘트니 커밍스: 만져도 돼?',
+                        'origin_title' => 'Whitney Cummings: Can I Touch It?',
+                        'link' => 'movie/%ed%9c%98%ed%8a%b8%eb%8b%88-%ec%bb%a4%eb%b0%8d%ec%8a%a4-%eb%a7%8c%ec%a0%b8%eb%8f%84-%eb%8f%bc/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/pxDekfQeobu7zONfRGzA5vy0RxL-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/pxDekfQeobu7zONfRGzA5vy0RxL-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/pxDekfQeobu7zONfRGzA5vy0RxL-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/pxDekfQeobu7zONfRGzA5vy0RxL-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/pxDekfQeobu7zONfRGzA5vy0RxL.jpg 600w'
+                    ],
+                    [
+                        'year' => '2021',
+                        'genres' => [
+                            [
+                                'name' => '로맨스',
+                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                            ],
+                            [
+                                'name' => '서양영화',
+                                'link' => 'movie-genre/wmovie/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                            [
+                                'name' => '판타지',
+                                'link' => 'movie-genre/%ed%8c%90%ed%83%80%ec%a7%80/'
+                            ]
+                        ],
+                        'title' => '룰리',
+                        'origin_title' => 'Lulli',
+                        'link' => 'movie/%eb%a3%b0%eb%a6%ac/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ztJHKv6KSSgCTWAI2STrX2BeuJZ-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ztJHKv6KSSgCTWAI2STrX2BeuJZ-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/ztJHKv6KSSgCTWAI2STrX2BeuJZ-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/ztJHKv6KSSgCTWAI2STrX2BeuJZ-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/ztJHKv6KSSgCTWAI2STrX2BeuJZ.jpg 600w'
+                    ],
+                    [
+                        'year' => '2022',
+                        'genres' => [
+                            [
+                                'name' => '드라마',
+                                'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
+                            ],
+                            [
+                                'name' => '로맨스',
+                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                            ],
+                            [
+                                'name' => '서양영화',
+                                'link' => 'movie-genre/wmovie/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ]
+                        ],
+                        'title' => '룰리',
+                        'origin_title' => 'Red, White & Royal Blue',
+                        'link' => 'movie/%eb%a0%88%eb%93%9c-%ed%99%94%ec%9d%b4%ed%8a%b8-%eb%a1%9c%ec%97%b4-%eb%b8%94%eb%a3%a8-%eb%b9%a8%ea%b0%95-%ed%8c%8c%eb%9e%91-%ec%96%b4%ec%a8%8c%eb%93%a0-%ec%b0%ac%eb%9e%80/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/pw2q0dMQYFFtYzKfbtoMKU8iyc9-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/pw2q0dMQYFFtYzKfbtoMKU8iyc9-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/pw2q0dMQYFFtYzKfbtoMKU8iyc9-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/pw2q0dMQYFFtYzKfbtoMKU8iyc9-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/pw2q0dMQYFFtYzKfbtoMKU8iyc9.jpg 600w'
+                    ],
+                ]
+            ],
+            'movies-carousel' => [
+                [
+                    'year' => '2023',
+                    'genres' => [
+                        [
+                            'name' => '동양영화',
+                            'link' => 'movie-genre/amovie/'
+                        ],
+                        [
+                            'name' => '로맨스',
+                            'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                        ],
+                    ],
+                    'title' => '유 & 미 & 미',
+                    'origin_title' => 'เธอกับฉันกับฉัน',
+                    'link' => 'movie/%ec%9c%a0-%eb%af%b8-%eb%af%b8-2/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0-150x225.jpg 150w'
+                ],
+                [
+                    'year' => '2023',
+                    'genres' => [
+                        [
+                            'name' => '공포',
+                            'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
+                        ],
+                        [
+                            'name' => '동양영화',
+                            'link' => 'movie-genre/amovie/'
+                        ],
+                        [
+                            'name' => '미스터리',
+                            'link' => 'movie-genre/%eb%af%b8%ec%8a%a4%ed%84%b0%eb%a6%ac/'
+                        ],
+                        [
+                            'name' => '스릴러',
+                            'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                        ]
+                    ],
+                    'title' => '홈 포 렌트',
+                    'origin_title' => 'บ้านเช่า..บูชายัญ',
+                    'link' => 'movie/%ed%99%88-%ed%8f%ac-%eb%a0%8c%ed%8a%b8/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru.jpg 600w'
+                ],
+                [
+                    'year' => '2020',
+                    'genres' => [
+                        [
+                            'name' => '동양영화',
+                            'link' => 'movie-genre/amovie/'
+                        ],
+                    ],
+                    'title' => '阴阳美人棺',
+                    'origin_title' => '阴阳美人棺',
+                    'link' => 'movie/%ec%a0%81%ec%9d%b8%ea%b1%b8-%ec%9d%8c%ec%96%91%eb%af%b8%ec%9d%b8%eb%8f%84/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8.jpg 600w'
+                ],
+                [
+                    'year' => '2019',
+                    'genres' => [
+                        [
+                            'name' => '공포',
+                            'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
+                        ],
+                        [
+                            'name' => '동양영화',
+                            'link' => 'movie-genre/amovie/'
+                        ],
+                    ],
+                    'title' => '피를 빠는 인형 파생',
+                    'origin_title' => '血を吸う粘土 派生',
+                    'link' => 'movie/%ed%94%bc%eb%a5%bc-%eb%b9%a0%eb%8a%94-%ec%9d%b8%ed%98%95-%ed%8c%8c%ec%83%9d/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr.jpg 600w'
+                ],
+                [
+                    'year' => '2020',
+                    'genres' => [
+                        [
+                            'name' => '동양영화',
+                            'link' => 'movie-genre/amovie/'
+                        ],
+                        [
+                            'name' => '코미디',
+                            'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                        ],
+                    ],
+                    'title' => '비르 다스: 인도로 인도할게',
+                    'origin_title' => 'Vir Das: For India',
+                    'link' => 'movie/%eb%b9%84%eb%a5%b4-%eb%8b%a4%ec%8a%a4-%ec%9d%b8%eb%8f%84%eb%a1%9c-%ec%9d%b8%eb%8f%84%ed%95%a0%ea%b2%8c/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs.jpg 600w'
+                ],
+                [
+                    'year' => '2007',
+                    'genres' => [
+                        [
+                            'name' => '로맨스',
+                            'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                        ],
+                        [
+                            'name' => '코미디',
+                            'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                        ],
+                    ],
+                    'title' => '색즉시공 시즌 2',
+                    'origin_title' => 'Sex Is Zero 2',
+                    'link' => 'movie/%ec%83%89%ec%a6%89%ec%8b%9c%ea%b3%b5-%ec%8b%9c%ec%a6%8c-2/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl.jpg 600w'
+                ],
+                [
+                    'year' => '2023',
+                    'genres' => [
+                        [
+                            'name' => '드라마',
+                            'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
+                        ],
+                        [
+                            'name' => '스릴러',
+                            'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                        ],
+                        [
+                            'name' => '한국영화',
+                            'link' => 'movie-genre/kmovie/'
+                        ],
+                    ],
+                    'title' => '비닐하우스',
+                    'origin_title' => 'Greenhouse',
+                    'link' => 'movie/%eb%b9%84%eb%8b%90%ed%95%98%ec%9a%b0%ec%8a%a4/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf.jpg 600w'
+                ],
+                [
+                    'year' => '2019',
+                    'genres' => [
+                        [
+                            'name' => '다큐멘터리',
+                            'link' => 'movie-genre/%eb%8b%a4%ed%81%90%eb%a9%98%ed%84%b0%eb%a6%ac/'
+                        ],
+                        [
+                            'name' => '서양영화',
+                            'link' => 'movie-genre/wmovie/'
+                        ]
+                    ],
+                    'title' => '비닐하우스',
+                    'origin_title' => 'Brené Brown: The Call to Courage',
+                    'link' => 'movie/%eb%b8%8c%eb%a0%88%eb%84%a4-%eb%b8%8c%eb%9d%bc%ec%9a%b4-%eb%82%98%eb%a5%bc-%eb%b0%94%ea%be%b8%eb%8a%94-%ec%9a%a9%ea%b8%b0/',
+                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg',
+                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH.jpg 600w'
+                ]
+            ],
+            'movies-list' => [
+                'top_5' => [
+                    [
+                        'year' => '2019',
+                        'genres' => [
+                            [
+                                'name' => '다큐멘터리',
+                                'link' => 'movie-genre/%eb%8b%a4%ed%81%90%eb%a9%98%ed%84%b0%eb%a6%ac/'
+                            ],
+                            [
+                                'name' => '서양영화',
+                                'link' => 'movie-genre/wmovie/'
+                            ]
+                        ],
+                        'title' => '비닐하우스'
+                    ],
+                    [
+                        'year' => '2023',
+                        'genres' => [
+                            [
+                                'name' => '드라마',
+                                'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
+                            ],
+                            [
+                                'name' => '스릴러',
+                                'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                            ],
+                            [
+                                'name' => '한국영화',
+                                'link' => 'movie-genre/kmovie/'
+                            ],
+                        ],
+                        'title' => '비닐하우스'
+                    ],
+                    [
+                        'year' => '2007',
+                        'genres' => [
+                            [
+                                'name' => '로맨스',
+                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                        ],
+                        'title' => '색즉시공 시즌 2'
+                    ],
+                    [
+                        'year' => '2020',
+                        'genres' => [
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                        ],
+                        'title' => '비르 다스: 인도로 인도할게'
+                    ],
+                    [
+                        'year' => '2023',
+                        'genres' => [
+                            [
+                                'name' => '공포',
+                                'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
+                            ],
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                            [
+                                'name' => '미스터리',
+                                'link' => 'movie-genre/%eb%af%b8%ec%8a%a4%ed%84%b0%eb%a6%ac/'
+                            ],
+                            [
+                                'name' => '스릴러',
+                                'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                            ]
+                        ],
+                        'title' => '홈 포 렌트'
+                    ],
+                ],
+                'movies_new' => [
+                    [
+                        'year' => '2023',
+                        'genres' => [
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                            [
+                                'name' => '로맨스',
+                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                            ],
+                        ],
+                        'title' => '유 & 미 & 미',
+                        'link' => 'movie/%ec%9c%a0-%eb%af%b8-%eb%af%b8-2/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0-150x225.jpg 150w'
+                    ],
+                    [
+                        'year' => '2023',
+                        'genres' => [
+                            [
+                                'name' => '공포',
+                                'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
+                            ],
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                            [
+                                'name' => '미스터리',
+                                'link' => 'movie-genre/%eb%af%b8%ec%8a%a4%ed%84%b0%eb%a6%ac/'
+                            ],
+                            [
+                                'name' => '스릴러',
+                                'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                            ]
+                        ],
+                        'title' => '홈 포 렌트',
+                        'link' => 'movie/%ed%99%88-%ed%8f%ac-%eb%a0%8c%ed%8a%b8/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru.jpg 600w'
+                    ],
+                    [
                         'year' => '2020',
                         'genres' => [
                             [
@@ -459,13 +905,101 @@ class HomepageController extends Controller
                             ],
                         ],
                         'title' => '阴阳美人棺',
-                        'origin_title' => '阴阳美人棺',
                         'link' => 'movie/%ec%a0%81%ec%9d%b8%ea%b1%b8-%ec%9d%8c%ec%96%91%eb%af%b8%ec%9d%b8%eb%8f%84/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg',
                         'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8.jpg 600w'
+                    ],
+                    [
+                        'year' => '2019',
+                        'genres' => [
+                            [
+                                'name' => '공포',
+                                'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
+                            ],
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                        ],
+                        'title' => '피를 빠는 인형 파생',
+                        'link' => 'movie/%ed%94%bc%eb%a5%bc-%eb%b9%a0%eb%8a%94-%ec%9d%b8%ed%98%95-%ed%8c%8c%ec%83%9d/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr.jpg 600w'
+                    ],
+                    [
+                        'year' => '2020',
+                        'genres' => [
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                        ],
+                        'title' => '비르 다스: 인도로 인도할게',
+                        'link' => 'movie/%eb%b9%84%eb%a5%b4-%eb%8b%a4%ec%8a%a4-%ec%9d%b8%eb%8f%84%eb%a1%9c-%ec%9d%b8%eb%8f%84%ed%95%a0%ea%b2%8c/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs.jpg 600w'
+                    ],
+                    [
+                        'year' => '2007',
+                        'genres' => [
+                            [
+                                'name' => '로맨스',
+                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
+                            ],
+                            [
+                                'name' => '코미디',
+                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
+                            ],
+                        ],
+                        'title' => '색즉시공 시즌 2',
+                        'link' => 'movie/%ec%83%89%ec%a6%89%ec%8b%9c%ea%b3%b5-%ec%8b%9c%ec%a6%8c-2/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl.jpg 600w'
+                    ],
+                    [
+                        'year' => '2023',
+                        'genres' => [
+                            [
+                                'name' => '드라마',
+                                'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
+                            ],
+                            [
+                                'name' => '스릴러',
+                                'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
+                            ],
+                            [
+                                'name' => '한국영화',
+                                'link' => 'movie-genre/kmovie/'
+                            ],
+                        ],
+                        'title' => '비닐하우스',
+                        'link' => 'movie/%eb%b9%84%eb%8b%90%ed%95%98%ec%9a%b0%ec%8a%a4/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf.jpg 600w'
+                    ],
+                    [
+                        'year' => '2019',
+                        'genres' => [
+                            [
+                                'name' => '다큐멘터리',
+                                'link' => 'movie-genre/%eb%8b%a4%ed%81%90%eb%a9%98%ed%84%b0%eb%a6%ac/'
+                            ],
+                            [
+                                'name' => '서양영화',
+                                'link' => 'movie-genre/wmovie/'
+                            ]
+                        ],
+                        'title' => '비닐하우스',
+                        'link' => 'movie/%eb%b8%8c%eb%a0%88%eb%84%a4-%eb%b8%8c%eb%9d%bc%ec%9a%b4-%eb%82%98%eb%a5%bc-%eb%b0%94%ea%be%b8%eb%8a%94-%ec%9a%a9%ea%b8%b0/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg',
+                        'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH.jpg 600w'
                     ]
                 ]
-            ]
+            ],
         ];
 
         return response()->json($data, Response::HTTP_OK);
