@@ -16,9 +16,13 @@ class MovieController extends Controller
     public function index(Request $request)
     {
         $page = $request->get('page', 1);
-        $perPage = $request->get('limit', 24);
+        $perPage = $request->get('limit', 30);
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
+
+        $queryTotal = "SELECT ID FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ORDER BY wp_posts.post_date DESC;";
+        $dataTotal = DB::select($queryTotal);
+        $total = count($dataTotal);
 
         $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ORDER BY wp_posts.post_date DESC
                 LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage";
@@ -63,15 +67,10 @@ class MovieController extends Controller
         }
         
         $data = [
-            "total" => count($movies),
+            "total" => $total,
             "per_page" => $perPage,
             "current_page" => $page,
             "last_page" => 4,
-            "first_page_url" => "",
-            "last_page_url" => "",
-            "next_page_url" => "",
-            "prev_page_url" => null,
-            "path" => "",
             "from" => ( $page - 1 ) * $perPage,
             "to" => $perPage,
             "data" => [
