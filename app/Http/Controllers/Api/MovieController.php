@@ -26,10 +26,8 @@ class MovieController extends Controller
         $dataTotal = DB::select($queryTotal);
         $total = count($dataTotal);
 
-        $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ORDER BY wp_posts.post_date DESC ";
-        
-        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage";
-        $query = $query . $limit;
+        $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ORDER BY wp_posts.post_date DESC 
+                    LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage";
         $datas = DB::select($query);
         
         $movies = [];
@@ -273,6 +271,18 @@ class MovieController extends Controller
                         'title' => '톱 오브 더 월드',
                         'link' => 'movie/%ed%86%b1-%ec%98%a4%eb%b8%8c-%eb%8d%94-%ec%9b%94%eb%93%9c/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/4aibIe4IdGQvO142HyvB7rIoAut-300x450.jpg'
+                    ],
+                    [
+                        'year' => '2020',
+                        'genres' => [
+                            [
+                                'name' => '동양영화',
+                                'link' => 'movie-genre/amovie/'
+                            ]
+                        ],
+                        'title' => '적인걸: 음양미인도',
+                        'link' => 'movie/%ec%a0%81%ec%9d%b8%ea%b1%b8-%ec%9d%8c%ec%96%91%eb%af%b8%ec%9d%b8%eb%8f%84/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg'
                     ],
                 ],
                 'movies' => $movies
