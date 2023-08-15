@@ -57,10 +57,12 @@ class MovieController extends Controller
             $link = $data->post_type == 'movie' ? 'movie/'.$data->post_name."/" : 'tv-show/'.$data->post_name."/";
             
             $movies[] = [
-                "year" => $releaseDate,
+                'pid' => $data->ID,
+                'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $data->post_title,
-                "original_title" => $data->original_title,
+                'originalTitle' => $data->original_title,
+                'description' => $data->post_content,
                 'link' => $link,
                 'src' => $imageUrlUpload.$dataMeta[0]->meta_value
             ];
@@ -68,13 +70,13 @@ class MovieController extends Controller
         
         $data = [
             "total" => $total,
-            "per_page" => $perPage,
-            "current_page" => $page,
-            "last_page" => 4,
+            "perPage" => $perPage,
+            "currentPage" => $page,
+            "lastPage" => 4,
             "from" => ( $page - 1 ) * $perPage,
             "to" => $perPage,
             "data" => [
-                'top_5' => [
+                'top5' => [
                     [
                         'year' => '2019',
                         'genres' => [
@@ -158,7 +160,7 @@ class MovieController extends Controller
                         'title' => '홈 포 렌트'
                     ],
                 ],
-                'movies_popular' => [
+                'moviesPopular' => [
                     [
                         'year' => '2019',
                         'genres' => [
@@ -262,12 +264,12 @@ class MovieController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  string  $title
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($title)
     {
-        //
+        
     }
 
     /**
