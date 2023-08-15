@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-
+use Illuminate\Support\Facades\DB;
 class HomepageController extends Controller
 {
     /**
@@ -13,6 +13,31 @@ class HomepageController extends Controller
      */
     public function index()
     {
+        $imageUrlUpload = env('IMAGE_URL_UPLOAD');
+
+        $sliderQuery = "SELECT meta_key, ID, post_title, post_name, post_type, post_date, meta_value, IF(pm.meta_value IS NOT NULL , CAST( pm.meta_value AS UNSIGNED ) , 0 ) as sort_order
+        FROM wp_posts as p
+        LEFT JOIN wp_postmeta as pm ON p.ID = pm.post_id and pm.meta_key= '_sort_order'
+        WHERE ID IN ( SELECT object_id FROM `wp_term_relationships` WHERE term_taxonomy_id IN (17 , 43) ) 
+            AND p.post_status = 'publish'
+        ORDER BY sort_order ASC, post_date DESC;";
+        $sliderData = DB::select($sliderQuery);
+
+        $sliders = [];
+        foreach ( $sliderData as $data ) {
+            $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
+            $dataResult = DB::select($dataQuery);
+
+            $link = $data->post_type == 'movie' ? 'movie/'.$data->post_name."/" : 'tv-show/'.$data->post_name."/";
+
+            $sliders[] = [
+                'title' => $data->post_title,
+                'link' => $link,
+                'src' => $imageUrlUpload.$dataResult[0]->meta_value
+            ];
+        }
+        
         $data = [
             'menus' => [
                 [
@@ -53,68 +78,7 @@ class HomepageController extends Controller
                     'link' => 'ott-web'
                 ]
             ],
-            'sliders' => [
-                [
-                    'title' => '무빙',
-                    'link' => 'episode/%eb%ac%b4%eb%b9%99-7%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/knsQmzXhgatXog9hh02VAjcE47W.jpg'
-                ],
-                [
-                    'title' => '스파이더맨: 어크로스 더 유니버스',
-                    'link' => 'movie/%ec%8a%a4%ed%8c%8c%ec%9d%b4%eb%8d%94%eb%a7%a8-%ec%96%b4%ed%81%ac%eb%a1%9c%ec%8a%a4-%eb%8d%94-%ec%9c%a0%eb%8b%88%eb%b2%84%ec%8a%a4/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/zG9TYiHt0fdaJiWuNEhFrfKzwoi-scaled.jpg'
-                ],
-                [
-                    'title' => '경이로운 소문 시즌 2',
-                    'link' => 'episode/%ea%b2%bd%ec%9d%b4%eb%a1%9c%ec%9a%b4-%ec%86%8c%eb%ac%b82-%ec%b9%b4%ec%9a%b4%ed%84%b0-%ed%8e%80%ec%b9%98-4%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2021/01/c6Sk9oUhUIFqarwohdjP6h_4fMcGFhHZsS33CpIFhg_Ky70phfHPRvm3iBHdL-g0ZjoEnGxkLzlQMLuOPIQkr-iCJLqSI35om-2_BvxZKAYxt8TxDkb-_VpfOq7Hb6vw0NUpYMzLiLJ4WRztwl7dfw.webp'
-                ],
-                [
-                    'title' => '소방서 옆 경찰서 시즌 2',
-                    'link' => 'episode/%ec%86%8c%eb%b0%a9%ec%84%9c-%ec%98%86-%ea%b2%bd%ec%b0%b0%ec%84%9c-%ea%b7%b8%eb%a6%ac%ea%b3%a0-%ea%b5%ad%ea%b3%bc%ec%88%98-2%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/common.jpg'
-                ],
-                [
-                    'title' => '라방',
-                    'link' => 'movie/%eb%9d%bc%eb%b0%a9/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hvjR3E9K9iRlVTsTSEByPflZjQ0.jpg'
-                ],
-                [
-                    'title' => 'D.P. 시즌 2',
-                    'link' => 'episode/d-p-%ec%8b%9c%ec%a6%8c-2-6%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/DP_2-mp1.jpeg'
-                ],
-                [
-                    'title' => '귀공자',
-                    'link' => 'movie/%ea%b7%80%ea%b3%b5%ec%9e%90/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/nMyM7CpWoebu03mAI3JtKTwh5zm.jpg'
-                ],
-                [
-                    'title' => '투 핫! 시즌 5',
-                    'link' => 'episode/%ed%88%ac-%ed%95%ab-%ec%8b%9c%ec%a6%8c-5-10%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/MV5BYzNkMmY0MWQtMzY1Mi00MTFlLWIxMTgtNGI5NTA3OGY0ZTc3XkEyXkFqcGdeQXVyMzQ2MDI5NjU@._V1_.jpg'
-                ],
-                [
-                    'title' => '가디언즈 오브 갤럭시 Volume 3',
-                    'link' => 'movie/%ea%b0%80%eb%94%94%ec%96%b8%ec%a6%88-%ec%98%a4%eb%b8%8c-%ea%b0%a4%eb%9f%ad%ec%8b%9c-volume-3/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/b7epV2cQZVIR4u5VZraDwD0AgiE.jpg'
-                ],
-                [
-                    'title' => '범죄도시 3',
-                    'link' => 'movie/%eb%b2%94%ec%a3%84%eb%8f%84%ec%8b%9c-3/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/jbremGnsRR4XZMDj97YHt20isRP.jpg'
-                ],
-                [
-                    'title' => '2억9천: 결혼전쟁',
-                    'link' => 'episode/2%ec%96%b59%ec%b2%9c-%ea%b2%b0%ed%98%bc%ec%a0%84%ec%9f%81-6%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/7TDiFPY1fhWTRqP1kp_cyYWKbz7P6BapxweFO8jsTosgeMsACmP4yERMfzIqCxXJuPRmXHryPSMHbNcaVy9Cdf5yzp3px7GCua8lI13y-Mfvy7IEICYvDIfA7LM4LVjduODzkdDRF4sFDzJe5neUHw.webp'
-                ],
-                [
-                    'title' => '위쳐 시즌 3',
-                    'link' => 'episode/%ec%9c%84%ec%b3%90-%ec%8b%9c%ec%a6%8c-3-8%ed%99%94/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/06/y2Jt64ky9cflLbK8ZNIWLtLZy7G4SITjnxVwxlsuzAEkIKkYgsNerMUQYbsMckDueLt7hTEYiyvXdC3TNGB6gzopT-T1-zEoTFqiJ4BiQ3eAnw0RIFZ8fGrv6B3Vp5h21QlvEmlimPUtSguqkJNIJA.webp'
-                ],
-            ],
+            'sliders' => $sliders,
             'otts' => [
                 'ott_chanels' => [
                     [
