@@ -132,8 +132,6 @@ class MovieController extends Controller
                 ];
             }
 
-            $link = $data->post_type == 'movie' ? 'movie/'.$data->post_name."/" : 'tv-show/'.$data->post_name."/";
-
             //outlink
             $path    = public_path('outlink');
             $files = array_diff(scandir($path), array('.', '..'));
@@ -164,7 +162,6 @@ class MovieController extends Controller
                 'title' => $data->post_title,
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
-                'link' => $link,
                 'src' => $src,
                 'movieRunTime' => $movieRunTime,
                 'outlink' => $outlinks[array_rand($outlinks, 1)] . '/pid=' . $data->ID,
