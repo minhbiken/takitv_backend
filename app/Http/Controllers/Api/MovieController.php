@@ -89,7 +89,13 @@ class MovieController extends Controller
         $movies = [];
         foreach( $datas as $key => $data ) {
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $data->ID .";";
-            //print_r($queryMeta); die;
+
+            $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
+            $dataSrcMeta = DB::select($querySrcMeta);
+
+            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+
             $dataMetas = DB::select($queryMeta);
             foreach($dataMetas as $dataMeta) {
                 if( $releaseYear == '' ) {
@@ -108,8 +114,6 @@ class MovieController extends Controller
                 if( $dataMeta->meta_key == '_movie_run_time' ) {
                     $movieRunTime = $dataMeta->meta_value;
                 }
-
-                $src = ($dataMeta->meta_key == '_thumbnail_id') || ($dataMeta->meta_key == '_wp_attached_file') ? $imageUrlUpload.$dataMeta->meta_value : '';
             }
 
             $queryTaxonomy = "SELECT * FROM `wp_posts` p
