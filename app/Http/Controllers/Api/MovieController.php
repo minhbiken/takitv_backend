@@ -16,7 +16,7 @@ class MovieController extends Controller
     public function index(Request $request)
     {
         $page = $request->get('page', 1);
-        $perPage = $request->get('limit', 30);
+        $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $releaseYear = $request->get('year', '');
         $genre = $request->get('genre', '');
         $orderBy = $request->get('orderBy', '');
@@ -110,7 +110,7 @@ class MovieController extends Controller
                                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                                 left join wp_terms t on tx.term_id = t.term_id
-                                where p.ID = ". $data->ID .";";
+                                where t.name != 'Featured' AND p.ID = ". $data->ID .";";
 
             $dataTaxonomy = DB::select($queryTaxonomy);
 
@@ -388,6 +388,9 @@ class MovieController extends Controller
         } else {
             return abort(404);
         }
+
+        //outlink
+        //print_r( config('constants.OUTLINKS')); die;
 
         $queryMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
         LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
