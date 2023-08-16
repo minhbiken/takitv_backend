@@ -17,7 +17,7 @@ class MovieController extends Controller
     {
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', 30);
-        $releaseYear = $request->get('year', 2023);
+        $releaseYear = $request->get('year', '');
         $genre = $request->get('genre', '');
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
@@ -26,27 +26,56 @@ class MovieController extends Controller
         $dataTotal = DB::select($queryTotal);
         $total = count($dataTotal);
 
-        $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ORDER BY wp_posts.post_date DESC 
-                    LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage";
-        $datas = DB::select($query);
+        $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ";
+        if( $releaseYear != '' ) {
+            $queryReleaseYear = "SELECT post_id
+            FROM wp_postmeta
+            WHERE
+              meta_key = '_movie_release_date'
+              and DATE_FORMAT(FROM_UNIXTIME(meta_value), '%Y') = '". $releaseYear. "'";
+            $query = $query . "AND ID IN ( ". $queryReleaseYear ." ) ";    
+        }
+
+        if( $genre != '' ) {
+            $genre = explode(',', $genre);
+            foreach($genre as $key => $g) {
+                $genre[$key] = "'" . "$g" . "'";
+            }
+            $genre = join(",", $genre);
+          
+            $queryGenre = "SELECT tr.object_id FROM wp_terms t
+                left join wp_term_taxonomy tx on tx.term_id = t.term_id
+                left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
+                WHERE t.name IN (". $genre .")";
+            $query = $query . "AND ID IN ( ". $queryGenre ." ) ";    
+        }
+
+        $orderBy = "ORDER BY wp_posts.post_date DESC ";
+        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+        $query = $query . $orderBy . $limit;
         
+        $datas = DB::select($query);
+
         $movies = [];
         foreach( $datas as $data ) {
             $queryMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
             $dataMeta = DB::select($queryMeta);
 
-            $queryReleaseDate = "SELECT * FROM wp_postmeta where meta_key = '_movie_release_date' and post_id =". $data->ID .";";
-            $dataReleaseDate = DB::select($queryReleaseDate);
-            $releaseDate = $dataReleaseDate[0]->meta_value;
-            $releaseDate = date('Y', $releaseDate);
-
+            if( $releaseYear == '' ) {
+                $queryReleaseDate = "SELECT * FROM wp_postmeta where meta_key = '_movie_release_date' and post_id =". $data->ID .";";
+                $dataReleaseDate = DB::select($queryReleaseDate);
+                $releaseDate = $dataReleaseDate[0]->meta_value;
+                $releaseDate = date('Y', $releaseDate);
+            } else {
+                $releaseDate = $releaseYear;
+            }
+            
             $queryTaxonomy = "SELECT * FROM `wp_posts` p
                                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                                 left join wp_terms t on tx.term_id = t.term_id
                                 where p.ID = ". $data->ID .";";
-
 
             $dataTaxonomy = DB::select($queryTaxonomy);
 
@@ -71,7 +100,7 @@ class MovieController extends Controller
                 'src' => $imageUrlUpload.$dataMeta[0]->meta_value
             ];
         }
-        
+
         $data = [
             "total" => $total,
             "perPage" => $perPage,
