@@ -138,6 +138,7 @@ class MovieController extends Controller
                 'link' => $link,
                 'src' => $src,
                 'movieRunTime' => $movieRunTime,
+                'outlink' => 'https://sfoodtv.com/%EC%88%98%EB%8B%88%ED%99%8D%EB%8F%BC%EC%A7%80%EB%B0%A5-60%EB%85%84-%EC%A0%84%ED%86%B5%EC%9D%98-%EC%9C%A0%EB%AA%85%ED%95%9C-%EB%A7%9B%EC%A7%91?pid='. $data->ID,
                 'relateds' => [
                     [
                         'year' => '2019',
