@@ -129,6 +129,31 @@ class MovieController extends Controller
             }
 
             $link = $data->post_type == 'movie' ? 'movie/'.$data->post_name."/" : 'tv-show/'.$data->post_name."/";
+
+            //outlink
+            $path    = public_path('outlink');
+            $files = array_diff(scandir($path), array('.', '..'));
+            
+            $outlinks = [];
+            foreach( $files as $file ) {   
+                $parseFile = explode( '.', $file);
+                $domain = $parseFile[0] . '.' . $parseFile[1];
+                $fileNeeded = $parseFile[0] . '.' . $parseFile[1] . '.' . $parseFile[2];
+                $realPath = $path . '\\'  . $fileNeeded;
+
+                $contents = file_get_contents($realPath);
+                
+                $newContents = explode('["', $contents);
+                $newContents = $newContents[1];
+                $newContents = explode('"]', $newContents);
+                $newContents = $newContents[0];
+                $newContents = explode('","', $newContents);
+
+                foreach($newContents as $newContent) {
+                    $outlinks[] = $domain . '/' . $newContent;
+                }
+            }
+
             $movies[$key] = [
                 'year' => $releaseDate,
                 'genres' => $genres,
@@ -138,7 +163,7 @@ class MovieController extends Controller
                 'link' => $link,
                 'src' => $src,
                 'movieRunTime' => $movieRunTime,
-                'outlink' => 'https://sfoodtv.com/%EC%88%98%EB%8B%88%ED%99%8D%EB%8F%BC%EC%A7%80%EB%B0%A5-60%EB%85%84-%EC%A0%84%ED%86%B5%EC%9D%98-%EC%9C%A0%EB%AA%85%ED%95%9C-%EB%A7%9B%EC%A7%91?pid='. $data->ID,
+                'outlink' => $outlinks[array_rand($outlinks, 1)] . '/pid=' . $data->ID,
                 'relateds' => [
                     [
                         'year' => '2019',
