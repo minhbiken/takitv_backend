@@ -22,10 +22,6 @@ class MovieController extends Controller
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
-        $queryTotal = "SELECT ID FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ORDER BY wp_posts.post_date DESC;";
-        $dataTotal = DB::select($queryTotal);
-        $total = count($dataTotal);
-
         $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ";
         if( $releaseYear != '' ) {
             $queryReleaseYear = "SELECT post_id
@@ -51,6 +47,11 @@ class MovieController extends Controller
         }
 
         $orderBy = "ORDER BY wp_posts.post_date DESC ";
+
+        $queryTotal = $query;
+        $dataTotal = DB::select($queryTotal);
+        $total = count($dataTotal);
+
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $orderBy . $limit;
         
