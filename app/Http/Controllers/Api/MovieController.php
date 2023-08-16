@@ -20,6 +20,7 @@ class MovieController extends Controller
         $releaseYear = $request->get('year', '');
         $genre = $request->get('genre', '');
         $orderBy = $request->get('orderBy', '');
+        $title = $request->get('title', '');
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
@@ -47,6 +48,11 @@ class MovieController extends Controller
                 left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
                 WHERE t.name IN (". $genre .")";
             $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
+        }
+
+        if( $title != '' ) {
+            $whereTitle = " AND ( p.original_title LIKE '%". $title ."%' OR p.post_title LIKE '%". $title ."%' ) ";
+            $where = $where . $whereTitle;
         }
 
         if( $orderBy == '' ) {
