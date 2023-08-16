@@ -19,17 +19,20 @@ class MovieController extends Controller
         $perPage = $request->get('limit', 30);
         $releaseYear = $request->get('year', '');
         $genre = $request->get('genre', '');
+        $orderBy = $request->get('orderBy', '');
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
-        $query = "SELECT * FROM wp_posts WHERE  wp_posts.comment_count = 0 AND ((wp_posts.post_type = 'movie' AND (wp_posts.post_status = 'publish'))) ";
+        $select = "SELECT * FROM wp_posts p ";
+        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
+
         if( $releaseYear != '' ) {
             $queryReleaseYear = "SELECT post_id
             FROM wp_postmeta
             WHERE
               meta_key = '_movie_release_date'
               and DATE_FORMAT(FROM_UNIXTIME(meta_value), '%Y') = '". $releaseYear. "'";
-            $query = $query . "AND ID IN ( ". $queryReleaseYear ." ) ";    
+            $where = $where . "AND p.ID IN ( ". $queryReleaseYear ." ) ";    
         }
 
         if( $genre != '' ) {
@@ -43,17 +46,37 @@ class MovieController extends Controller
                 left join wp_term_taxonomy tx on tx.term_id = t.term_id
                 left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
                 WHERE t.name IN (". $genre .")";
-            $query = $query . "AND ID IN ( ". $queryGenre ." ) ";    
+            $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
         }
 
-        $orderBy = "ORDER BY wp_posts.post_date DESC ";
+        if( $orderBy == '' ) {
+            $order = "ORDER BY p.post_date DESC ";
+        } else if( $orderBy == 'titleAsc' ) {
+            $order = "ORDER BY p.post_title ASC ";
+         }else if( $orderBy == 'titleDesc' ) {
+            $order = "ORDER BY p.post_title DESC ";
+        } else if($orderBy == 'date' ) {
+            $order = "ORDER BY p.post_date DESC ";
+        } else if($orderBy == 'rating') {
+            $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
+            $select = $select . $selectRating;
+            $order = "ORDER BY mp.all_time_stats DESC ";
+        } else if($orderBy == 'menuOrder') {
+            $order = "ORDER BY p.menu_order DESC ";
+        } else {
+            $order = "ORDER BY p.post_date DESC ";
+        }
 
+        //query all movie
+        $query = $select . $where . $order;
+        
         $queryTotal = $query;
         $dataTotal = DB::select($queryTotal);
         $total = count($dataTotal);
 
+        //query limit movie
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
-        $query = $query . $orderBy . $limit;
+        $query = $query . $limit;
         
         $datas = DB::select($query);
 
@@ -65,9 +88,14 @@ class MovieController extends Controller
 
             if( $releaseYear == '' ) {
                 $queryReleaseDate = "SELECT * FROM wp_postmeta where meta_key = '_movie_release_date' and post_id =". $data->ID .";";
+                
                 $dataReleaseDate = DB::select($queryReleaseDate);
-                $releaseDate = $dataReleaseDate[0]->meta_value;
-                $releaseDate = date('Y', $releaseDate);
+                if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataReleaseDate[0]->meta_value)) {
+                    $newDataReleaseDate = explode('-', $dataReleaseDate[0]->meta_value);
+                    $releaseDate = $newDataReleaseDate[0];
+                } else {
+                    $releaseDate = $dataReleaseDate[0]->meta_value > 0 ? date('Y', $dataReleaseDate[0]->meta_value) : '2023';
+                }
             } else {
                 $releaseDate = $releaseYear;
             }
