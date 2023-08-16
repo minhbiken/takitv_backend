@@ -87,25 +87,31 @@ class MovieController extends Controller
         $datas = DB::select($query);
 
         $movies = [];
-        foreach( $datas as $data ) {
-            $queryMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
-            $dataMeta = DB::select($queryMeta);
-            //$dataMeta = $dataMeta[0];
-            if( $releaseYear == '' ) {
-                $queryReleaseDate = "SELECT * FROM wp_postmeta where meta_key = '_movie_release_date' and post_id =". $data->ID .";";
-                
-                $dataReleaseDate = DB::select($queryReleaseDate);
-                if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataReleaseDate[0]->meta_value)) {
-                    $newDataReleaseDate = explode('-', $dataReleaseDate[0]->meta_value);
-                    $releaseDate = $newDataReleaseDate[0];
+        foreach( $datas as $key => $data ) {
+            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $data->ID .";";
+            //print_r($queryMeta); die;
+            $dataMetas = DB::select($queryMeta);
+            foreach($dataMetas as $dataMeta) {
+                if( $releaseYear == '' ) {
+                    if( $dataMeta->meta_key == '_movie_release_date' ) {
+                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                            $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                            $releaseDate = $newDataReleaseDate[0];
+                        } else {
+                            $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                        }
+                    }
                 } else {
-                    $releaseDate = $dataReleaseDate[0]->meta_value > 0 ? date('Y', $dataReleaseDate[0]->meta_value) : '2023';
+                    $releaseDate = $releaseYear;
                 }
-            } else {
-                $releaseDate = $releaseYear;
-            }
             
+                if( $dataMeta->meta_key == '_movie_run_time' ) {
+                    $movieRunTime = $dataMeta->meta_value;
+                }
+
+                $src = ($dataMeta->meta_key == '_thumbnail_id') || ($dataMeta->meta_key == '_wp_attached_file') ? $imageUrlUpload.$dataMeta->meta_value : '';
+            }
+
             $queryTaxonomy = "SELECT * FROM `wp_posts` p
                                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
@@ -123,16 +129,15 @@ class MovieController extends Controller
             }
 
             $link = $data->post_type == 'movie' ? 'movie/'.$data->post_name."/" : 'tv-show/'.$data->post_name."/";
-            
-            $movies[] = [
-                'pid' => $data->ID,
+            $movies[$key] = [
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $data->post_title,
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
                 'link' => $link,
-                'src' => $imageUrlUpload.$dataMeta[0]->meta_value,
+                'src' => $src,
+                'movieRunTime' => $movieRunTime,
                 'relateds' => [
                     [
                         'year' => '2019',
