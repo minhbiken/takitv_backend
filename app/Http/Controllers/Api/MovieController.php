@@ -143,7 +143,7 @@ class MovieController extends Controller
                 $parseFile = explode( '.', $file);
                 $domain = $parseFile[0] . '.' . $parseFile[1];
                 $fileNeeded = $parseFile[0] . '.' . $parseFile[1] . '.' . $parseFile[2];
-                $realPath = $path . '\/'  . $fileNeeded;
+                $realPath = $path . '/'  . $fileNeeded;
 
                 $contents = file_get_contents($realPath);
                 
