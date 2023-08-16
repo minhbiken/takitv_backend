@@ -376,7 +376,12 @@ class MovieController extends Controller
         $query = $select . $where;
         
         $data = DB::select($query);
-        $data = $data[0];
+
+        if( isset($data[0]) ) {
+            $data = $data[0];
+        } else {
+            return abort(404);
+        }
 
         $queryMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
         LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
