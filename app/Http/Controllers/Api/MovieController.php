@@ -132,30 +132,18 @@ class MovieController extends Controller
                 ];
             }
 
-            //outlink
-            $path    = public_path('outlink');
-            $files = array_diff(scandir($path), array('.', '..'));
-            
-            $outlinks = [];
-            foreach( $files as $file ) {   
-                $parseFile = explode( '.', $file);
-                $domain = $parseFile[0] . '.' . $parseFile[1];
-                $fileNeeded = $parseFile[0] . '.' . $parseFile[1] . '.' . $parseFile[2];
-                $realPath = $path . '/'  . $fileNeeded;
+            //outlink only show in into
+            if(count($datas) == 1) {
+                $outlink = env('OUTLINK');
+                $outlink = @file_get_contents($outlink);
 
-                $contents = file_get_contents($realPath);
-                
-                $newContents = explode('["', $contents);
-                $newContents = $newContents[1];
-                $newContents = explode('"]', $newContents);
-                $newContents = $newContents[0];
-                $newContents = explode('","', $newContents);
+                if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
 
-                foreach($newContents as $newContent) {
-                    $outlinks[] = $domain . '/' . $newContent;
-                }
+                $outlink =  $outlink . '?pid=' . $data->ID;
+            } else {
+                $outlink = '';
             }
-
+            
             $movies[$key] = [
                 'year' => $releaseDate,
                 'genres' => $genres,
@@ -164,7 +152,7 @@ class MovieController extends Controller
                 'description' => $data->post_content,
                 'src' => $src,
                 'movieRunTime' => $movieRunTime,
-                'outlink' => $outlinks[array_rand($outlinks, 1)] . '/pid=' . $data->ID,
+                'outlink' => $outlink,
                 'relateds' => [
                     [
                         'year' => '2019',
