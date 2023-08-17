@@ -519,7 +519,7 @@ class MovieController extends Controller
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg'
                     ],
                 ],
-                'movies' => $movies
+                'items' => $movies
             ]
         ];
         return response()->json($data, Response::HTTP_OK);
