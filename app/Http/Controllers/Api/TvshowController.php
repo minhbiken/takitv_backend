@@ -146,8 +146,12 @@ class TvshowController extends Controller
 
             if( count($dataChanel) > 0 ) {
                 $chanel = $dataChanel[0]->description;
+                $newChanel = explode('src="', $chanel);
+                $newChanel = explode('" alt', $newChanel[1]);
+                $newChanel = $newChanel[0];
+                $chanel = 'https://image002.modooup.com' . $newChanel;
             } else {
-                $chanel = "<img class='tv-channel' src='".env('IMAGE_PLACEHOLDER')."' alt='' width='83' height='31'>";
+                $chanel = env('IMAGE_PLACEHOLDER');
             }
             
             $movies[$key] = [
