@@ -67,7 +67,6 @@ class TvshowController extends Controller
         $datas = DB::select($query);
 
         $movies = [];
-        $releaseDate = '2023';
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1";
             $dataEpisode = DB::select($queryEpisode);
@@ -75,16 +74,16 @@ class TvshowController extends Controller
             $episodeId = $dataEpisode[0]->meta_value;
             $episodeId = unserialize($episodeId);
 
-            $totalEpisode = count($episodeId);
+            $totalEpisode = count($episodeId[0]['episodes']);
 
             $episodeId = end($episodeId[0]['episodes']);
             
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
             $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $episodeId .";";
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
             $dataSrcMeta = DB::select($querySrcMeta);
-
+            
             $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
             $dataMetas = DB::select($queryMeta);
@@ -110,13 +109,13 @@ class TvshowController extends Controller
                         left join wp_terms t on tx.term_id = t.term_id
                         where p.ID = ". $episodeId .";";
 
-            $dataTaxonomy = DB::select($queryTaxonomy);
+            $dataTaxonomys = DB::select($queryTaxonomy);
 
             $genres = [];
-            foreach( $dataTaxonomy as $data ) {
+            foreach( $dataTaxonomys as $dataTaxonomy ) {
                 $genres[] = [
-                    'name' => $data->name,
-                    'link' =>  $data->taxonomy . '/' .  $data->slug
+                    'name' => $dataTaxonomy->name,
+                    'link' =>  $dataTaxonomy->taxonomy . '/' .  $dataTaxonomy->slug
                 ];
             }
 
