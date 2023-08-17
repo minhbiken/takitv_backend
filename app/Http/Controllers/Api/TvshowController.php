@@ -68,7 +68,6 @@ class TvshowController extends Controller
 
         $movies = [];
         foreach( $datas as $key => $data ) {
-            print_r($data->ID . ",");
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1";
             $dataEpisode = DB::select($queryEpisode);
             
