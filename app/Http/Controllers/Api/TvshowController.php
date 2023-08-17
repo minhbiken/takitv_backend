@@ -19,38 +19,13 @@ class TvshowController extends Controller
         ini_set('memory_limit', '-1');
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
-        $releaseYear = $request->get('year', '');
-        $genre = $request->get('genre', '');
         $orderBy = $request->get('orderBy', '');
         $title = $request->get('title', '');
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         $select = "SELECT * FROM wp_posts p ";
-        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-
-        if( $releaseYear != '' ) {
-            $queryReleaseYear = "SELECT post_id
-            FROM wp_postmeta
-            WHERE
-              meta_key = '_movie_release_date'
-              and DATE_FORMAT(FROM_UNIXTIME(meta_value), '%Y') = '". $releaseYear. "'";
-            $where = $where . "AND p.ID IN ( ". $queryReleaseYear ." ) ";    
-        }
-
-        if( $genre != '' ) {
-            $genre = explode(',', $genre);
-            foreach($genre as $key => $g) {
-                $genre[$key] = "'" . "$g" . "'";
-            }
-            $genre = join(",", $genre);
-          
-            $queryGenre = "SELECT tr.object_id FROM wp_terms t
-                left join wp_term_taxonomy tx on tx.term_id = t.term_id
-                left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
-                WHERE t.name IN (". $genre .")";
-            $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
-        }
+        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
 
         if( $title != '' ) {
             $whereTitle = " AND ( p.original_title LIKE '%". $title ."%' OR p.post_title LIKE '%". $title ."%' ) ";
@@ -75,25 +50,39 @@ class TvshowController extends Controller
             $order = "ORDER BY p.post_date DESC ";
         }
 
-        //query all movie
+        //query all tvshow
         $query = $select . $where . $order;
-        
-        $queryTotal = $query;
-        $dataTotal = DB::select($queryTotal);
-        $total = count($dataTotal);
 
-        //query limit movie
+        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+        $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+        
+        $queryTotal = $selectTotal . $whereTotal;
+        $dataTotal = DB::select($queryTotal);
+        $total = $dataTotal[0]->total;
+
+        //query limit tvshow
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         
         $datas = DB::select($query);
 
         $movies = [];
+        $releaseDate = '2023';
         foreach( $datas as $key => $data ) {
-            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $data->ID .";";
+            $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1";
+            $dataEpisode = DB::select($queryEpisode);
+            
+            $episodeId = $dataEpisode[0]->meta_value;
+            $episodeId = unserialize($episodeId);
+
+            $totalEpisode = count($episodeId);
+
+            $episodeId = end($episodeId[0]['episodes']);
+            
+            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
             $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $episodeId .";";
             $dataSrcMeta = DB::select($querySrcMeta);
 
             $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
@@ -101,17 +90,13 @@ class TvshowController extends Controller
             $dataMetas = DB::select($queryMeta);
 
             foreach($dataMetas as $dataMeta) {
-                if( $releaseYear == '' ) {
-                    if( $dataMeta->meta_key == '_episode_release_date' ) {
-                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
-                            $newDataReleaseDate = explode('-', $dataMeta->meta_value);
-                            $releaseDate = $newDataReleaseDate[0];
-                        } else {
-                            $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
-                        }
+                if( $dataMeta->meta_key == '_episode_release_date' ) {
+                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                        $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                        $releaseDate = $newDataReleaseDate[0];
+                    } else {
+                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
                     }
-                } else {
-                    $releaseDate = $releaseYear;
                 }
             
                 if( $dataMeta->meta_key == '_episode_run_time' ) {
@@ -120,10 +105,10 @@ class TvshowController extends Controller
             }
 
             $queryTaxonomy = "SELECT * FROM `wp_posts` p
-                                left join wp_term_relationships t_r on t_r.object_id = p.ID
-                                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
-                                left join wp_terms t on tx.term_id = t.term_id
-                                where t.name != 'Featured' AND p.ID = ". $data->ID .";";
+                        left join wp_term_relationships t_r on t_r.object_id = p.ID
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_terms t on tx.term_id = t.term_id
+                        where p.ID = ". $episodeId .";";
 
             $dataTaxonomy = DB::select($queryTaxonomy);
 
@@ -142,9 +127,20 @@ class TvshowController extends Controller
 
                 if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
 
-                $outlink =  $outlink . '?pid=' . $data->ID;
+                $outlink =  $outlink . '?pid=' . $episodeId;
             } else {
                 $outlink = '';
+            }
+
+            $queryChanel = "SELECT * FROM `wp_term_relationships` wp
+                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                        WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
+            $dataChanel = DB::select($queryChanel);
+            
+            if( count($dataChanel) > 0 ) {
+                $chanel = $dataChanel[0]->description;
+            } else {
+                $chanel = "<img class='tv-channel' src='".env('IMAGE_PLACEHOLDER')."' alt='' width='83' height='31'>";
             }
             
             $movies[$key] = [
@@ -156,6 +152,8 @@ class TvshowController extends Controller
                 'src' => $src,
                 'movieRunTime' => $movieRunTime,
                 'outlink' => $outlink,
+                'chanelImage' => $chanel,
+                'totalEpisode' => $totalEpisode,
                 'relateds' => [
                     [
                         'year' => '2019',

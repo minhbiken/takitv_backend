@@ -75,10 +75,14 @@ class MovieController extends Controller
 
         //query all movie
         $query = $select . $where . $order;
+
+        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+        $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
         
-        $queryTotal = $query;
+        $queryTotal = $selectTotal . $whereTotal;
         $dataTotal = DB::select($queryTotal);
-        $total = count($dataTotal);
+        $total = $dataTotal[0]->total;
+
 
         //query limit movie
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
