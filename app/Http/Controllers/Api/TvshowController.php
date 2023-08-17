@@ -68,15 +68,24 @@ class TvshowController extends Controller
 
         $movies = [];
         foreach( $datas as $key => $data ) {
+            print_r($data->ID . ",");
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1";
             $dataEpisode = DB::select($queryEpisode);
             
-            $episodeId = $dataEpisode[0]->meta_value;
-            $episodeId = unserialize($episodeId);
+            $episodeData = $dataEpisode[0]->meta_value;
+            $episodeData = unserialize($episodeData);
 
-            $totalEpisode = count($episodeId[0]['episodes']);
+            $seasonNumber = $episodeData[0]['position'];
 
-            $episodeId = end($episodeId[0]['episodes']);
+            $totalEpisode = count($episodeData[0]['episodes']);
+
+            if( $seasonNumber > 0 ) {
+                $episodeProject = "시즌 ". $seasonNumber ." - " .$totalEpisode  . "화";
+            } else {
+                $episodeProject = $totalEpisode  . "화";
+            }
+
+            $episodeId = end($episodeData[0]['episodes']);
             
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
@@ -135,7 +144,7 @@ class TvshowController extends Controller
                         LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
             $dataChanel = DB::select($queryChanel);
-            
+
             if( count($dataChanel) > 0 ) {
                 $chanel = $dataChanel[0]->description;
             } else {
@@ -152,7 +161,8 @@ class TvshowController extends Controller
                 'movieRunTime' => $movieRunTime,
                 'outlink' => $outlink,
                 'chanelImage' => $chanel,
-                'totalEpisode' => $totalEpisode,
+                'totalEpisode' => $episodeProject,
+                'postDateGmt' => $data->post_date_gmt,
                 'relateds' => [
                     [
                         'year' => '2019',
@@ -301,6 +311,7 @@ class TvshowController extends Controller
                 ]
             ];
         }
+
         $data = [
             "total" => $total,
             "perPage" => $perPage,
