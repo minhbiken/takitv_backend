@@ -25,7 +25,7 @@ class TvshowController extends Controller
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         $select = "SELECT * FROM wp_posts p ";
-        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
 
         if( $releaseYear != '' ) {
             $queryReleaseYear = "SELECT post_id
@@ -97,9 +97,10 @@ class TvshowController extends Controller
             $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
             $dataMetas = DB::select($queryMeta);
+
             foreach($dataMetas as $dataMeta) {
                 if( $releaseYear == '' ) {
-                    if( $dataMeta->meta_key == '_movie_release_date' ) {
+                    if( $dataMeta->meta_key == '_episode_release_date' ) {
                         if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
                             $newDataReleaseDate = explode('-', $dataMeta->meta_value);
                             $releaseDate = $newDataReleaseDate[0];
@@ -111,7 +112,7 @@ class TvshowController extends Controller
                     $releaseDate = $releaseYear;
                 }
             
-                if( $dataMeta->meta_key == '_movie_run_time' ) {
+                if( $dataMeta->meta_key == '_episode_run_time' ) {
                     $movieRunTime = $dataMeta->meta_value;
                 }
             }
@@ -301,7 +302,6 @@ class TvshowController extends Controller
                 ]
             ];
         }
-
         $data = [
             "total" => $total,
             "perPage" => $perPage,
