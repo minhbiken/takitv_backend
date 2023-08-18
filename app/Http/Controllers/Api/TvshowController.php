@@ -131,10 +131,9 @@ class TvshowController extends Controller
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                         left join wp_terms t on tx.term_id = t.term_id
-                        where p.ID = ". $episodeId .";";
-
+                        where p.ID = ". $data->ID .";";
             $dataTaxonomys = DB::select($queryTaxonomy);
-            
+
             $genres = [];
             foreach( $dataTaxonomys as $dataTaxonomy ) {
                 $genres[] = [
@@ -487,16 +486,36 @@ class TvshowController extends Controller
         $select = "SELECT ID FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $title ."' ";
+
+        $tvshowId = DB::select($select . $where .  $whereTitle);
+
         $where = $where . $whereTitle;
         $idTV = $select . $where;
         $query = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id  IN (". $idTV . ");";
-        $data = DB::select($query);
+        $dataTV = DB::select($query);
 
-        $episodeData = $data[0]->meta_value;
+        if (count($dataTV) == 0) {
+            $data = [
+                "total" => 0,
+                "perPage" => $perPage,
+                "currentPage" => $page,
+                "items" => []
+            ];
+            return response()->json($data, Response::HTTP_NOT_FOUND);
+        }
+
+        $episodeData = $dataTV[0]->meta_value;
         $episodeDatas = unserialize($episodeData);
 
         $movies = [];
         $total = 0;
+        
+        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowId[0]->ID .";";
+        $dataSrcMeta = DB::select($querySrcMeta);
+    
+        $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
+
         foreach( $episodeDatas as $episodeData ) {
             if( $episodeData['position'] == $seasonPosition ) {
                 $episodeIds = $episodeData['episodes'];
@@ -507,12 +526,6 @@ class TvshowController extends Controller
                     $queryEpisode = $selectEpisode . $whereEpisode;
                     $data = DB::select($queryEpisode);
 
-                    $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $episodeId .";";
-                    $dataSrcMeta = DB::select($querySrcMeta);
-    
-                    $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
-                    
                     $movies[$key] = [
                         'title' => $data[0]->post_title,
                         'src' => $src,
