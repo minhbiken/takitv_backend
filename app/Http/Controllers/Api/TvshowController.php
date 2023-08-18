@@ -8,6 +8,11 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 class TvshowController extends Controller
 {
+    private $imageUrlUpload;
+    public function __construct()
+    {
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -22,8 +27,6 @@ class TvshowController extends Controller
         $orderBy = $request->get('orderBy', '');
         $title = $request->get('title', '');
         $type = $request->get('type', '');
-
-        $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         $select = "SELECT * FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
@@ -101,7 +104,7 @@ class TvshowController extends Controller
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
             $dataSrcMeta = DB::select($querySrcMeta);
             
-            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+            $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
             $dataMetas = DB::select($queryMeta);
 
@@ -168,6 +171,7 @@ class TvshowController extends Controller
             }
 
             $movies[$key] = [
+                'id' => $data->ID,
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $data->post_title,
@@ -333,6 +337,7 @@ class TvshowController extends Controller
 
             if( $key <= 4) {
                 $populars[$key] = [
+                    'id' => $data->ID,
                     'year' => $releaseDate,
                     'genres' => $genres,
                     'title' => $data->post_title,
@@ -353,9 +358,6 @@ class TvshowController extends Controller
             "total" => $total,
             "perPage" => $perPage,
             "currentPage" => $page,
-            "lastPage" => 4,
-            "from" => ( $page - 1 ) * $perPage,
-            "to" => $perPage,
             "data" => [
                 'top5' => [
                     [
@@ -483,7 +485,7 @@ class TvshowController extends Controller
         $seasonPosition = $request->get('seasonPosition', 0);
 
         $select = "SELECT ID FROM wp_posts p ";
-        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+        $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $title ."' ";
         $where = $where . $whereTitle;
         $idTV = $select . $where;
@@ -491,14 +493,42 @@ class TvshowController extends Controller
         $data = DB::select($query);
 
         $episodeData = $data[0]->meta_value;
-        $episodeData = unserialize($episodeData);
+        $episodeDatas = unserialize($episodeData);
 
-        foreach( $episodeData as $episode ) {
-            if( $episode['position'] == $seasonPosition ) {
-                print_r($episode);
+        $movies = [];
+        foreach( $episodeDatas as $episodeData ) {
+            if( $episodeData['position'] == $seasonPosition ) {
+                $episodeIds = $episodeData['episodes'];
+                $total = count($episodeIds);
+                foreach( $episodeIds as $key => $episodeId ) {
+                    $selectEpisode = "SELECT p.post_title, p.post_date_gmt FROM wp_posts p ";
+                    $whereEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID=".$episodeId;
+                    $queryEpisode = $selectEpisode . $whereEpisode;
+                    $data = DB::select($queryEpisode);
+
+                    $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $episodeId .";";
+                    $dataSrcMeta = DB::select($querySrcMeta);
+    
+                    $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
+                    
+                    $movies[$key] = [
+                        'title' => $data[0]->post_title,
+                        'src' => $src,
+                        'postDateGmt' => $data[0]->post_date_gmt
+                    ];  
+                }
             }
         }
-        die;
+
+        $data = [
+            "total" => $total,
+            "perPage" => $perPage,
+            "currentPage" => $page,
+            "items" => $movies
+        ];
+
+        return response()->json($data, Response::HTTP_OK);
     }
 
     /**
