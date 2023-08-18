@@ -77,7 +77,7 @@ class MovieController extends Controller
         $query = $select . $where . $order;
 
         $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
-        $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
+        $whereTotal = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
         
         $queryTotal = $selectTotal . $whereTotal;
         $dataTotal = DB::select($queryTotal);

@@ -26,7 +26,7 @@ class TvshowController extends Controller
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         $select = "SELECT * FROM wp_posts p ";
-        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+        $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
 
         if( $title != '' ) {
             $whereTitle = " AND ( p.original_title LIKE '%". $title ."%' OR p.post_title LIKE '%". $title ."%' ) ";
@@ -89,19 +89,12 @@ class TvshowController extends Controller
             
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
+            
             $totalEpisodeData = count($episodeData);
 
-            $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];
-            $totalEpisode = count($episodeData[$totalEpisodeData - 1]['episodes']);
-
-            if( $seasonNumber > 0 ) {
-                $episodeProject = "시즌 ". $seasonNumber ." - " .$totalEpisode  . "화";
-            } else {
-                $episodeProject = $totalEpisode  . "화";
-            }
+            $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];            
 
             $episodeId = end($episodeData[$totalEpisodeData - 1]['episodes']);
-            
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
             $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
@@ -124,6 +117,10 @@ class TvshowController extends Controller
             
                 if( $dataMeta->meta_key == '_episode_run_time' ) {
                     $movieRunTime = $dataMeta->meta_value;
+                }
+
+                if( $dataMeta->meta_key == '_episode_number' ) {
+                    $episodeNumber = $dataMeta->meta_value;
                 }
             }
 
@@ -169,7 +166,7 @@ class TvshowController extends Controller
             } else {
                 $chanel = env('IMAGE_PLACEHOLDER');
             }
-            
+
             $movies[$key] = [
                 'year' => $releaseDate,
                 'genres' => $genres,
@@ -180,7 +177,8 @@ class TvshowController extends Controller
                 'movieRunTime' => $movieRunTime,
                 'outlink' => $outlink,
                 'chanelImage' => $chanel,
-                'totalEpisode' => $episodeProject,
+                'seasonNumber' => $seasonNumber + 1,
+                'episodeNumber' => $episodeNumber,
                 'postDateGmt' => $data->post_date_gmt
             ];
 
@@ -344,7 +342,8 @@ class TvshowController extends Controller
                     'movieRunTime' => $movieRunTime,
                     'outlink' => $outlink,
                     'chanelImage' => $chanel,
-                    'totalEpisode' => $episodeProject,
+                    'seasonNumber' => $seasonNumber,
+                    'episodeNumber' => $episodeNumber,
                     'postDateGmt' => $data->post_date_gmt
                 ];
             }
