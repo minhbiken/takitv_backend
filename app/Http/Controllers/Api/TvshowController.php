@@ -21,6 +21,7 @@ class TvshowController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
         $title = $request->get('title', '');
+        $type = $request->get('type', '');
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
@@ -32,6 +33,16 @@ class TvshowController extends Controller
             $where = $where . $whereTitle;
         }
 
+        if($type != '') {
+            $idType = "SELECT wr.object_id
+                            FROM wp_terms t
+                            LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id
+                            LEFT JOIN wp_term_relationships wr ON wr.term_taxonomy_id = wt.term_taxonomy_id
+                            WHERE slug = '". $type ."'";
+            $whereType = " AND p.ID IN ( ". $idType ." ) ";
+            $where = $where . $whereType;
+        }
+
         if( $orderBy == '' ) {
             $order = "ORDER BY p.post_date DESC ";
         } else if( $orderBy == 'titleAsc' ) {
@@ -41,7 +52,7 @@ class TvshowController extends Controller
         } else if($orderBy == 'date' ) {
             $order = "ORDER BY p.post_date DESC ";
         } else if($orderBy == 'rating') {
-            $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
+            $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID ";
             $select = $select . $selectRating;
             $order = "ORDER BY mp.all_time_stats DESC ";
         } else if($orderBy == 'menuOrder') {
@@ -55,13 +66,17 @@ class TvshowController extends Controller
 
         $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
         $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+
+        if($type != '') {
+            $whereTotal = $whereTotal . $whereType;
+        }
         
         $queryTotal = $selectTotal . $whereTotal;
         $dataTotal = DB::select($queryTotal);
         $total = $dataTotal[0]->total;
 
         //query limit tvshow
-        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+        $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         
         $datas = DB::select($query);
@@ -69,7 +84,7 @@ class TvshowController extends Controller
         $movies = [];
         $populars = [];
         foreach( $datas as $key => $data ) {
-            $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1";
+            $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
             
             $episodeData = $dataEpisode[0]->meta_value;
