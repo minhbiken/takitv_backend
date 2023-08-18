@@ -67,6 +67,7 @@ class TvshowController extends Controller
         $datas = DB::select($query);
 
         $movies = [];
+        $populars = [];
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1";
             $dataEpisode = DB::select($queryEpisode);
@@ -313,6 +314,22 @@ class TvshowController extends Controller
                     ],
                 ]
             ];
+
+            if( $key <= 4) {
+                $populars[$key] = [
+                    'year' => $releaseDate,
+                    'genres' => $genres,
+                    'title' => $data->post_title,
+                    'originalTitle' => $data->original_title,
+                    'description' => $data->post_content,
+                    'src' => $src,
+                    'movieRunTime' => $movieRunTime,
+                    'outlink' => $outlink,
+                    'chanelImage' => $chanel,
+                    'totalEpisode' => $episodeProject,
+                    'postDateGmt' => $data->post_date_gmt
+                ];
+            }
         }
 
         $data = [
@@ -418,116 +435,7 @@ class TvshowController extends Controller
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/4aibIe4IdGQvO142HyvB7rIoAut-300x450.jpg'
                     ],
                 ],
-                'populars' => [
-                    [
-                        'year' => '2019',
-                        'genres' => [
-                            [
-                                'name' => '다큐멘터리',
-                                'link' => 'movie-genre/%eb%8b%a4%ed%81%90%eb%a9%98%ed%84%b0%eb%a6%ac/'
-                            ],
-                            [
-                                'name' => '서양영화',
-                                'link' => 'movie-genre/wmovie/'
-                            ]
-                        ],
-                        'title' => '비닐하우스',
-                        'link' => 'movie/%eb%b9%84%eb%8b%90%ed%95%98%ec%9a%b0%ec%8a%a4/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg'
-                    ],
-                    [
-                        'year' => '2023',
-                        'genres' => [
-                            [
-                                'name' => '로맨스',
-                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
-                            ],
-                            [
-                                'name' => '서양영화',
-                                'link' => 'movie-genre/wmovie/'
-                            ],
-                            [
-                                'name' => '코미디',
-                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
-                            ],
-                        ],
-                        'title' => '노 하드 필링',
-                        'link' => 'movie/%eb%85%b8-%ed%95%98%eb%93%9c-%ed%95%84%eb%a7%81/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/gD72DhJ7NbfxvtxGiAzLaa0xaoj.jpg'
-                    ],
-                    [
-                        'year' => '2019',
-                        'genres' => [
-                            [
-                                'name' => 'TV 영화',
-                                'link' => 'movie-genre/tv-%ec%98%81%ed%99%94/'
-                            ],
-                            [
-                                'name' => '드라마',
-                                'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
-                            ],
-                            [
-                                'name' => '서양영화',
-                                'link' => 'https://web.takitv.net/movie-genre/wmovie/'
-                            ]
-                        ],
-                        'title' => '완벽한 커플',
-                        'link' => 'movie/%ec%99%84%eb%b2%bd%ed%95%9c-%ec%bb%a4%ed%94%8c/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h4jGfhWaR4KaCjjrzUQqvsHS5wb-300x450.jpg'
-                    ],
-                    [
-                        'year' => '2020',
-                        'genres' => [
-                            [
-                                'name' => '동양영화',
-                                'link' => 'movie-genre/amovie/'
-                            ],
-                            [
-                                'name' => '코미디',
-                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
-                            ],
-                        ],
-                        'title' => '비르 다스: 인도로 인도할게',
-                        'link' => 'movie/%eb%b9%84%eb%a5%b4-%eb%8b%a4%ec%8a%a4-%ec%9d%b8%eb%8f%84%eb%a1%9c-%ec%9d%b8%eb%8f%84%ed%95%a0%ea%b2%8c/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg'
-                    ],
-                    [
-                        'year' => '2022',
-                        'genres' => [
-                            [
-                                'name' => '동양영화',
-                                'link' => 'movie-genre/amovie/'
-                            ],
-                            [
-                                'name' => '드라마',
-                                'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
-                            ],
-                            [
-                                'name' => '로맨스',
-                                'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
-                            ],
-                            [
-                                'name' => '코미디',
-                                'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
-                            ]
-                        ],
-                        'title' => '톱 오브 더 월드',
-                        'link' => 'movie/%ed%86%b1-%ec%98%a4%eb%b8%8c-%eb%8d%94-%ec%9b%94%eb%93%9c/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/4aibIe4IdGQvO142HyvB7rIoAut-300x450.jpg'
-                    ],
-                    [
-                        'year' => '2020',
-                        'genres' => [
-                            [
-                                'name' => '동양영화',
-                                'link' => 'movie-genre/amovie/'
-                            ]
-                        ],
-                        'title' => '적인걸: 음양미인도',
-                        'link' => 'movie/%ec%a0%81%ec%9d%b8%ea%b1%b8-%ec%9d%8c%ec%96%91%eb%af%b8%ec%9d%b8%eb%8f%84/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg'
-                    ],
-                ],
+                'populars' => $populars,
                 'items' => $movies
             ]
         ];
