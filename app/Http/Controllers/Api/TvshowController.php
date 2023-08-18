@@ -496,6 +496,7 @@ class TvshowController extends Controller
         $episodeDatas = unserialize($episodeData);
 
         $movies = [];
+        $total = 0;
         foreach( $episodeDatas as $episodeData ) {
             if( $episodeData['position'] == $seasonPosition ) {
                 $episodeIds = $episodeData['episodes'];
