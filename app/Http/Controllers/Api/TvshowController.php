@@ -89,10 +89,10 @@ class TvshowController extends Controller
             
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
+            $totalEpisodeData = count($episodeData);
 
-            $seasonNumber = $episodeData[0]['position'];
-
-            $totalEpisode = count($episodeData[0]['episodes']);
+            $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];
+            $totalEpisode = count($episodeData[$totalEpisodeData - 1]['episodes']);
 
             if( $seasonNumber > 0 ) {
                 $episodeProject = "시즌 ". $seasonNumber ." - " .$totalEpisode  . "화";
@@ -100,7 +100,7 @@ class TvshowController extends Controller
                 $episodeProject = $totalEpisode  . "화";
             }
 
-            $episodeId = end($episodeData[0]['episodes']);
+            $episodeId = end($episodeData[$totalEpisodeData - 1]['episodes']);
             
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
@@ -182,7 +182,6 @@ class TvshowController extends Controller
                 'chanelImage' => $chanel,
                 'totalEpisode' => $episodeProject,
                 'postDateGmt' => $data->post_date_gmt
-                
             ];
 
             if(count($datas) == 1) {
@@ -478,9 +477,29 @@ class TvshowController extends Controller
      * @param  string  $title
      * @return \Illuminate\Http\Response
      */
-    public function show($title)
+    public function show($title, Request $request)
     {
-        
+        $page = $request->get('page', 1);
+        $perPage = $request->get('limit', env('PAGE_LIMIT'));
+        $seasonPosition = $request->get('seasonPosition', 0);
+
+        $select = "SELECT ID FROM wp_posts p ";
+        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+        $whereTitle = " AND p.post_title='". $title ."' ";
+        $where = $where . $whereTitle;
+        $idTV = $select . $where;
+        $query = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id  IN (". $idTV . ");";
+        $data = DB::select($query);
+
+        $episodeData = $data[0]->meta_value;
+        $episodeData = unserialize($episodeData);
+
+        foreach( $episodeData as $episode ) {
+            if( $episode['position'] == $seasonPosition ) {
+                print_r($episode);
+            }
+        }
+        die;
     }
 
     /**
