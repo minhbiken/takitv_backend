@@ -139,7 +139,7 @@ class TvshowController extends Controller
             foreach( $dataTaxonomys as $dataTaxonomy ) {
                 $genres[] = [
                     'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->taxonomy . '/' .  $dataTaxonomy->slug
+                    'link' =>  $dataTaxonomy->slug
                 ];
             }
 
@@ -181,8 +181,12 @@ class TvshowController extends Controller
                 'outlink' => $outlink,
                 'chanelImage' => $chanel,
                 'totalEpisode' => $episodeProject,
-                'postDateGmt' => $data->post_date_gmt,
-                'relateds' => [
+                'postDateGmt' => $data->post_date_gmt
+                
+            ];
+
+            if(count($datas) == 1) {
+                $movies[$key]['relateds'] = [
                     [
                         'year' => '2019',
                         'genres' => [
@@ -327,8 +331,8 @@ class TvshowController extends Controller
                         'link' => 'movie/%ec%a0%81%ec%9d%b8%ea%b1%b8-%ec%9d%8c%ec%96%91%eb%af%b8%ec%9d%b8%eb%8f%84/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg'
                     ],
-                ]
-            ];
+                ];
+            }
 
             if( $key <= 4) {
                 $populars[$key] = [
