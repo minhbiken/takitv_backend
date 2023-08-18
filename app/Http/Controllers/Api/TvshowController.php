@@ -117,10 +117,6 @@ class TvshowController extends Controller
                         $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
                     }
                 }
-            
-                if( $dataMeta->meta_key == '_episode_run_time' ) {
-                    $movieRunTime = $dataMeta->meta_value;
-                }
 
                 if( $dataMeta->meta_key == '_episode_number' ) {
                     $episodeNumber = $dataMeta->meta_value;
@@ -177,7 +173,6 @@ class TvshowController extends Controller
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
                 'src' => $src,
-                'movieRunTime' => $movieRunTime,
                 'outlink' => $outlink,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber + 1,
@@ -343,7 +338,6 @@ class TvshowController extends Controller
                     'originalTitle' => $data->original_title,
                     'description' => $data->post_content,
                     'src' => $src,
-                    'movieRunTime' => $movieRunTime,
                     'outlink' => $outlink,
                     'chanelImage' => $chanel,
                     'seasonNumber' => $seasonNumber,
