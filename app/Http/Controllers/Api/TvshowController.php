@@ -134,7 +134,7 @@ class TvshowController extends Controller
                         where p.ID = ". $episodeId .";";
 
             $dataTaxonomys = DB::select($queryTaxonomy);
-
+            
             $genres = [];
             foreach( $dataTaxonomys as $dataTaxonomy ) {
                 $genres[] = [
