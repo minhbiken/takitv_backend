@@ -74,7 +74,7 @@ class TvshowController extends Controller
             $whereTotal = $whereTotal . $whereType;
         }
         
-        $queryTotal = $selectTotal . $whereTotal;
+        $queryTotal = $selectTotal . $where;
         $dataTotal = DB::select($queryTotal);
         $total = $dataTotal[0]->total;
 
@@ -179,6 +179,49 @@ class TvshowController extends Controller
                 'episodeNumber' => $episodeNumber,
                 'postDateGmt' => $data->post_date_gmt
             ];
+
+            if(count($datas) == 1) {
+                $movies[$key]['seasons'] = [
+                    [
+                        'number' => 1,
+                        'episodes' => [
+                            [
+                                'episodeNumber' => 1,
+                                'episodeTitle' => 'title 1',
+                            ],
+                            [
+                                'episodeNumber' => 2,
+                                'episodeTitle' => 'title 2',
+                            ],
+                            [
+                                'episodeNumber' => 3,
+                                'episodeTitle' => 'title 3',
+                            ],
+                            [
+                                'episodeNumber' => 4,
+                                'episodeTitle' => 'title 4',
+                            ],
+                            [
+                                'episodeNumber' => 5,
+                                'episodeTitle' => 'title 5',
+                            ]
+                        ]
+                    ],
+                    [
+                        'number' => 2,
+                        'episodes' => [
+                            [
+                                'episodeNumber' => 1,
+                                'episodeTitle' => 'title 1',
+                            ],
+                            [
+                                'episodeNumber' => 2,
+                                'episodeTitle' => 'title 2',
+                            ]
+                        ]
+                    ],
+                ];
+            }
 
             if(count($datas) == 1) {
                 $movies[$key]['relateds'] = [
