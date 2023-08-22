@@ -410,7 +410,7 @@ class HomepageController extends Controller
                     'item' => '161947',
                     'title'=> 'TV',
                     'link' => 'tv-shows',
-                    'sub_menu' => [
+                    'subMenu' => [
                         [
                             'item' => '8093',
                             'title'=> '드라마',
@@ -441,11 +441,7 @@ class HomepageController extends Controller
             ],
             'sliders' => $sliders,
             'otts' => [
-                'ott_chanels' => [
-                    [
-                        'link' => 'ott-web/netflix/',
-                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/netflix.png'
-                    ],
+                'ottChanels' => [
                     [
                         'link' => 'ott-web/disney/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/disney_plus.png'
@@ -454,9 +450,21 @@ class HomepageController extends Controller
                         'link' => 'ott-web/apple-tv/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/appletv.png'
                     ],
+                    [
+                        'link' => 'ott-web/tving/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2022/05/tving.png'
+                    ],
+                    [
+                        'link' => 'ott-web/wavve/',
+                        'src' => 'https://peekletv.takitv.net/outlink/wavve.png'
+                    ],
+                    [
+                        'link' => 'ott-web/amazon-prime-video/',
+                        'src' => 'https://peekletv.takitv.net/outlink/prime.png'
+                    ]
                 ],
-                'ott_title' => '오늘의 미국 넷플릭스 순위',
-                'ott_sliders' => $sliderRandoms
+                'ottTitle' => '오늘의 미국 넷플릭스 순위',
+                'ottSliders' => $sliderRandoms
             ],
             'tvshows' => [
                 'categories' => [
