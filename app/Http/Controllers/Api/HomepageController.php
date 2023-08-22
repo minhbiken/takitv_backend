@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Services\MovieService;
 class HomepageController extends Controller
 {
+
+    protected $movieService;
+    public function __construct(MovieService $movieService)
+    {
+        $this->movieService = $movieService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -280,54 +288,7 @@ class HomepageController extends Controller
             ];
         }
 
-        $topWeeks = [];
-        $queryTopWeek = "SELECT p.ID, p.post_title FROM `wp_most_popular` mp
-                            LEFT JOIN wp_posts p ON p.ID = mp.post_id
-                            WHERE mp.post_type = 'movie' and p.post_title != ''
-                            ORDER BY mp.7_day_stats DESC
-                            LIMIT 5";
-        $dataTopWeeks = DB::select($queryTopWeek);
-        $releaseDateTopWeek = '2023';
-        if( count($dataTopWeeks) > 0 ) {
-            foreach ( $dataTopWeeks as $dataTopWeek ) {
-                $queryMetaTopWeek = "SELECT * FROM wp_postmeta WHERE meta_key = '_movie_release_date' and post_id = ". $dataTopWeek->ID .";";
-                $dataMetaTopWeeks = DB::select($queryMetaTopWeek);
-
-                if( count($dataMetaTopWeeks) > 0 ) {
-                    foreach ( $dataMetaTopWeeks as $dataMetaTopWeek ) {
-                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaTopWeek->meta_value)) {
-                            $newDataReleaseDateTopWeek = explode('-', $dataMetaTopWeek->meta_value);
-                            $releaseDateTopWeek = $newDataReleaseDateTopWeek[0];
-                        } else {
-                            $releaseDateTopWeek = $dataMetaTopWeek->meta_value > 0 ? date('Y', $dataMetaTopWeek->meta_value) : '2023';
-                        }
-                    }
-                }
-
-                $queryTaxonomy = "SELECT * FROM `wp_posts` p
-                                    left join wp_term_relationships t_r on t_r.object_id = p.ID
-                                    left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
-                                    left join wp_terms t on tx.term_id = t.term_id
-                where t.name != 'featured' AND p.ID = ". $dataTopWeek->ID .";";
-                $dataTaxonomys = DB::select($queryTaxonomy);
-
-                $genres = [];
-                if ( count($dataTaxonomys) > 0 ) {
-                    foreach( $dataTaxonomys as $dataTaxonomy ) {
-                        $genres[] = [
-                            'name' => $dataTaxonomy->name,
-                            'link' =>  $dataTaxonomy->slug
-                        ];
-                    }
-                }
-                
-                $topWeeks[] = [
-                    'year' => $releaseDateTopWeek,
-                    'genres' => $genres,
-                    'title' => $dataTopWeek->post_title,
-                ];
-            }
-        }
+        $topWeeks = $this->movieService->getTopWeeks();
 
         //Get movies newest of Korea for slider in bottom
         $movieKoreas = [];
