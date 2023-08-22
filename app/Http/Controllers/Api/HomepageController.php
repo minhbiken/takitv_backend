@@ -328,6 +328,77 @@ class HomepageController extends Controller
                 ];
             }
         }
+
+        //Get movies newest of Korea for slider in bottom
+        $movieKoreas = [];
+        $queryKoreaMovie = "SELECT ID, post_title, original_title, post_name, post_type, post_date , IF(pm1.meta_value IS NOT NULL , CAST( pm1.meta_value AS UNSIGNED ) , 0 ) as sort_order,
+                                IF(pm2.meta_value IS NOT NULL , CAST( pm2.meta_value AS UNSIGNED ) , 0 ) as slide_img
+                                FROM wp_posts as p
+                                INNER JOIN wp_postmeta as pm0 ON p.ID = pm0.post_id AND pm0.meta_key = '_korea_featured' and pm0.meta_value = 1
+                                LEFT JOIN wp_postmeta as pm1 ON p.ID = pm1.post_id and pm1.meta_key = '_sort_order_korea'
+                                LEFT JOIN wp_postmeta as pm2 ON p.ID = pm2.post_id and pm2.meta_key = '_korea_image_id'
+                                WHERE p.post_type = 'movie'
+                                ORDER BY sort_order ASC, post_date DESC;";
+
+        $movieDataKoreas = DB::select($queryKoreaMovie);
+        foreach ( $movieDataKoreas as $movieDataKorea ) {
+            $queryMetaKorea = "SELECT * FROM wp_postmeta WHERE post_id = ". $movieDataKorea->ID .";";
+            $dataMetaKorea = DB::select($queryMetaKorea);
+
+            $linkKoreaMovie = 'movie/'.$movieDataKorea->post_name."/";
+            $releaseDateKorea = '2023';
+            $episodeNumber = '';
+
+            $dataMetaRandoms = DB::select($queryMetaKorea);
+            foreach ($dataMetaRandoms as $dataMetaRandom) {
+                if ( $dataMetaRandom->meta_key == '_movie_release_date' ) {
+                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaRandom->meta_value)) {
+                        $newDataReleaseDateKorea = explode('-', $dataMetaRandom->meta_value);
+                        $releaseDateKorea = $newDataReleaseDateKorea[0];
+                    } else {
+                        $releaseDateKorea = $dataMetaRandom->meta_value > 0 ? date('Y', $dataMetaRandom->meta_value) : '2023';
+                    }
+                }
+                if( $dataMetaRandom->meta_key == '_movie_run_time' ) {
+                    $movieRunTime = $dataMetaRandom->meta_value != '' ? $dataMetaRandom->meta_value : '';
+                }
+            }
+
+            $querySrcMetaKorea = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' 
+                                    WHERE p.post_status = 'publish' and p.ID =". $movieDataKorea->ID .";";
+            $dataSrcMetaKorea = DB::select($querySrcMetaKorea);
+            $src = $imageUrlUpload.$dataSrcMetaKorea[0]->meta_value;
+
+
+            $queryTaxonomyKorea = "SELECT * FROM `wp_posts` p
+                        left join wp_term_relationships t_r on t_r.object_id = p.ID
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_terms t on tx.term_id = t.term_id
+                        where t.name != 'featured' AND p.ID = ". $movieDataKorea->ID .";";
+
+            $dataTaxonomyKoreas = DB::select($queryTaxonomyKorea);
+
+            $genreKoreas = [];
+            foreach( $dataTaxonomyKoreas as $dataTaxonomyKorea ) {
+                $genreKoreas[] = [
+                    'name' => $dataTaxonomyKorea->name,
+                    'link' =>  $dataTaxonomyKorea->slug
+                ];
+            }
+
+            $movieKoreas[] = [
+                'year' => $releaseDateKorea,
+                'title' => $movieDataKorea->post_title,
+                'originalTitle' => $movieDataKorea->original_title,
+                'description' => $data->post_content,
+                'link' => $linkKoreaMovie,
+                'src' => $src,
+                'movieRunTime' => $movieRunTime,
+                'genres' => $genreKoreas,
+            ];
+        }
+        
         $data = [
             'menus' => [
                 [
@@ -387,7 +458,7 @@ class HomepageController extends Controller
                 'ott_title' => '오늘의 미국 넷플릭스 순위',
                 'ott_sliders' => $sliderRandoms
             ],
-            'tv-shows' => [
+            'tvshows' => [
                 'categories' => [
                     [
                         'title' => '전체',
@@ -417,161 +488,8 @@ class HomepageController extends Controller
                 'title' => '최신등록영화',
                 'items' => $movies
             ],
-            'movies-carousel' => [
-                [
-                    'year' => '2023',
-                    'genres' => [
-                        [
-                            'name' => '동양영화',
-                            'link' => 'movie-genre/amovie/'
-                        ],
-                        [
-                            'name' => '로맨스',
-                            'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
-                        ],
-                    ],
-                    'title' => '유 & 미 & 미',
-                    'origin_title' => 'เธอกับฉันกับฉัน',
-                    'link' => 'movie/%ec%9c%a0-%eb%af%b8-%eb%af%b8-2/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/tYWGz26UCPGC2dI7fERFalAFgv0-150x225.jpg 150w'
-                ],
-                [
-                    'year' => '2023',
-                    'genres' => [
-                        [
-                            'name' => '공포',
-                            'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
-                        ],
-                        [
-                            'name' => '동양영화',
-                            'link' => 'movie-genre/amovie/'
-                        ],
-                        [
-                            'name' => '미스터리',
-                            'link' => 'movie-genre/%eb%af%b8%ec%8a%a4%ed%84%b0%eb%a6%ac/'
-                        ],
-                        [
-                            'name' => '스릴러',
-                            'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
-                        ]
-                    ],
-                    'title' => '홈 포 렌트',
-                    'origin_title' => 'บ้านเช่า..บูชายัญ',
-                    'link' => 'movie/%ed%99%88-%ed%8f%ac-%eb%a0%8c%ed%8a%b8/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/ve8Vaze3v7gFOCaqpVWG8vkibru.jpg 600w'
-                ],
-                [
-                    'year' => '2020',
-                    'genres' => [
-                        [
-                            'name' => '동양영화',
-                            'link' => 'movie-genre/amovie/'
-                        ],
-                    ],
-                    'title' => '阴阳美人棺',
-                    'origin_title' => '阴阳美人棺',
-                    'link' => 'movie/%ec%a0%81%ec%9d%b8%ea%b1%b8-%ec%9d%8c%ec%96%91%eb%af%b8%ec%9d%b8%eb%8f%84/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/6EVIn0joKXrmSw4iZEckQljurz8.jpg 600w'
-                ],
-                [
-                    'year' => '2019',
-                    'genres' => [
-                        [
-                            'name' => '공포',
-                            'link' => 'movie-genre/%ea%b3%b5%ed%8f%ac/'
-                        ],
-                        [
-                            'name' => '동양영화',
-                            'link' => 'movie-genre/amovie/'
-                        ],
-                    ],
-                    'title' => '피를 빠는 인형 파생',
-                    'origin_title' => '血を吸う粘土 派生',
-                    'link' => 'movie/%ed%94%bc%eb%a5%bc-%eb%b9%a0%eb%8a%94-%ec%9d%b8%ed%98%95-%ed%8c%8c%ec%83%9d/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/h0tzfZQWZV95vZmePXQIuMswcGr.jpg 600w'
-                ],
-                [
-                    'year' => '2020',
-                    'genres' => [
-                        [
-                            'name' => '동양영화',
-                            'link' => 'movie-genre/amovie/'
-                        ],
-                        [
-                            'name' => '코미디',
-                            'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
-                        ],
-                    ],
-                    'title' => '비르 다스: 인도로 인도할게',
-                    'origin_title' => 'Vir Das: For India',
-                    'link' => 'movie/%eb%b9%84%eb%a5%b4-%eb%8b%a4%ec%8a%a4-%ec%9d%b8%eb%8f%84%eb%a1%9c-%ec%9d%b8%eb%8f%84%ed%95%a0%ea%b2%8c/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/fkYvRHVVs6lTmH9u85AIqjqeuOs.jpg 600w'
-                ],
-                [
-                    'year' => '2007',
-                    'genres' => [
-                        [
-                            'name' => '로맨스',
-                            'link' => 'movie-genre/%eb%a1%9c%eb%a7%a8%ec%8a%a4/'
-                        ],
-                        [
-                            'name' => '코미디',
-                            'link' => 'movie-genre/%ec%bd%94%eb%af%b8%eb%94%94/'
-                        ],
-                    ],
-                    'title' => '색즉시공 시즌 2',
-                    'origin_title' => 'Sex Is Zero 2',
-                    'link' => 'movie/%ec%83%89%ec%a6%89%ec%8b%9c%ea%b3%b5-%ec%8b%9c%ec%a6%8c-2/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/7CXkBFZvQ6kKeiDJeUQOZRyLHMl.jpg 600w'
-                ],
-                [
-                    'year' => '2023',
-                    'genres' => [
-                        [
-                            'name' => '드라마',
-                            'link' => 'movie-genre/%eb%93%9c%eb%9d%bc%eb%a7%88/'
-                        ],
-                        [
-                            'name' => '스릴러',
-                            'link' => 'movie-genre/%ec%8a%a4%eb%a6%b4%eb%9f%ac/'
-                        ],
-                        [
-                            'name' => '한국영화',
-                            'link' => 'movie-genre/kmovie/'
-                        ],
-                    ],
-                    'title' => '비닐하우스',
-                    'origin_title' => 'Greenhouse',
-                    'link' => 'movie/%eb%b9%84%eb%8b%90%ed%95%98%ec%9a%b0%ec%8a%a4/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/hVb49BvAYeILDcXkGJvzAYnZ8bf.jpg 600w'
-                ],
-                [
-                    'year' => '2019',
-                    'genres' => [
-                        [
-                            'name' => '다큐멘터리',
-                            'link' => 'movie-genre/%eb%8b%a4%ed%81%90%eb%a9%98%ed%84%b0%eb%a6%ac/'
-                        ],
-                        [
-                            'name' => '서양영화',
-                            'link' => 'movie-genre/wmovie/'
-                        ]
-                    ],
-                    'title' => '비닐하우스',
-                    'origin_title' => 'Brené Brown: The Call to Courage',
-                    'link' => 'movie/%eb%b8%8c%eb%a0%88%eb%84%a4-%eb%b8%8c%eb%9d%bc%ec%9a%b4-%eb%82%98%eb%a5%bc-%eb%b0%94%ea%be%b8%eb%8a%94-%ec%9a%a9%ea%b8%b0/',
-                    'src' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg',
-                    'srcset' => 'https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-300x450.jpg 300w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-200x300.jpg 200w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH-150x225.jpg 150w, https://image002.modooup.com/wp-content/uploads/2023/08/cnjzskLPzbQiQCwJGRt05FFTUpH.jpg 600w'
-                ]
-            ],
-            'movies-list' => [
+            'moviesCarousel' => $movieKoreas,
+            'movieNewests' => [
                 'topWeeks' => $topWeeks,
                 'movieNewests' => $movieNewests
             ],
