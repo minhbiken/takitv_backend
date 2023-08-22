@@ -481,22 +481,17 @@ class TvshowController extends Controller
         $where = $where . $whereTitle;
         
         $dataPost = DB::select($select . $where);
-
-        $query = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id  IN (". $dataPost[0]->ID . ");";
-        $dataTV = DB::select($query);
         
-        $dataSeason = $dataPost[0];
-       
         $movies = [];
-
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
 
+        $dataSeason = $dataPost[0];
+    
         //Get seasons
         $seasons = [];
         $episodes = [];
-        
         $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
         $dataEpisode = DB::select($queryEpisode);
         
