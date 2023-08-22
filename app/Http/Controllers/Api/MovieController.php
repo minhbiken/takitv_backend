@@ -25,7 +25,7 @@ class MovieController extends Controller
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         $select = "SELECT * FROM wp_posts p ";
-        $where = " WHERE  p.comment_count = 0 AND ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
+        $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
 
         if( $releaseYear != '' ) {
             $queryReleaseYear = "SELECT post_id
@@ -121,7 +121,7 @@ class MovieController extends Controller
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                         left join wp_terms t on tx.term_id = t.term_id
-                        where p.ID = ". $data->ID .";";
+                        where t.name != 'featured' AND p.ID = ". $data->ID .";";
 
             $dataTaxonomys = DB::select($queryTaxonomy);
 
@@ -519,6 +519,7 @@ class MovieController extends Controller
                 'items' => $movies
             ]
         ];
+        
         return response()->json($data, Response::HTTP_OK);
     }
 

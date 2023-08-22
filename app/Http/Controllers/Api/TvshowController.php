@@ -126,7 +126,7 @@ class TvshowController extends Controller
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                         left join wp_terms t on tx.term_id = t.term_id
-                        where p.ID = ". $data->ID .";";
+                        where t.name != 'featured' AND p.ID = ". $data->ID .";";
             $dataTaxonomys = DB::select($queryTaxonomy);
 
             $genres = [];
@@ -502,7 +502,7 @@ class TvshowController extends Controller
                 $dataEpiso = DB::select($queryEpiso);
                 $episodes[] = [
                     'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
-                    'post_date_gmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
+                    'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
                 ];
             }
             
