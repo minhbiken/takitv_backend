@@ -529,7 +529,7 @@ class TvshowController extends Controller
         if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
         $outlink =  $outlink . '?pid=' . $episodeId;
 
-        $movies[] = [
+        $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
             'originalTitle' => $dataSeason->original_title,
