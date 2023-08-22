@@ -25,7 +25,7 @@ class MovieService {
         return $this->getItems($queryPopular);
     }
 
-    public function getItems(string $query) {
+    public function getItems($query) {
         $items = [];
         $dataItems = DB::select($query);
         $releaseDate = '2023';

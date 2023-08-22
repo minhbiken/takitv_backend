@@ -163,8 +163,8 @@ class MovieController extends Controller
             ];
         }
 
-        $topWeeks = $this->movieService->getTopWeeks();
-        $populars = $this->movieService->getPopulars();
+        $topWeeks = [];
+        $populars = [];
         $data = [
             "total" => $total,
             "perPage" => $perPage,
