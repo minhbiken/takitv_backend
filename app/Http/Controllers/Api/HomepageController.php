@@ -15,6 +15,7 @@ class HomepageController extends Controller
     {
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
+        //Get header slider
         $sliderQuery = "SELECT meta_key, ID, post_title, post_name, post_type, post_date, meta_value, IF(pm.meta_value IS NOT NULL , CAST( pm.meta_value AS UNSIGNED ) , 0 ) as sort_order
         FROM wp_posts as p
         LEFT JOIN wp_postmeta as pm ON p.ID = pm.post_id and pm.meta_key= '_sort_order'
@@ -38,6 +39,7 @@ class HomepageController extends Controller
             ];
         }
 
+        //Get Chanel slider random between USA and Korea
         $sliderRandoms = [];
         $queryKoreaSlider = "SELECT ID, post_title, post_name, post_type, post_date , IF(pm1.meta_value IS NOT NULL , CAST( pm1.meta_value AS UNSIGNED ) , 0 ) as sort_order,
                                 IF(pm2.meta_value IS NOT NULL , CAST( pm2.meta_value AS UNSIGNED ) , 0 ) as slide_img
@@ -118,6 +120,7 @@ class HomepageController extends Controller
             ];
         }
 
+        //Get 12 tv-shows 
         $tvshows = [];
         $queryTvShow = "SELECT * FROM wp_posts p WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
         $dataTvShows = DB::select($queryTvShow);
@@ -204,6 +207,7 @@ class HomepageController extends Controller
             ];
         }
 
+        //Get 12 movies 
         $movies = [];
         $queryMovie = "SELECT * FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
         $dataMovies = DB::select($queryMovie);
@@ -242,17 +246,17 @@ class HomepageController extends Controller
 
             $dataTaxonomyMovies = DB::select($queryTaxonomyMovie);
 
-            $genres = [];
-            foreach( $dataTaxonomys as $dataTaxonomy ) {
-                $genres[] = [
-                    'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->slug
+            $genreMovies = [];
+            foreach( $dataTaxonomyMovies as $dataTaxonomyMovie ) {
+                $genreMovies[] = [
+                    'name' => $dataTaxonomyMovie->name,
+                    'link' =>  $dataTaxonomyMovie->slug
                 ];
             }
             
             $movies[] = [
                 'year' => $releaseDate,
-                'genres' => $genres,
+                'genres' => $genreMovies,
                 'title' => $dataMovie->post_title,
                 'originalTitle' => $dataMovie->original_title,
                 'description' => $dataMovie->post_content,

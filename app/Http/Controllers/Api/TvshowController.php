@@ -67,7 +67,7 @@ class TvshowController extends Controller
         //query all tvshow
         $query = $select . $where . $order;
 
-        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+        $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
         $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
 
         if($type != '') {
@@ -81,7 +81,6 @@ class TvshowController extends Controller
         //query limit tvshow
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
-        
         $datas = DB::select($query);
 
         $movies = [];
@@ -179,49 +178,6 @@ class TvshowController extends Controller
                 'episodeNumber' => $episodeNumber,
                 'postDateGmt' => $data->post_date_gmt
             ];
-
-            if(count($datas) == 1) {
-                $movies[$key]['seasons'] = [
-                    [
-                        'number' => 1,
-                        'episodes' => [
-                            [
-                                'episodeNumber' => 1,
-                                'episodeTitle' => 'title 1',
-                            ],
-                            [
-                                'episodeNumber' => 2,
-                                'episodeTitle' => 'title 2',
-                            ],
-                            [
-                                'episodeNumber' => 3,
-                                'episodeTitle' => 'title 3',
-                            ],
-                            [
-                                'episodeNumber' => 4,
-                                'episodeTitle' => 'title 4',
-                            ],
-                            [
-                                'episodeNumber' => 5,
-                                'episodeTitle' => 'title 5',
-                            ]
-                        ]
-                    ],
-                    [
-                        'number' => 2,
-                        'episodes' => [
-                            [
-                                'episodeNumber' => 1,
-                                'episodeTitle' => 'title 1',
-                            ],
-                            [
-                                'episodeNumber' => 2,
-                                'episodeTitle' => 'title 2',
-                            ]
-                        ]
-                    ],
-                ];
-            }
 
             if(count($datas) == 1) {
                 $movies[$key]['relateds'] = [
@@ -516,70 +472,78 @@ class TvshowController extends Controller
      */
     public function show($title, Request $request)
     {
-        $page = $request->get('page', 1);
-        $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $seasonPosition = $request->get('seasonPosition', 0);
 
-        $select = "SELECT ID FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $title ."' ";
 
-        $tvshowId = DB::select($select . $where .  $whereTitle);
-
         $where = $where . $whereTitle;
-        $idTV = $select . $where;
-        $query = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id  IN (". $idTV . ");";
-        $dataTV = DB::select($query);
-
-        if (count($dataTV) == 0) {
-            $data = [
-                "total" => 0,
-                "perPage" => $perPage,
-                "currentPage" => $page,
-                "items" => []
-            ];
-            return response()->json($data, Response::HTTP_NOT_FOUND);
-        }
-
-        $episodeData = $dataTV[0]->meta_value;
-        $episodeDatas = unserialize($episodeData);
-
-        $movies = [];
-        $total = 0;
         
-        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowId[0]->ID .";";
-        $dataSrcMeta = DB::select($querySrcMeta);
-    
-        $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
+        $dataPost = DB::select($select . $where);
 
-        foreach( $episodeDatas as $episodeData ) {
-            if( $episodeData['position'] == $seasonPosition ) {
-                $episodeIds = $episodeData['episodes'];
-                $total = count($episodeIds);
-                foreach( $episodeIds as $key => $episodeId ) {
-                    $selectEpisode = "SELECT p.post_title, p.post_date_gmt FROM wp_posts p ";
-                    $whereEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID=".$episodeId;
-                    $queryEpisode = $selectEpisode . $whereEpisode;
-                    $data = DB::select($queryEpisode);
+        $query = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id  IN (". $dataPost[0]->ID . ");";
+        $dataTV = DB::select($query);
+        
+        $dataSeason = $dataPost[0];
+       
+        $movies = [];
 
-                    $movies[$key] = [
-                        'title' => $data[0]->post_title,
-                        'src' => $src,
-                        'postDateGmt' => $data[0]->post_date_gmt
-                    ];  
-                }
-            }
+        if (count($dataPost) == 0) {
+            return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
 
-        $data = [
-            "total" => $total,
-            "perPage" => $perPage,
-            "currentPage" => $page,
-            "items" => $movies
+        //Get seasons
+        $seasons = [];
+        $episodes = [];
+        
+        $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
+        $dataEpisode = DB::select($queryEpisode);
+        
+        $episodeData = $dataEpisode[0]->meta_value;
+        $episodeData = unserialize($episodeData);
+
+        foreach ( $episodeData[0]['episodes'] as $episo ) {
+            $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episo ." LIMIT 1;";
+            $dataEpiso = DB::select($queryEpiso);
+            $episodes[] = [
+                'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
+                'post_date_gmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
+            ];
+        }
+        $seasons[] = [
+            'name' => $episodeData[0]['name'],
+            'year' => $episodeData[0]['year'],
+            'number' => count($episodeData[0]['episodes']),
+            'episodes' => $episodes
         ];
 
-        return response()->json($data, Response::HTTP_OK);
+        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
+        $dataSrcMeta = DB::select($querySrcMeta);
+        $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
+     
+        $episodeId = end($episodeData[0]['episodes']);
+
+        //outlink only show in into
+        $outlink = env('OUTLINK');
+        $outlink = @file_get_contents($outlink);
+
+        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
+        $outlink =  $outlink . '?pid=' . $episodeId;
+
+        $movies[] = [
+            'id' => $dataSeason->ID,
+            'title' => $dataSeason->post_title,
+            'originalTitle' => $dataSeason->original_title,
+            'description' => $dataSeason->post_content,
+            'src' => $src,
+            'outlink' => $outlink,
+            'postDateGmt' => $dataSeason->post_date_gmt,
+            'seasons' => $seasons
+        ];
+
+        return response()->json($movies, Response::HTTP_OK);
     }
 
     /**
