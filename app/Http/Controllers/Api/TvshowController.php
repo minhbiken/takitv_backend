@@ -472,8 +472,6 @@ class TvshowController extends Controller
      */
     public function show($title, Request $request)
     {
-        $seasonPosition = $request->get('seasonPosition', 0);
-
         $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $title ."' ";
@@ -489,36 +487,40 @@ class TvshowController extends Controller
 
         $dataSeason = $dataPost[0];
     
-        //Get seasons
-        $seasons = [];
-        $episodes = [];
         $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
         $dataEpisode = DB::select($queryEpisode);
         
         $episodeData = $dataEpisode[0]->meta_value;
         $episodeData = unserialize($episodeData);
 
-        foreach ( $episodeData[0]['episodes'] as $episo ) {
-            $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episo ." LIMIT 1;";
-            $dataEpiso = DB::select($queryEpiso);
-            $episodes[] = [
-                'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
-                'post_date_gmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
+        //Get seasons
+        $seasons = [];
+        foreach ( $episodeData as $episodeSeasonData ) {
+            $episodeDatas = $episodeSeasonData['episodes'];
+            foreach ( $episodeDatas as $episodeSubData ) {
+                $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
+                $dataEpiso = DB::select($queryEpiso);
+                $episodes[] = [
+                    'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
+                    'post_date_gmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
+                ];
+            }
+            
+            $seasons[] = [
+                'name' => $episodeSeasonData['name'],
+                'year' => $episodeSeasonData['year'],
+                'number' => count($episodeSeasonData['episodes']),
+                'episodes' => $episodes
             ];
         }
-        $seasons[] = [
-            'name' => $episodeData[0]['name'],
-            'year' => $episodeData[0]['year'],
-            'number' => count($episodeData[0]['episodes']),
-            'episodes' => $episodes
-        ];
 
         $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
         $dataSrcMeta = DB::select($querySrcMeta);
         $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
      
-        $episodeId = end($episodeData[0]['episodes']);
+        $lastSeason = end($episodeData);
+        $episodeId = end($lastSeason['episodes']);
 
         //outlink only show in into
         $outlink = env('OUTLINK');
