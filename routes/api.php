@@ -18,5 +18,3 @@ Route::apiResource('homepage', 'Api\HomepageController')->only(['index']);
 Route::apiResource('movies', 'Api\MovieController')->only(['index']);
 Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show']);
 Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
-
-Route::get('/tvshow', [App\Http\Controllers\Api\TvshowController::class, 'getTv']);
