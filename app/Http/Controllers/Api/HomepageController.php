@@ -35,6 +35,7 @@ class HomepageController extends Controller
         ORDER BY sort_order ASC, post_date DESC;";
         $sliderDatas = DB::select($sliderQuery);
         $sliders = [];
+        
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
@@ -46,14 +47,7 @@ class HomepageController extends Controller
             $episodeNumber = '';
             
             if( $sliderData->post_type == 'tv_show' ) {
-                $queryMetaSlider = "SELECT * FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = ". $sliderData->ID ." LIMIT 1;";
                 
-                $dataMetaSlider = DB::select($queryMetaSlider);
-
-                if( count($dataMetaSlider) > 0 ) {
-                    $episodeNumber = $dataMetaSlider[0]->meta_value;
-                }
-        
                 $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 
@@ -64,7 +58,7 @@ class HomepageController extends Controller
                 $seasonNumber = $lastSeason['name'];
 
                 $episodeId = end($lastSeason['episodes']);
-    
+                
                 $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                 $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                 $whereTitle = " AND p.ID='". $episodeId ."' ";
@@ -76,6 +70,10 @@ class HomepageController extends Controller
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title . "/";
                 }
+
+                $queryEpisodeNumber = "SELECT * FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
+                $dataEpisodeNumber = DB::select($queryEpisodeNumber);
+                $episodeNumber = $dataEpisodeNumber[0]->meta_value;
             }
 
             $sliders[] = [
