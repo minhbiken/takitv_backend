@@ -19,7 +19,7 @@ class MovieService {
     public function getPopulars() {
         $queryPopular = "SELECT * FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
-                            WHERE wp.post_type = 'movie' AND wp.post_id != NULL
+                            WHERE wp.post_type = 'movie' AND wp.post_id != ''
                             ORDER BY wp.`1_day_stats` DESC
                             LIMIT 6";
         return $this->getItems($queryPopular);
