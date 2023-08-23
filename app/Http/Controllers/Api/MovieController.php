@@ -104,6 +104,7 @@ class MovieController extends Controller
             $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
             $dataMetas = DB::select($queryMeta);
+            $movieRunTime = '';
             foreach($dataMetas as $dataMeta) {
                 if( $releaseYear == '' ) {
                     if( $dataMeta->meta_key == '_movie_release_date' ) {
