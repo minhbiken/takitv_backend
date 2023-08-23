@@ -47,6 +47,7 @@ class EpisodeController extends Controller
         $movies = [];
         $query = $select . $where;
         $dataPost = DB::select($query);
+       
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
@@ -77,6 +78,15 @@ class EpisodeController extends Controller
 
         if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
         $outlink =  $outlink . '?pid=' . $dataSeason->ID;
+
+        //get all seasons and episode
+        $querySeason = "SELECT ID FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
+        $dataSeasons = DB::select($querySeason);
+
+        if (count($dataSeasons) > 0) {
+            
+        }
+
 
         $movies = [
             'id' => $dataSeason->ID,

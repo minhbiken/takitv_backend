@@ -112,4 +112,8 @@ class TvshowService {
         }
         return $items;
     }
+
+    public function getSeasons($query) {
+        $seasons = [];
+    }
 }

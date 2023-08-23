@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class MovieService {
     public function getTopWeeks()
     {
-        $queryTopWeek = "SELECT p.ID, p.post_title FROM `wp_most_popular` mp
+        $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
                             WHERE mp.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
                             ORDER BY mp.7_day_stats DESC
@@ -17,7 +17,7 @@ class MovieService {
     }
 
     public function getPopulars() {
-        $queryPopular = "SELECT p.ID, wp.post_type, wp.post_id, wp.1_day_stats, p.post_title FROM `wp_most_popular` wp
+        $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
                             WHERE wp.post_type = 'movie' AND wp.post_id != '' AND p.ID != ''
 
@@ -30,20 +30,36 @@ class MovieService {
         $items = [];
         $dataItems = DB::select($query);
         $releaseDate = '2023';
+        $imageUrlUpload = env('IMAGE_URL_UPLOAD');
+        $movieRunTime = '';
+        $outlink = '';
         if( count($dataItems) > 0 ) {
             foreach ( $dataItems as $dataItem ) {
-                $queryMeta = "SELECT * FROM wp_postmeta WHERE meta_key = '_movie_release_date' and post_id = ". $dataItem->ID .";";
+                $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataItem->ID .";";
                 $dataMetas = DB::select($queryMeta);
                 if( count($dataMetas) > 0 ) {
                     foreach ( $dataMetas as $dataMeta ) {
-                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
-                            $newDataReleaseDate = explode('-', $dataMeta->meta_value);
-                            $releaseDate = $newDataReleaseDate[0];
-                        } else {
-                            $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                        if( $dataMeta->meta_key == '_movie_release_date' ) {
+                            if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                                $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                                $releaseDate = $newDataReleaseDate[0];
+                            } else {
+                                $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                            }
+                        }
+                    
+                        if( $dataMeta->meta_key == '_movie_run_time' ) {
+                            $movieRunTime = $dataMeta->meta_value;
                         }
                     }
                 }
+
+
+                $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataItem->ID .";";
+                $dataSrcMeta = DB::select($querySrcMeta);
+
+                $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
                 $queryTaxonomy = "SELECT * FROM `wp_posts` p
                                     left join wp_term_relationships t_r on t_r.object_id = p.ID
@@ -66,6 +82,10 @@ class MovieService {
                     'year' => $releaseDate,
                     'genres' => $genres,
                     'title' => $dataItem->post_title,
+                    'originalTitle' => $dataItem->original_title,
+                    'src' => $src,
+                    'movieRunTime' => $movieRunTime,
+                    'outlink' => $outlink
                 ];
             }
         }
