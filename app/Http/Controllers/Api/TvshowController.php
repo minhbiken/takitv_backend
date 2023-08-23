@@ -85,6 +85,7 @@ class TvshowController extends Controller
 
         $movies = [];
         $populars = [];
+        $titleEpisode = '';
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
@@ -97,6 +98,14 @@ class TvshowController extends Controller
             $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];            
 
             $episodeId = end($episodeData[$totalEpisodeData - 1]['episodes']);
+
+            $querryTitleEpisode = "SELECT p.post_title FROM wp_posts p WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = " .  $episodeId . " ";
+            $dataTitleEpisode = DB::select($querryTitleEpisode);
+
+            if( count($dataTitleEpisode) > 0 ) {
+                $titleEpisode = $dataTitleEpisode[0]->post_title;
+            }
+
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
             $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
@@ -168,7 +177,7 @@ class TvshowController extends Controller
                 'id' => $data->ID,
                 'year' => $releaseDate,
                 'genres' => $genres,
-                'title' => $data->post_title,
+                'title' => $titleEpisode,
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
                 'src' => $src,
@@ -473,7 +482,7 @@ class TvshowController extends Controller
     public function show($title = '', Request $request)
     {
         $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
-        $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
+        $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $title ."' ";
 
         $where = $where . $whereTitle;
