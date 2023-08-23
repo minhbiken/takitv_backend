@@ -10,7 +10,7 @@ class MovieService {
     {
         $queryTopWeek = "SELECT p.ID, p.post_title FROM `wp_most_popular` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
-                            WHERE mp.post_type = 'movie' AND p.post_title != '' AND pm.post_id != '' AND p.ID != ''
+                            WHERE mp.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
                             ORDER BY mp.7_day_stats DESC
                             LIMIT 5";
         return $this->getItems($queryTopWeek);
