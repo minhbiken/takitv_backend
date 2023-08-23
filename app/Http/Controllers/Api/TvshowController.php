@@ -252,37 +252,17 @@ class TvshowController extends Controller
         $dataSeason = $dataPost[0];
     
         $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
-        $dataEpisode = DB::select($queryEpisode);
+        $seasons = $this->tvshowService->getSeasons($queryEpisode);
         
-        $episodeData = $dataEpisode[0]->meta_value;
-        $episodeData = unserialize($episodeData);
-
-        //Get seasons
-        $seasons = [];
-        foreach ( $episodeData as $episodeSeasonData ) {
-            $episodeDatas = $episodeSeasonData['episodes'];
-            foreach ( $episodeDatas as $episodeSubData ) {
-                $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
-                $dataEpiso = DB::select($queryEpiso);
-                $episodes[] = [
-                    'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
-                    'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
-                ];
-            }
-            
-            $seasons[] = [
-                'name' => $episodeSeasonData['name'],
-                'year' => $episodeSeasonData['year'],
-                'number' => count($episodeSeasonData['episodes']),
-                'episodes' => $episodes
-            ];
-        }
-
         $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
         $dataSrcMeta = DB::select($querySrcMeta);
         $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
      
+        $episodeData = DB::select($queryEpisode);
+        $episodeData = $episodeData[0]->meta_value;
+        $episodeData = unserialize($episodeData);
+        
         $lastSeason = end($episodeData);
         $episodeId = end($lastSeason['episodes']);
 

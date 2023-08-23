@@ -6,8 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Services\TvshowService;
 class EpisodeController extends Controller
 {
+    private $imageUrlUpload;
+    protected $tvshowService;
+    public function __construct(TvshowService $tvshowService)
+    {
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
+        $this->tvshowService = $tvshowService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -80,13 +88,8 @@ class EpisodeController extends Controller
         $outlink =  $outlink . '?pid=' . $dataSeason->ID;
 
         //get all seasons and episode
-        $querySeason = "SELECT ID FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
-        $dataSeasons = DB::select($querySeason);
-
-        if (count($dataSeasons) > 0) {
-            
-        }
-
+        $querySeasonEpisode = "SELECT * FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
+        $seasons = $this->tvshowService->getSeasons($querySeasonEpisode);
 
         $movies = [
             'id' => $dataSeason->ID,
@@ -96,7 +99,8 @@ class EpisodeController extends Controller
             'genres' => $genres,
             'src' => $src,
             'outlink' => $outlink,
-            'postDateGmt' => $dataSeason->post_date_gmt
+            'postDateGmt' => $dataSeason->post_date_gmt,
+            'seasons' => $seasons
         ];
 
         return response()->json($movies, Response::HTTP_OK);
