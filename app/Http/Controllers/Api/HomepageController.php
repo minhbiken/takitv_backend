@@ -129,6 +129,31 @@ class HomepageController extends Controller
         }
 
         //Get 12 tv-shows 
+
+        $categories = [
+            [
+                'title' => '전체',
+                'link' => 'tv-show'
+            ],
+            [
+                'title' => '드라마',
+                'link' => 'k-drama'
+            ],
+            [
+                'title' => '예능',
+                'link' => 'k-show'
+            ],
+            [
+                'title' => '시사/교양',
+                'link' => 'k-sisa'
+            ],
+            [
+                'title' => '미드',
+                'link' => 'u-drama'
+            ]
+        ];
+
+        //get tvshows of tv-show 
         $tvshows = [];
         $queryTvShow = "SELECT * FROM wp_posts p WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
         $dataTvShows = DB::select($queryTvShow);
@@ -189,7 +214,7 @@ class HomepageController extends Controller
                         LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
             $dataChanel = DB::select($queryChanel);
-
+            
             if( count($dataChanel) > 0 ) {
                 $chanel = $dataChanel[0]->description;
                 $newChanel = explode('src="', $chanel);
@@ -361,45 +386,45 @@ class HomepageController extends Controller
         }
         
         $data = [
-            'menus' => [
-                [
-                    'item' => '8092',
-                    'title'=> '영화',
-                    'link' => 'movie'
-                ],
-                [
-                    'item' => '161947',
-                    'title'=> 'TV',
-                    'link' => 'tv-shows',
-                    'subMenu' => [
-                        [
-                            'item' => '8093',
-                            'title'=> '드라마',
-                            'link' => 'k-drama'
-                        ],
-                        [
-                            'item' => '8094',
-                            'title'=> '예능',
-                            'link' => 'k-show'
-                        ],
-                        [
-                            'item' => '8095',
-                            'title'=> '시사',
-                            'link' => 'k-sisa'
-                        ]
-                    ]
-                ],
-                [
-                    'item' => '118282',
-                    'title'=> '미드',
-                    'link' => 'u-drama'
-                ],
-                [
-                    'item' => '8098',
-                    'title'=> 'OTT',
-                    'link' => 'ott-web'
-                ]
-            ],
+            // 'menus' => [
+            //     [
+            //         'item' => '8092',
+            //         'title'=> '영화',
+            //         'link' => 'movie'
+            //     ],
+            //     [
+            //         'item' => '161947',
+            //         'title'=> 'TV',
+            //         'link' => 'tv-shows',
+            //         'subMenu' => [
+            //             [
+            //                 'item' => '8093',
+            //                 'title'=> '드라마',
+            //                 'link' => 'k-drama'
+            //             ],
+            //             [
+            //                 'item' => '8094',
+            //                 'title'=> '예능',
+            //                 'link' => 'k-show'
+            //             ],
+            //             [
+            //                 'item' => '8095',
+            //                 'title'=> '시사',
+            //                 'link' => 'k-sisa'
+            //             ]
+            //         ]
+            //     ],
+            //     [
+            //         'item' => '118282',
+            //         'title'=> '미드',
+            //         'link' => 'u-drama'
+            //     ],
+            //     [
+            //         'item' => '8098',
+            //         'title'=> 'OTT',
+            //         'link' => 'ott-web'
+            //     ]
+            // ],
             'sliders' => $sliders,
             'otts' => [
                 'ottChanels' => [
@@ -428,6 +453,7 @@ class HomepageController extends Controller
                 'ottSliders' => $sliderRandoms
             ],
             'tvshows' => [
+                'title' => '최신등록 방송',
                 'categories' => [
                     [
                         'title' => '전체',
@@ -450,7 +476,6 @@ class HomepageController extends Controller
                         'link' => 'u-drama'
                     ],
                 ],
-                'title' => '최신등록 방송',
                 'items' => $tvshows
             ],
             'movies' => [

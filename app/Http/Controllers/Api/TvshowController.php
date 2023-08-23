@@ -478,8 +478,11 @@ class TvshowController extends Controller
 
         $where = $where . $whereTitle;
         
+        $movies = [];
         $dataPost = DB::select($select . $where);
-
+        if (count($dataPost) == 0) {
+            return response()->json($movies, Response::HTTP_NOT_FOUND);
+        }
         $queryTaxonomy = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
@@ -493,11 +496,6 @@ class TvshowController extends Controller
                 'name' => $dataTaxonomy->name,
                 'link' =>  $dataTaxonomy->slug
             ];
-        }
-        
-        $movies = [];
-        if (count($dataPost) == 0) {
-            return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
 
         $dataSeason = $dataPost[0];
