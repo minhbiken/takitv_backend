@@ -333,6 +333,30 @@ class TvshowController extends Controller
     }
 
     public function getTv(Request $request) {
-        $type = $request->get('post', 'k-show');
+        $type = $request->get('type', '');
+
+        $arrayType = [
+            'tv-show', 'k-drama', 'k-show', 'k-sisa', 'u-drama'
+        ];
+
+        if( in_array($type, $arrayType) ) {
+            $query = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = '" . $type . "'
+            ORDER BY p.post_date DESC 
+            LIMIT 12;";
+        } else {
+            $query = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish')))
+                            ORDER BY p.post_date DESC 
+                            LIMIT 12;";
+        }
+        $dataKDramas = $this->tvshowService->getItems($query);
+        return response()->json($dataKDramas, Response::HTTP_OK);
     }
 }

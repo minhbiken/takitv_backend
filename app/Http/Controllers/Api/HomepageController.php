@@ -179,46 +179,6 @@ class HomepageController extends Controller
                             LIMIT 12;";
         $dataTvshow = $this->tvshowService->getItems($queryTvshow);
 
-        //get 12 k-drama
-        $queryKdrama = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
-                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
-                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
-                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
-                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'k-drama'
-                            ORDER BY p.post_date DESC 
-                            LIMIT 12;";
-        $dataKDramas = $this->tvshowService->getItems($queryKdrama);
-
-        //get 12 k-show 
-        $queryKshow = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
-                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
-                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
-                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
-                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'k-show'
-                            ORDER BY p.post_date DESC 
-                            LIMIT 12;";
-        $dataKshows = $this->tvshowService->getItems($queryKshow);
-
-        //get 12 k-sisa
-        $queryKsisa = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
-                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
-                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
-                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
-                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'k-sisa'
-                            ORDER BY p.post_date DESC 
-                            LIMIT 12;";
-        $dataKsisa = $this->tvshowService->getItems($queryKsisa);
-
-        //get 12 u-drama
-        $queryUdrama = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
-                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
-                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
-                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
-                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'u-drama'
-                            ORDER BY p.post_date DESC 
-                            LIMIT 12;";
-        $dataUdrama = $this->tvshowService->getItems($queryUdrama);
-
         $categories = [
             'menu' => [
                 [
@@ -243,11 +203,7 @@ class HomepageController extends Controller
                 ]
             ],
             'items' => [
-                'tv-show' => $dataKshows,
-                'k-drama' => $dataKDramas,
-                'k-show' => $dataKshows,
-                'k-sisa' => $dataKsisa,
-                'u-drama' => $dataUdrama
+                'tv-show' => $dataTvshow,
             ]
         ];
         
