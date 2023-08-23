@@ -470,7 +470,7 @@ class TvshowController extends Controller
      * @param  string  $title
      * @return \Illuminate\Http\Response
      */
-    public function show($title, Request $request)
+    public function show($title = '', Request $request)
     {
         $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
@@ -479,6 +479,21 @@ class TvshowController extends Controller
         $where = $where . $whereTitle;
         
         $dataPost = DB::select($select . $where);
+
+        $queryTaxonomy = "SELECT * FROM `wp_posts` p
+                        left join wp_term_relationships t_r on t_r.object_id = p.ID
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_terms t on tx.term_id = t.term_id
+                        where t.name != 'featured' AND p.ID = ". $dataPost[0]->ID .";";
+        $dataTaxonomys = DB::select($queryTaxonomy);
+
+        $genres = [];
+        foreach( $dataTaxonomys as $dataTaxonomy ) {
+            $genres[] = [
+                'name' => $dataTaxonomy->name,
+                'link' =>  $dataTaxonomy->slug
+            ];
+        }
         
         $movies = [];
         if (count($dataPost) == 0) {
@@ -534,6 +549,7 @@ class TvshowController extends Controller
             'title' => $dataSeason->post_title,
             'originalTitle' => $dataSeason->original_title,
             'description' => $dataSeason->post_content,
+            'genres' => $genres,
             'src' => $src,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
