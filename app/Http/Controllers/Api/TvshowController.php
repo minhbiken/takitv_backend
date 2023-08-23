@@ -126,7 +126,7 @@ class TvshowController extends Controller
                         $newDataReleaseDate = explode('-', $dataMeta->meta_value);
                         $releaseDate = $newDataReleaseDate[0];
                     } else {
-                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y-m-d', $dataMeta->meta_value) : date('Y-m-d');
                     }
                 }
 
@@ -330,5 +330,9 @@ class TvshowController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function getTv(Request $request) {
+        $type = $request->get('post', 'k-show');
     }
 }

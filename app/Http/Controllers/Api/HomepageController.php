@@ -7,13 +7,16 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
+use App\Services\TvshowService;
 class HomepageController extends Controller
 {
 
     protected $movieService;
-    public function __construct(MovieService $movieService)
+    protected $tvshowService;
+    public function __construct(MovieService $movieService, TvshowService $tvshowService)
     {
         $this->movieService = $movieService;
+        $this->tvshowService = $tvshowService;
     }
 
     /**
@@ -30,20 +33,57 @@ class HomepageController extends Controller
         WHERE ID IN ( SELECT object_id FROM `wp_term_relationships` WHERE term_taxonomy_id IN (17 , 43) ) 
             AND p.post_status = 'publish'
         ORDER BY sort_order ASC, post_date DESC;";
-        $sliderData = DB::select($sliderQuery);
-
+        $sliderDatas = DB::select($sliderQuery);
         $sliders = [];
-        foreach ( $sliderData as $data ) {
+        foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
+            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
             $dataResult = DB::select($dataQuery);
 
-            $link = $data->post_type == 'movie' ? 'movie/'.$data->post_name."/" : 'tv-show/'.$data->post_name."/";
+            $titleSlider = $sliderData->post_title; 
+            $linkSlider = 'movie/' . $sliderData->post_title."/";
+            $seasonNumber = '';
+            $episodeNumber = '';
+            
+            if( $sliderData->post_type == 'tv_show' ) {
+                $queryMetaSlider = "SELECT * FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = ". $sliderData->ID ." LIMIT 1;";
+                
+                $dataMetaSlider = DB::select($queryMetaSlider);
+
+                if( count($dataMetaSlider) > 0 ) {
+                    $episodeNumber = $dataMetaSlider[0]->meta_value;
+                }
+        
+                $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
+                $dataEpisode = DB::select($queryEpisode);
+                
+                $episodeData = $dataEpisode[0]->meta_value;
+                $episodeData = unserialize($episodeData);
+    
+                $lastSeason = end($episodeData);
+                $seasonNumber = $lastSeason['name'];
+
+                $episodeId = end($lastSeason['episodes']);
+    
+                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
+                $whereTitle = " AND p.ID='". $episodeId ."' ";
+    
+                $where = $where . $whereTitle;
+                $query = $select . $where;
+                $dataEpisoSlider = DB::select($query);
+                
+                if( count($dataEpisoSlider) > 0 ) {
+                    $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title . "/";
+                }
+            }
 
             $sliders[] = [
-                'title' => $data->post_title,
-                'link' => $link,
-                'src' => $imageUrlUpload.$dataResult[0]->meta_value
+                'title' => $titleSlider,
+                'link' => $linkSlider,
+                'src' => $imageUrlUpload.$dataResult[0]->meta_value,
+                'seasonNumber' => $seasonNumber,
+                'episodeNumber' => $episodeNumber,
             ];
         }
 
@@ -76,7 +116,7 @@ class HomepageController extends Controller
             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $randomData->ID .";";
             $dataRandomResult = DB::select($dataRandomQuery);
 
-            $linkRandom = $data->post_type == 'movie' ? 'movie/'.$randomData->post_name."/" : 'tv-show/'.$randomData->post_name."/";
+            $linkRandom = $randomData->post_type == 'movie' ? 'movie/'.$randomData->post_name."/" : 'tv-show/'.$randomData->post_name."/";
 
             $releaseDate = '2023';
 
@@ -107,7 +147,7 @@ class HomepageController extends Controller
             }
 
             if( $randomData->post_type == 'tv_show' ) {
-                $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
+                $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $randomData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 
                 $episodeData = $dataEpisode[0]->meta_value;
@@ -128,118 +168,89 @@ class HomepageController extends Controller
             ];
         }
 
-        //Get 12 tv-shows 
+
+        //get 12 tv-show
+        $queryTvshow = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish')))
+                            ORDER BY p.post_date DESC 
+                            LIMIT 12;";
+        $dataTvshow = $this->tvshowService->getItems($queryTvshow);
+
+        //get 12 k-drama
+        $queryKdrama = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'k-drama'
+                            ORDER BY p.post_date DESC 
+                            LIMIT 12;";
+        $dataKDramas = $this->tvshowService->getItems($queryKdrama);
+
+        //get 12 k-show 
+        $queryKshow = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'k-show'
+                            ORDER BY p.post_date DESC 
+                            LIMIT 12;";
+        $dataKshows = $this->tvshowService->getItems($queryKshow);
+
+        //get 12 k-sisa
+        $queryKsisa = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'k-sisa'
+                            ORDER BY p.post_date DESC 
+                            LIMIT 12;";
+        $dataKsisa = $this->tvshowService->getItems($queryKsisa);
+
+        //get 12 u-drama
+        $queryUdrama = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
+                            LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id
+                            LEFT JOIN wp_terms t ON tx.term_id = t.term_id
+                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND t.slug = 'u-drama'
+                            ORDER BY p.post_date DESC 
+                            LIMIT 12;";
+        $dataUdrama = $this->tvshowService->getItems($queryUdrama);
 
         $categories = [
-            [
-                'title' => '전체',
-                'link' => 'tv-show'
+            'menu' => [
+                [
+                    'title' => '전체',
+                    'link' => 'tv-show'
+                ],
+                [
+                    'title' => '드라마',
+                    'link' => 'k-drama'
+                ],
+                [
+                    'title' => '예능',
+                    'link' => 'k-show'
+                ],
+                [
+                    'title' => '시사/교양',
+                    'link' => 'k-sisa'
+                ],
+                [
+                    'title' => '미드',
+                    'link' => 'u-drama'
+                ]
             ],
-            [
-                'title' => '드라마',
-                'link' => 'k-drama'
-            ],
-            [
-                'title' => '예능',
-                'link' => 'k-show'
-            ],
-            [
-                'title' => '시사/교양',
-                'link' => 'k-sisa'
-            ],
-            [
-                'title' => '미드',
-                'link' => 'u-drama'
+            'items' => [
+                'tv-show' => $dataKshows,
+                'k-drama' => $dataKDramas,
+                'k-show' => $dataKshows,
+                'k-sisa' => $dataKsisa,
+                'u-drama' => $dataUdrama
             ]
         ];
-
-        //get tvshows of tv-show 
-        $tvshows = [];
-        $queryTvShow = "SELECT * FROM wp_posts p WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
-        $dataTvShows = DB::select($queryTvShow);
         
-        foreach ( $dataTvShows as $data ) {
-            $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            $dataEpisode = DB::select($queryEpisode);
-            
-            $episodeData = $dataEpisode[0]->meta_value;
-            $episodeData = unserialize($episodeData);
-            
-            $totalEpisodeData = count($episodeData);
-
-            $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];            
-
-            $episodeId = end($episodeData[$totalEpisodeData - 1]['episodes']);
-            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
-
-            $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
-            $dataSrcMeta = DB::select($querySrcMeta);
-            
-            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
-
-            $dataMetas = DB::select($queryMeta);
-
-            foreach($dataMetas as $dataMeta) {
-                if( $dataMeta->meta_key == '_episode_release_date' ) {
-                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
-                        $newDataReleaseDate = explode('-', $dataMeta->meta_value);
-                        $releaseDate = $newDataReleaseDate[0];
-                    } else {
-                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
-                    }
-                }
-
-                if( $dataMeta->meta_key == '_episode_number' ) {
-                    $episodeNumber = $dataMeta->meta_value;
-                }
-            }
-
-            $queryTaxonomy = "SELECT * FROM `wp_posts` p
-                        left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
-                        left join wp_terms t on tx.term_id = t.term_id
-                        where p.ID = ". $data->ID .";";
-            $dataTaxonomys = DB::select($queryTaxonomy);
-
-            $genres = [];
-            foreach( $dataTaxonomys as $dataTaxonomy ) {
-                $genres[] = [
-                    'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->slug
-                ];
-            }
-
-            $queryChanel = "SELECT * FROM `wp_term_relationships` wp
-                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
-                        WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
-            $dataChanel = DB::select($queryChanel);
-            
-            if( count($dataChanel) > 0 ) {
-                $chanel = $dataChanel[0]->description;
-                $newChanel = explode('src="', $chanel);
-                $newChanel = explode('" alt', $newChanel[1]);
-                $newChanel = $newChanel[0];
-                $chanel = 'https://image002.modooup.com' . $newChanel;
-            } else {
-                $chanel = env('IMAGE_PLACEHOLDER');
-            }
-
-            $tvshows[] = [
-                'id' => $data->ID,
-                'year' => $releaseDate,
-                'genres' => $genres,
-                'title' => $data->post_title,
-                'originalTitle' => $data->original_title,
-                'description' => $data->post_content,
-                'src' => $src,
-                'chanelImage' => $chanel,
-                'seasonNumber' => $seasonNumber + 1,
-                'episodeNumber' => $episodeNumber,
-                'postDateGmt' => $data->post_date_gmt
-            ];
-        }
-
         //Get 12 movies 
         $movies = [];
         $queryMovie = "SELECT * FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
@@ -316,7 +327,6 @@ class HomepageController extends Controller
         $topWeeks = $this->movieService->getTopWeeks();
 
         //Get movies newest of Korea for slider in bottom
-        $movieKoreas = [];
         $queryKoreaMovie = "SELECT ID, post_title, original_title, post_name, post_type, post_date , IF(pm1.meta_value IS NOT NULL , CAST( pm1.meta_value AS UNSIGNED ) , 0 ) as sort_order,
                                 IF(pm2.meta_value IS NOT NULL , CAST( pm2.meta_value AS UNSIGNED ) , 0 ) as slide_img
                                 FROM wp_posts as p
@@ -326,105 +336,9 @@ class HomepageController extends Controller
                                 WHERE p.post_type = 'movie'
                                 ORDER BY sort_order ASC, post_date DESC;";
 
-        $movieDataKoreas = DB::select($queryKoreaMovie);
-        foreach ( $movieDataKoreas as $movieDataKorea ) {
-            $queryMetaKorea = "SELECT * FROM wp_postmeta WHERE post_id = ". $movieDataKorea->ID .";";
-            $dataMetaKorea = DB::select($queryMetaKorea);
-
-            $linkKoreaMovie = 'movie/'.$movieDataKorea->post_name."/";
-            $releaseDateKorea = '2023';
-            $episodeNumber = '';
-
-            $dataMetaRandoms = DB::select($queryMetaKorea);
-            foreach ($dataMetaRandoms as $dataMetaRandom) {
-                if ( $dataMetaRandom->meta_key == '_movie_release_date' ) {
-                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaRandom->meta_value)) {
-                        $newDataReleaseDateKorea = explode('-', $dataMetaRandom->meta_value);
-                        $releaseDateKorea = $newDataReleaseDateKorea[0];
-                    } else {
-                        $releaseDateKorea = $dataMetaRandom->meta_value > 0 ? date('Y', $dataMetaRandom->meta_value) : '2023';
-                    }
-                }
-                if( $dataMetaRandom->meta_key == '_movie_run_time' ) {
-                    $movieRunTime = $dataMetaRandom->meta_value != '' ? $dataMetaRandom->meta_value : '';
-                }
-            }
-
-            $querySrcMetaKorea = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' 
-                                    WHERE p.post_status = 'publish' and p.ID =". $movieDataKorea->ID .";";
-            $dataSrcMetaKorea = DB::select($querySrcMetaKorea);
-            $src = $imageUrlUpload.$dataSrcMetaKorea[0]->meta_value;
-
-
-            $queryTaxonomyKorea = "SELECT * FROM `wp_posts` p
-                        left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
-                        left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND p.ID = ". $movieDataKorea->ID .";";
-
-            $dataTaxonomyKoreas = DB::select($queryTaxonomyKorea);
-
-            $genreKoreas = [];
-            foreach( $dataTaxonomyKoreas as $dataTaxonomyKorea ) {
-                $genreKoreas[] = [
-                    'name' => $dataTaxonomyKorea->name,
-                    'link' =>  $dataTaxonomyKorea->slug
-                ];
-            }
-
-            $movieKoreas[] = [
-                'year' => $releaseDateKorea,
-                'title' => $movieDataKorea->post_title,
-                'originalTitle' => $movieDataKorea->original_title,
-                'description' => $data->post_content,
-                'link' => $linkKoreaMovie,
-                'src' => $src,
-                'movieRunTime' => $movieRunTime,
-                'genres' => $genreKoreas,
-            ];
-        }
+        $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
         
         $data = [
-            // 'menus' => [
-            //     [
-            //         'item' => '8092',
-            //         'title'=> '영화',
-            //         'link' => 'movie'
-            //     ],
-            //     [
-            //         'item' => '161947',
-            //         'title'=> 'TV',
-            //         'link' => 'tv-shows',
-            //         'subMenu' => [
-            //             [
-            //                 'item' => '8093',
-            //                 'title'=> '드라마',
-            //                 'link' => 'k-drama'
-            //             ],
-            //             [
-            //                 'item' => '8094',
-            //                 'title'=> '예능',
-            //                 'link' => 'k-show'
-            //             ],
-            //             [
-            //                 'item' => '8095',
-            //                 'title'=> '시사',
-            //                 'link' => 'k-sisa'
-            //             ]
-            //         ]
-            //     ],
-            //     [
-            //         'item' => '118282',
-            //         'title'=> '미드',
-            //         'link' => 'u-drama'
-            //     ],
-            //     [
-            //         'item' => '8098',
-            //         'title'=> 'OTT',
-            //         'link' => 'ott-web'
-            //     ]
-            // ],
             'sliders' => $sliders,
             'otts' => [
                 'ottChanels' => [
@@ -454,29 +368,7 @@ class HomepageController extends Controller
             ],
             'tvshows' => [
                 'title' => '최신등록 방송',
-                'categories' => [
-                    [
-                        'title' => '전체',
-                        'link' => 'tv-show'
-                    ],
-                    [
-                        'title' => '드라마',
-                        'link' => 'k-drama'
-                    ],
-                    [
-                        'title' => '예능',
-                        'link' => 'k-show'
-                    ],
-                    [
-                        'title' => '시사/교양',
-                        'link' => 'k-sisa'
-                    ],
-                    [
-                        'title' => '미드',
-                        'link' => 'u-drama'
-                    ],
-                ],
-                'items' => $tvshows
+                'categories' => $categories
             ],
             'movies' => [
                 'title' => '최신등록영화',
