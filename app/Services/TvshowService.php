@@ -22,7 +22,7 @@ class TvshowService {
                             WHERE wp.post_type = 'tv_show' AND wp.post_id != '' AND p.ID != ''
 
                             ORDER BY wp.`1_day_stats` DESC
-                            LIMIT 6";
+                            LIMIT 5";
         return $this->getItems($queryPopular);
     }
     public function getItems($query) {
