@@ -6,6 +6,25 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 class TvshowService {
+    public function getTopWeeks()
+    {
+        $queryTopWeek = "SELECT p.ID, p.post_title FROM `wp_most_popular` mp
+                            LEFT JOIN wp_posts p ON p.ID = mp.post_id
+                            WHERE mp.post_type = 'tv_show' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
+                            ORDER BY mp.7_day_stats DESC
+                            LIMIT 5";
+        return $this->getItems($queryTopWeek);
+    }
+
+    public function getPopulars() {
+        $queryPopular = "SELECT p.ID, wp.post_type, wp.post_id, wp.1_day_stats, p.post_title FROM `wp_most_popular` wp
+                            LEFT JOIN wp_posts p ON p.ID = wp.post_id 
+                            WHERE wp.post_type = 'tv_show' AND wp.post_id != '' AND p.ID != ''
+
+                            ORDER BY wp.`1_day_stats` DESC
+                            LIMIT 6";
+        return $this->getItems($queryPopular);
+    }
     public function getItems($query) {
         $items = [];
         $dataItems = DB::select($query);
