@@ -42,7 +42,7 @@ class TvshowController extends Controller
         if($type != '') {
             $idType = "SELECT wr.object_id
                             FROM wp_terms t
-                            LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id AND wt.taxonomy = 'movie_genre'
+                            LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id
                             LEFT JOIN wp_term_relationships wr ON wr.term_taxonomy_id = wt.term_taxonomy_id
                             WHERE slug = '". $type ."'";
             $whereType = " AND p.ID IN ( ". $idType ." ) ";
