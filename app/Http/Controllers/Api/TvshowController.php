@@ -30,6 +30,7 @@ class TvshowController extends Controller
         $orderBy = $request->get('orderBy', '');
         $title = $request->get('title', '');
         $type = $request->get('type', '');
+        $genre = $request->get('genre', '');
 
         $select = "SELECT * FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
@@ -47,6 +48,20 @@ class TvshowController extends Controller
                             WHERE slug = '". $type ."'";
             $whereType = " AND p.ID IN ( ". $idType ." ) ";
             $where = $where . $whereType;
+        }
+
+        if( $genre != '' ) {
+            $genre = explode(',', $genre);
+            foreach($genre as $key => $g) {
+                $genre[$key] = "'" . "$g" . "'";
+            }
+            $genre = join(",", $genre);
+          
+            $queryGenre = "SELECT tr.object_id FROM wp_terms t
+                left join wp_term_taxonomy tx on tx.term_id = t.term_id
+                left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
+                WHERE t.name IN (". $genre .") ";
+            $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
         }
 
         if( $orderBy == '' ) {
@@ -84,6 +99,7 @@ class TvshowController extends Controller
         //query limit tvshow
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
+        
         $datas = DB::select($query);
 
         $movies = [];
