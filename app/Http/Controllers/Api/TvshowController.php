@@ -304,8 +304,7 @@ class TvshowController extends Controller
             left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
             left join wp_terms t on tx.term_id = t.term_id
             where t.name != 'featured' AND t.name IN ( ".$slug." ) LIMIT 10";
-            print_r($queryTaxonomyRelated); die;
-    $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
+            $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
         }
         
 
