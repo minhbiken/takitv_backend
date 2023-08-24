@@ -70,7 +70,7 @@ class HomepageController extends Controller
                             LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID 
                             LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                             LEFT JOIN wp_terms t ON tx.term_id = t.term_id 
-                            WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12;";
+                            WHERE t.name != 'featured' AND t.name != '' AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12;";
         $dataTvshow = $this->tvshowService->getItems($queryTvshow);
 
         $categories = [
@@ -138,7 +138,7 @@ class HomepageController extends Controller
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                         left join wp_terms t on tx.term_id = t.term_id
-                        where p.ID = ". $dataMovie->ID .";";
+                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $dataMovie->ID .";";
 
             $dataTaxonomyMovies = DB::select($queryTaxonomyMovie);
 
