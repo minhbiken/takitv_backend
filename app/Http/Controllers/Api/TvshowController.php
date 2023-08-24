@@ -279,6 +279,15 @@ class TvshowController extends Controller
         //Get populars
         $populars = $this->tvshowService->getPopulars();
 
+        //get 8 movies related
+        $slug = join(",", $slug);
+        $queryTaxonomyRelated = "SELECT * FROM `wp_posts` p
+                left join wp_term_relationships t_r on t_r.object_id = p.ID
+                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                left join wp_terms t on tx.term_id = t.term_id
+                where t.name != 'featured' AND t.name IN ( ".$slug." ) LIMIT 5";
+        $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
+
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
@@ -290,7 +299,8 @@ class TvshowController extends Controller
             'postDateGmt' => $dataSeason->post_date_gmt,
             'seasons' => $seasons,
             'topweeks' => $topWeeks,
-            'populars' => $populars
+            'populars' => $populars,
+            'relateds' => $dataRelateds
         ];
 
         return response()->json($movies, Response::HTTP_OK);
