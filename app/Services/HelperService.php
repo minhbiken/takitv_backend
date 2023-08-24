@@ -20,6 +20,23 @@ class HelperService {
             $linkSlider = 'movie/' . $sliderData->post_title."/";
             $seasonNumber = '';
             $episodeNumber = '';
+            $year = '';
+
+            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
+            $dataMetas = DB::select($queryMeta);
+            if( count($dataMetas) > 0 ) {
+                foreach ( $dataMetas as $dataMeta ) {
+                    if( $dataMeta->meta_key == '_movie_release_date' || $dataMeta->meta_key == '_episode_release_date' ) {
+                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                            $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                            $year = $newDataReleaseDate[0];
+                        } else {
+                            $year = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : date('Y');
+                        }
+                    }
+                }
+            }
+
             
             if( $sliderData->post_type == 'tv_show' ) {
                 
@@ -52,6 +69,7 @@ class HelperService {
             }
 
             $sliders[] = [
+                'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
                 'src' => $imageUrlUpload.$dataResult[0]->meta_value,
