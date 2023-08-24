@@ -162,7 +162,7 @@ class TvshowController extends Controller
             }
 
             $queryChanel = "SELECT * FROM `wp_term_relationships` wp
-                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
+                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id AND wt.taxonomy = 'tv_show_genre'
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
             $dataChanel = DB::select($queryChanel);
 
