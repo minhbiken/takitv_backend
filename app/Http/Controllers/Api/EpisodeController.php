@@ -55,13 +55,15 @@ class EpisodeController extends Controller
         $movies = [];
         $query = $select . $where;
         $dataPost = DB::select($query);
-        
+        $tvshowTitle = '';
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
 
         //get all seasons and episode
         $querySeasonEpisode = "SELECT * FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
+        $tvshowTitleData = DB::select($querySeasonEpisode);
+        $tvshowTitle = $tvshowTitleData[0]->post_title;
         $seasons = $this->tvshowService->getSeasons($querySeasonEpisode);
 
         $datapostId = DB::select($querySeasonEpisode);
@@ -95,11 +97,11 @@ class EpisodeController extends Controller
         $dataSrcMeta = DB::select($querySrcMeta);
         $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
-        $titleTvShow = '';
+        $seasonName = '';
         foreach ( $seasons as $season ) {
             foreach ( $season['episodes'] as $episode ) {
                 if ( $dataSeason->post_title == $episode['title'] ) {
-                    $titleTvShow = $season['name'];
+                    $seasonName = $season['name'];
                     break;
                 }
             }
@@ -114,7 +116,8 @@ class EpisodeController extends Controller
             'src' => $src,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
-            'titleTvShow' => $titleTvShow,
+            'seasonName' => $seasonName,
+            'tvshowTitle' => $tvshowTitle,
             'seasons' => $seasons
         ];
         
