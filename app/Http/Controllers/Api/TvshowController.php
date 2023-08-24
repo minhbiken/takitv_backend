@@ -240,11 +240,13 @@ class TvshowController extends Controller
         $dataTaxonomys = DB::select($queryTaxonomy);
 
         $genres = [];
+        $slug = [];
         foreach( $dataTaxonomys as $dataTaxonomy ) {
             $genres[] = [
                 'name' => $dataTaxonomy->name,
                 'link' =>  $dataTaxonomy->slug
             ];
+            $slug[] = "'" . $dataTaxonomy->name . "'";
         }
 
         $dataSeason = $dataPost[0];
@@ -271,6 +273,12 @@ class TvshowController extends Controller
         if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
         $outlink =  $outlink . '?pid=' . $episodeId;
 
+        //Get topweek
+        $topWeeks = $this->tvshowService->getTopWeeks();
+
+        //Get populars
+        $populars = $this->tvshowService->getPopulars();
+
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
@@ -280,7 +288,9 @@ class TvshowController extends Controller
             'src' => $src,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
-            'seasons' => $seasons
+            'seasons' => $seasons,
+            'topweeks' => $topWeeks,
+            'populars' => $populars
         ];
 
         return response()->json($movies, Response::HTTP_OK);
