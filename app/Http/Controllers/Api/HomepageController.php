@@ -68,7 +68,7 @@ class HomepageController extends Controller
         //get 12 tv-show
         $queryTvshow = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p 
                             LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID 
-                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id 
+                            LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                             LEFT JOIN wp_terms t ON tx.term_id = t.term_id 
                             WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12;";
         $dataTvshow = $this->tvshowService->getItems($queryTvshow);
@@ -136,7 +136,7 @@ class HomepageController extends Controller
             
             $queryTaxonomyMovie = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                         left join wp_terms t on tx.term_id = t.term_id
                         where p.ID = ". $dataMovie->ID .";";
 

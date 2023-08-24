@@ -126,7 +126,7 @@ class MovieController extends Controller
 
             $queryTaxonomy = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                         left join wp_terms t on tx.term_id = t.term_id
                         where t.name != 'featured' AND p.ID = ". $data->ID .";";
 
@@ -170,7 +170,7 @@ class MovieController extends Controller
                 $slug = join(",", $slug);
                 $queryTaxonomyRelated = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                         left join wp_terms t on tx.term_id = t.term_id
                         where t.name != 'featured' AND t.name IN ( ".$slug." ) LIMIT 8";
                 $dataRelateds = $this->movieService->getItems($queryTaxonomyRelated);

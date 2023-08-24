@@ -136,7 +136,7 @@ class TvshowController extends Controller
 
             $queryTaxonomy = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                         left join wp_terms t on tx.term_id = t.term_id
                         where t.name != 'featured' AND p.ID = ". $data->ID .";";
             $dataTaxonomys = DB::select($queryTaxonomy);
@@ -249,7 +249,7 @@ class TvshowController extends Controller
         }
         $queryTaxonomy = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                         left join wp_terms t on tx.term_id = t.term_id
                         where t.name != 'featured' AND p.ID = ". $dataPost[0]->ID .";";
         $dataTaxonomys = DB::select($queryTaxonomy);
@@ -298,7 +298,7 @@ class TvshowController extends Controller
         $slug = join(",", $slug);
         $queryTaxonomyRelated = "SELECT * FROM `wp_posts` p
                 left join wp_term_relationships t_r on t_r.object_id = p.ID
-                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
+                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                 left join wp_terms t on tx.term_id = t.term_id
                 where t.name != 'featured' AND t.name IN ( ".$slug." ) LIMIT 10";
         $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
