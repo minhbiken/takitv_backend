@@ -74,8 +74,8 @@ class TvshowService {
             $dataTaxonomys = DB::select($queryTaxonomy);
 
             $genres = [];
-            foreach( $dataTaxonomys as $dataTaxonomy ) {
-                $genres[] = [
+            foreach( $dataTaxonomys as $key => $dataTaxonomy ) {
+                $genres[$key] = [
                     'name' => $dataTaxonomy->name,
                     'link' =>  $dataTaxonomy->slug
                 ];

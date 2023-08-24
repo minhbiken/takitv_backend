@@ -134,8 +134,8 @@ class MovieController extends Controller
 
             $genres = [];
             $slug = [];
-            foreach( $dataTaxonomys as $dataTaxonomy ) {
-                $genres[] = [
+            foreach( $dataTaxonomys as $k => $dataTaxonomy ) {
+                $genres[$k] = [
                     'name' => $dataTaxonomy->name,
                     'link' =>  $dataTaxonomy->slug
                 ];
