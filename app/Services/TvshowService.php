@@ -30,6 +30,7 @@ class TvshowService {
         $dataItems = DB::select($query);
         $releaseDate = date('Y-M-D');
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
+        $link = '';
         foreach ( $dataItems as $dataItem ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
@@ -96,6 +97,17 @@ class TvshowService {
                 $chanel = env('IMAGE_PLACEHOLDER');
             }
 
+            $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+            $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
+            $whereTitleSub = " AND p.ID='". $episodeId ."' ";
+
+            $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
+            $dataEpisoTitle = DB::select($queryTitle);
+            
+            if( count($dataEpisoTitle) > 0 ) {
+                $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
+            }
+
             $items[] = [
                 'id' => $dataItem->ID,
                 'year' => $releaseDate,
@@ -104,6 +116,7 @@ class TvshowService {
                 'originalTitle' => $dataItem->original_title,
                 'description' => $dataItem->post_content,
                 'src' => $src,
+                'link' => $link,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
