@@ -30,7 +30,6 @@ class TvshowService {
         $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
                             WHERE wp.post_type = 'tv_show' AND wp.post_id != '' AND p.ID != ''
-
                             ORDER BY wp.`1_day_stats` DESC
                             LIMIT 5";
         return $this->getItems($queryPopular);
@@ -93,7 +92,7 @@ class TvshowService {
             }
 
             $queryChanel = "SELECT * FROM `wp_term_relationships` wp
-                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id AND wt.taxonomy = 'tv_show_genre' 
+                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $dataItem->ID .";";
             $dataChanel = DB::select($queryChanel);
             
