@@ -119,10 +119,11 @@ class TvshowService {
         
         $episodeData = $dataEpisode[0]->meta_value;
         $episodeData = unserialize($episodeData);
-
+        arsort($episodeData);
         //Get seasons
         foreach ( $episodeData as $k => $episodeSeasonData ) {
             $episodeDatas = $episodeSeasonData['episodes'];
+            arsort($episodeDatas);
             foreach ( $episodeDatas as $key => $episodeSubData ) {
                 $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
                 $dataEpiso = DB::select($queryEpiso);
