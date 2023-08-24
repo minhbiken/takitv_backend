@@ -330,7 +330,7 @@ class TvshowController extends Controller
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
             'seasons' => $seasons,
-            'topweeks' => $topWeeks,
+            'topWeeks' => $topWeeks,
             'topMonths' => $topMonths,
             'relateds' => $dataRelateds
         ];
