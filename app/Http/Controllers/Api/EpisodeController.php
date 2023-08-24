@@ -96,6 +96,15 @@ class EpisodeController extends Controller
         $dataSrcMeta = DB::select($querySrcMeta);
         $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
+        $titleTvShow = '';
+        foreach ( $seasons as $season ) {
+            foreach ( $season['episodes'] as $episode ) {
+                if ( $dataSeason->post_title == $episode['title'] ) {
+                    $titleTvShow = $season['name'];
+                }
+            }
+        }
+
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
@@ -105,8 +114,10 @@ class EpisodeController extends Controller
             'src' => $src,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
+            'titleTvShow' => $titleTvShow,
             'seasons' => $seasons
         ];
+        
 
         return response()->json($movies, Response::HTTP_OK);
     }

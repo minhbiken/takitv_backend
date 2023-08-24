@@ -193,6 +193,10 @@ class HomepageController extends Controller
             'otts' => [
                 'ottChanels' => [
                     [
+                        'link' => 'ott-web/netflix/',
+                        'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/netflix.png'
+                    ],
+                    [
                         'link' => 'ott-web/disney/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/disney_plus.png'
                     ],
