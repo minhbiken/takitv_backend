@@ -55,15 +55,23 @@ class EpisodeController extends Controller
         $movies = [];
         $query = $select . $where;
         $dataPost = DB::select($query);
-       
+        
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
+
+        //get all seasons and episode
+        $querySeasonEpisode = "SELECT * FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
+        $seasons = $this->tvshowService->getSeasons($querySeasonEpisode);
+
+        $datapostId = DB::select($querySeasonEpisode);
+
+        $dataSeason = $dataPost[0];
         $queryTaxonomy = "SELECT * FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                         left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND p.ID = ". $dataPost[0]->ID .";";
+                        where t.name != 'featured' AND p.ID = ". $datapostId[0]->ID .";";
         $dataTaxonomys = DB::select($queryTaxonomy);
 
         $genres = [];
@@ -73,12 +81,6 @@ class EpisodeController extends Controller
                 'link' =>  $dataTaxonomy->slug
             ];
         }
-
-        $dataSeason = $dataPost[0];
-        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
-        $dataSrcMeta = DB::select($querySrcMeta);
-        $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
     
         //outlink only show in into
         $outlink = env('OUTLINK');
@@ -87,15 +89,18 @@ class EpisodeController extends Controller
         if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
         $outlink =  $outlink . '?pid=' . $dataSeason->ID;
 
-        //get all seasons and episode
-        $querySeasonEpisode = "SELECT * FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
-        $seasons = $this->tvshowService->getSeasons($querySeasonEpisode);
+        $datapostId = DB::select($querySeasonEpisode);
+        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $datapostId[0]->ID .";";
+        
+        $dataSrcMeta = DB::select($querySrcMeta);
+        $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
-            'originalTitle' => $dataSeason->original_title,
-            'description' => $dataSeason->post_content,
+            'originalTitle' => $datapostId[0]->original_title,
+            'description' => $datapostId[0]->post_content,
             'genres' => $genres,
             'src' => $src,
             'outlink' => $outlink,

@@ -9,17 +9,20 @@ use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
 use App\Services\TvshowService;
 use App\Services\SearchService;
+use App\Services\HelperService;
 class HomepageController extends Controller
 {
 
     protected $movieService;
     protected $tvshowService;
     protected $searchService;
-    public function __construct(MovieService $movieService, TvshowService $tvshowService, SearchService $searchService)
+    protected $helperService;
+    public function __construct(MovieService $movieService, TvshowService $tvshowService, SearchService $searchService, HelperService $helperService)
     {
         $this->movieService = $movieService;
         $this->tvshowService = $tvshowService;
         $this->searchService = $searchService;
+        $this->helperService = $helperService;
     }
 
     /**
@@ -36,62 +39,10 @@ class HomepageController extends Controller
         WHERE ID IN ( SELECT object_id FROM `wp_term_relationships` WHERE term_taxonomy_id IN (17 , 43) ) 
             AND p.post_status = 'publish'
         ORDER BY sort_order ASC, post_date DESC;";
-        $sliderDatas = DB::select($sliderQuery);
-        $sliders = [];
-        foreach ( $sliderDatas as $sliderData ) {
-            $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
-            $dataResult = DB::select($dataQuery);
 
-            $titleSlider = $sliderData->post_title; 
-            $linkSlider = 'movie/' . $sliderData->post_title."/";
-            $seasonNumber = '';
-            $episodeNumber = '';
-            
-            if( $sliderData->post_type == 'tv_show' ) {
-                $queryMetaSlider = "SELECT * FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = ". $sliderData->ID ." LIMIT 1;";
-                
-                $dataMetaSlider = DB::select($queryMetaSlider);
-
-                if( count($dataMetaSlider) > 0 ) {
-                    $episodeNumber = $dataMetaSlider[0]->meta_value;
-                }
+        $sliders = $this->helperService->getSliderItems($sliderQuery);
         
-                $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
-                $dataEpisode = DB::select($queryEpisode);
-                
-                $episodeData = $dataEpisode[0]->meta_value;
-                $episodeData = unserialize($episodeData);
-    
-                $lastSeason = end($episodeData);
-                $seasonNumber = $lastSeason['name'];
-
-                $episodeId = end($lastSeason['episodes']);
-    
-                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
-                $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-                $whereTitle = " AND p.ID='". $episodeId ."' ";
-    
-                $where = $where . $whereTitle;
-                $query = $select . $where;
-                $dataEpisoSlider = DB::select($query);
-                
-                if( count($dataEpisoSlider) > 0 ) {
-                    $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title . "/";
-                }
-            }
-
-            $sliders[] = [
-                'title' => $titleSlider,
-                'link' => $linkSlider,
-                'src' => $imageUrlUpload.$dataResult[0]->meta_value,
-                'seasonNumber' => $seasonNumber,
-                'episodeNumber' => $episodeNumber,
-            ];
-        }
-
         //Get Chanel slider random between USA and Korea
-        $sliderRandoms = [];
         $queryKoreaSlider = "SELECT ID, post_title, post_name, post_type, post_date , IF(pm1.meta_value IS NOT NULL , CAST( pm1.meta_value AS UNSIGNED ) , 0 ) as sort_order,
                                 IF(pm2.meta_value IS NOT NULL , CAST( pm2.meta_value AS UNSIGNED ) , 0 ) as slide_img
                                 FROM wp_posts as p
@@ -112,65 +63,7 @@ class HomepageController extends Controller
         $randomSlider[1] = $queryUsaSlider;
 
         $queryRandom = $randomSlider[rand(0,1)];
-        $randomDatas = DB::select($queryRandom);
-
-        foreach ( $randomDatas as $randomData ) {
-            $dataRandomQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $randomData->ID .";";
-            $dataRandomResult = DB::select($dataRandomQuery);
-
-            $linkRandom = $randomData->post_type == 'movie' ? 'movie/'.$randomData->post_name."/" : 'tv-show/'.$randomData->post_name."/";
-
-            $releaseDate = '2023';
-
-            $queryMetaRandom = "SELECT * FROM wp_postmeta WHERE post_id = ". $randomData->ID .";";
-            $dataMetaRandoms = DB::select($queryMetaRandom);
-
-            $episodeNumber = '';
-            foreach ($dataMetaRandoms as $dataMetaRandom) {
-                if ( $randomData->post_type == 'movie' && $dataMetaRandom->meta_key == '_movie_release_date' ) {
-                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaRandom->meta_value)) {
-                        $newDataReleaseDate = explode('-', $dataMetaRandom->meta_value);
-                        $releaseDate = $newDataReleaseDate[0];
-                    } else {
-                        $releaseDate = $dataMetaRandom->meta_value > 0 ? date('Y', $dataMetaRandom->meta_value) : '2023';
-                    }
-                } else if ( $randomData->post_type == 'tv_show' && $dataMetaRandom->meta_key == '_episode_release_date' ) {
-                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaRandom->meta_value)) {
-                        $newDataReleaseDate = explode('-', $dataMetaRandom->meta_value);
-                        $releaseDate = $newDataReleaseDate[0];
-                    } else {
-                        $releaseDate = $dataMetaRandom->meta_value > 0 ? date('Y', $dataMetaRandom->meta_value) : '2023';
-                    }
-
-                    if( $dataMetaRandom->meta_key == '_episode_number' ) {
-                        $episodeNumber = $dataMetaRandom->meta_value;
-                    }
-                }
-            }
-
-            if( $randomData->post_type == 'tv_show' ) {
-                $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $randomData->ID . " LIMIT 1;";
-                $dataEpisode = DB::select($queryEpisode);
-                
-                $episodeData = $dataEpisode[0]->meta_value;
-                $episodeData = unserialize($episodeData);
-                
-                $totalEpisodeData = count($episodeData);
-    
-                $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];            
-            }
-
-            $sliderRandoms[] = [
-                'year' => $releaseDate,
-                'title' => $randomData->post_title,
-                'seasonNumber' => $seasonNumber + 1,
-                'episodeNumber' => $episodeNumber,
-                'link' => $linkRandom,
-                'src' => $imageUrlUpload.$dataRandomResult[0]->meta_value,
-            ];
-        }
-
+        $sliderRandoms = $this->helperService->getSliderItems($queryRandom);
 
         //get 12 tv-show
         $queryTvshow = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_posts` p
