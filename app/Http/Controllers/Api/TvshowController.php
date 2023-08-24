@@ -300,7 +300,7 @@ class TvshowController extends Controller
                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id
                 left join wp_terms t on tx.term_id = t.term_id
-                where t.name != 'featured' AND t.name IN ( ".$slug." ) LIMIT 5";
+                where t.name != 'featured' AND t.name IN ( ".$slug." ) LIMIT 10";
         $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
 
         $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
