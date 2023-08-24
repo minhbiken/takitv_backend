@@ -97,11 +97,9 @@ class TvshowController extends Controller
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
             
-            $totalEpisodeData = count($episodeData);
-
-            $seasonNumber = $episodeData[$totalEpisodeData - 1]['position'];            
-
-            $episodeId = end($episodeData[$totalEpisodeData - 1]['episodes']);
+            $lastSeason = end($episodeData);
+            $seasonNumber = $lastSeason['name'];     
+            $episodeId = end($lastSeason['episodes']);
             
             $querryTitleEpisode = "SELECT p.post_title FROM wp_posts p WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = " .  $episodeId . " ";
             $dataTitleEpisode = DB::select($querryTitleEpisode);
@@ -186,7 +184,7 @@ class TvshowController extends Controller
                 'src' => $src,
                 'outlink' => $outlink,
                 'chanelImage' => $chanel,
-                'seasonNumber' => $seasonNumber + 1,
+                'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
                 'postDateGmt' => $data->post_date_gmt
             ];
