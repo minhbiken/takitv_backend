@@ -101,6 +101,7 @@ class EpisodeController extends Controller
             foreach ( $season['episodes'] as $episode ) {
                 if ( $dataSeason->post_title == $episode['title'] ) {
                     $titleTvShow = $season['name'];
+                    break;
                 }
             }
         }
