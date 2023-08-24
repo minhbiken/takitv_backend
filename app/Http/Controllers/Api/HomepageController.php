@@ -177,14 +177,13 @@ class HomepageController extends Controller
         $topWeeks = $this->movieService->getTopWeeks();
 
         //Get movies newest of Korea for slider in bottom
-        $queryKoreaMovie = "SELECT ID, post_title, original_title, post_name, post_type, post_date , IF(pm1.meta_value IS NOT NULL , CAST( pm1.meta_value AS UNSIGNED ) , 0 ) as sort_order,
-                                IF(pm2.meta_value IS NOT NULL , CAST( pm2.meta_value AS UNSIGNED ) , 0 ) as slide_img
-                                FROM wp_posts as p
-                                INNER JOIN wp_postmeta as pm0 ON p.ID = pm0.post_id AND pm0.meta_key = '_korea_featured' and pm0.meta_value = 1
-                                LEFT JOIN wp_postmeta as pm1 ON p.ID = pm1.post_id and pm1.meta_key = '_sort_order_korea'
-                                LEFT JOIN wp_postmeta as pm2 ON p.ID = pm2.post_id and pm2.meta_key = '_korea_image_id'
-                                WHERE p.post_type = 'movie'
-                                ORDER BY sort_order ASC, post_date DESC;";
+        $queryKoreaMovie = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+                                LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
+                                LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                                LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
+                                WHERE t.name != 'featured' AND t.name != ''
+                                ORDER BY p.post_date DESC
+                                LIMIT 8;";
 
         $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
         
