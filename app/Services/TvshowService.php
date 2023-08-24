@@ -133,7 +133,7 @@ class TvshowService {
                 ];
             }
             
-            $seasons[$k] = [
+            $seasons[] = [
                 'name' => $episodeSeasonData['name'],
                 'year' => $episodeSeasonData['year'],
                 'number' => count($episodeSeasonData['episodes']),
