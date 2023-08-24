@@ -42,7 +42,7 @@ class TvshowController extends Controller
         if($type != '') {
             $idType = "SELECT wr.object_id
                             FROM wp_terms t
-                            LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id
+                            LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id AND wt.taxonomy = 'movie_genre'
                             LEFT JOIN wp_term_relationships wr ON wr.term_taxonomy_id = wt.term_taxonomy_id
                             WHERE slug = '". $type ."'";
             $whereType = " AND p.ID IN ( ". $idType ." ) ";
@@ -162,7 +162,7 @@ class TvshowController extends Controller
             }
 
             $queryChanel = "SELECT * FROM `wp_term_relationships` wp
-                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
             $dataChanel = DB::select($queryChanel);
 
