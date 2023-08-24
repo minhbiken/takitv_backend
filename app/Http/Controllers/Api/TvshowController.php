@@ -292,7 +292,7 @@ class TvshowController extends Controller
         $topWeeks = $this->tvshowService->getTopWeeks();
 
         //Get populars
-        $populars = $this->tvshowService->getPopulars();
+        $topMonths = $this->tvshowService->getTopMonths();
 
         //get 8 movies related
         $slug = join(",", $slug);
@@ -326,7 +326,7 @@ class TvshowController extends Controller
             'postDateGmt' => $dataSeason->post_date_gmt,
             'seasons' => $seasons,
             'topweeks' => $topWeeks,
-            'populars' => $populars,
+            'topMonths' => $topMonths,
             'relateds' => $dataRelateds
         ];
 

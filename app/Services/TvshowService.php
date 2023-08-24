@@ -16,6 +16,16 @@ class TvshowService {
         return $this->getItems($queryTopWeek);
     }
 
+    public function getTopMonths()
+    {
+        $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
+                            LEFT JOIN wp_posts p ON p.ID = mp.post_id
+                            WHERE mp.post_type = 'tv_show' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
+                            ORDER BY mp.30_day_stats DESC
+                            LIMIT 5";
+        return $this->getItems($queryTopWeek);
+    }
+
     public function getPopulars() {
         $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
