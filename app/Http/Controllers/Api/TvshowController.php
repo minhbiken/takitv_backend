@@ -105,6 +105,7 @@ class TvshowController extends Controller
         $movies = [];
         $topWeeks = $this->tvshowService->getTopWeeks();
         $populars = $this->tvshowService->getPopulars();
+        
         $titleEpisode = '';
         $link = '';
         $episodeNumber = '';

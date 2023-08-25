@@ -18,19 +18,19 @@ class TvshowService {
 
     public function getTopMonths()
     {
-        $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
+        $queryTopMonth = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
                             WHERE mp.post_type = 'tv_show' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
-                            ORDER BY mp.1_day_stats DESC
+                            ORDER BY mp.30_day_stats DESC
                             LIMIT 5";
-        return $this->getItems($queryTopWeek);
+        return $this->getItems($queryTopMonth);
     }
 
     public function getPopulars() {
         $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
                             WHERE wp.post_type = 'tv_show' AND wp.post_id != '' AND p.ID != ''
-                            ORDER BY wp.`1_day_stats` DESC
+                            ORDER BY wp.`7_day_stats` DESC
                             LIMIT 5";
         return $this->getItems($queryPopular);
     }
@@ -116,7 +116,7 @@ class TvshowService {
             if( count($dataEpisoTitle) > 0 ) {
                 $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
             }
-
+            
             $items[] = [
                 'id' => $dataItem->ID,
                 'year' => $releaseDate,
