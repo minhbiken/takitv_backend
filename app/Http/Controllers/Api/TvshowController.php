@@ -216,7 +216,7 @@ class TvshowController extends Controller
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $titleEpisode,
-                'tvshowTitle' => $data->post_type,
+                'tvshowTitle' => $data->post_title,
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
                 'src' => $src,
