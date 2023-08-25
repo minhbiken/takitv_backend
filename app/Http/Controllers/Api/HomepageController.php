@@ -200,7 +200,7 @@ class HomepageController extends Controller
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/disney_plus.png'
                     ],
                     [
-                        'link' => 'ott-web/apple_tv/',
+                        'link' => 'ott-web/apple-tv/',
                         'src' => 'https://image002.modooup.com/wp-content/uploads/2023/07/appletv.png'
                     ],
                     [
