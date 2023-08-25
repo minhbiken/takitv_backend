@@ -146,7 +146,7 @@ class TvshowService {
         foreach ( $episodeData as $episodeSeasonData ) {
             $episodeDatas = $episodeSeasonData['episodes'];
             arsort($episodeDatas);
-            //print_r($episodeDatas);
+            $episodes = [];
             foreach ( $episodeDatas as $episodeSubData ) {
                 $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
                 $dataEpiso = DB::select($queryEpiso);
@@ -164,7 +164,6 @@ class TvshowService {
                 'episodes' => $episodes
             ];
         }
-        //die;
         return $seasons;
     }
 }
