@@ -34,6 +34,16 @@ class TvshowService {
                             LIMIT 5";
         return $this->getItems($queryPopular);
     }
+
+    public function getWebOTT() {
+        $query = "SELECT * FROM `wp_term_taxonomy` tx
+        LEFT JOIN wp_terms t ON t.term_id = tx.term_id AND t.slug = 'ott-web'
+        LEFT JOIN wp_term_relationships tr ON tr.term_taxonomy_id = tx.term_taxonomy_id
+        LEFT JOIN wp_posts p ON p.ID = tr.object_id
+        WHERE tx.taxonomy = 'category' AND tx.parent = 280 AND p.post_status = 'publish'
+        ORDER BY p.post_date DESC;";
+        return $this->getItems($query);
+    }
     public function getItems($query) {
         $items = [];
         $dataItems = DB::select($query);
