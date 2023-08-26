@@ -40,13 +40,18 @@ class TvshowController extends Controller
             $where = $where . $whereTitle;
         }
 
-        if($type != '') {
-            $idType = "SELECT wr.object_id
+        if( $type != '' ) {
+            $categoryTvShowKorea = config('constants.categoryTvshowKoreas');
+            if( in_array($type, $categoryTvShowKorea) ) {
+                $idType = "SELECT wr.object_id
                             FROM wp_terms t
                             LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id
                             LEFT JOIN wp_term_relationships wr ON wr.term_taxonomy_id = wt.term_taxonomy_id
                             WHERE slug = '". $type ."'";
-            $whereType = " AND p.ID IN ( ". $idType ." ) ";
+                $whereType = " AND p.ID IN ( ". $idType ." ) ";
+            } else {
+                $whereType = $this->tvshowService->getWhereByType($type);
+            }
             $where = $where . $whereType;
         }
 
@@ -87,12 +92,9 @@ class TvshowController extends Controller
 
         $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
         $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
-
-        if($type != '') {
-            $whereTotal = $whereTotal . $whereType;
-        }
-        
+       
         $queryTotal = $selectTotal . $where;
+        
         $dataTotal = DB::select($queryTotal);
         $total = $dataTotal[0]->total;
 

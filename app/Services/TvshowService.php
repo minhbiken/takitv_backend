@@ -176,4 +176,24 @@ class TvshowService {
         }
         return $seasons;
     }
+
+    public function getWhereByType($type = '') {
+        if( $type  == 'ott-web'  ) {
+            $whereByType = "SELECT tr.object_id FROM wp_terms t 
+            INNER JOIN wp_term_taxonomy tx ON tx.term_id = t.term_id AND tx.taxonomy = 'category' 
+            INNER JOIN wp_term_relationships tr ON tr.term_taxonomy_id = tx.term_taxonomy_id 
+            INNER JOIN wp_posts p ON p.ID = tr.object_id AND p.post_type = 'tv_show' 
+            AND p.post_status = 'publish' WHERE tx.parent = 280 ";
+            
+            $where = " AND p.ID IN ( ". $whereByType ." ) ";
+        } else {
+            $whereByType = "SELECT tr.object_id FROM wp_terms t 
+            INNER JOIN wp_term_taxonomy tx ON tx.term_id = t.term_id AND tx.taxonomy = 'category' 
+            INNER JOIN wp_term_relationships tr ON tr.term_taxonomy_id = tx.term_taxonomy_id 
+            INNER JOIN wp_posts p ON p.ID = tr.object_id AND p.post_type = 'tv_show' 
+            AND p.post_status = 'publish' WHERE tx.parent = 280 AND t.slug = '" . $type . "'";
+            $where = " AND p.ID IN ( ". $whereByType ." ) ";
+        }
+        return $where;
+    }
 }
