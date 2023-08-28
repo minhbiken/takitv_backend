@@ -123,8 +123,10 @@ class TvshowService {
             $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
             $dataEpisoTitle = DB::select($queryTitle);
             
+            $episodeTitle = '';
             if( count($dataEpisoTitle) > 0 ) {
-                $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
+                $episodeTitle = $dataEpisoTitle[0]->post_title;
+                $link = 'episode/' . $episodeTitle . "/";                
             }
             
             $items[] = [
@@ -132,7 +134,7 @@ class TvshowService {
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'tvShowTitle' => $dataItem->post_title,
-                'title' => $dataEpisoTitle[0]->post_title,
+                'title' => $episodeTitle,
                 'originalTitle' => $dataItem->original_title,
                 'description' => $dataItem->post_content,
                 'src' => $src,
