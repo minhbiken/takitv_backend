@@ -91,8 +91,6 @@ class TvshowController extends Controller
         $query = $select . $where . $order;
 
         $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
-        $whereTotal = " WHERE  p.comment_count = 0 AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
-       
         $queryTotal = $selectTotal . $where;
         
         $dataTotal = DB::select($queryTotal);
@@ -105,6 +103,7 @@ class TvshowController extends Controller
         $datas = DB::select($query);
 
         $movies = [];
+        
         $topWeeks = $this->tvshowService->getTopWeeks();
         $populars = $this->tvshowService->getPopulars();
         
@@ -265,7 +264,7 @@ class TvshowController extends Controller
     {
         $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND p.post_title='". $title ."' ";
+        $whereTitle = " AND p.post_title='". $title ."'  LIMIT 1; ";
 
         $where = $where . $whereTitle;
         $movies = [];
