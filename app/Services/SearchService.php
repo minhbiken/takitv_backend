@@ -117,6 +117,7 @@ class SearchService {
             }
 
             $items[$key] = [
+                'postType'  => $data->post_type,
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $data->post_title,
