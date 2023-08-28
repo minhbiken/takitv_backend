@@ -325,11 +325,13 @@ class TvshowController extends Controller
         if ( $slug == '' ) {
             $dataRelateds = [];
         } else {
+            $arrayTvShowError = config('constants.tv_show_error');
+            $arrayTvShowError = join(",", $arrayTvShowError);
             $queryTaxonomyRelated = "SELECT * FROM `wp_posts` p
             left join wp_term_relationships t_r on t_r.object_id = p.ID
             left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
             left join wp_terms t on tx.term_id = t.term_id
-            where t.name != 'featured' AND t.name != '' AND t.name IN ( ".$slug." ) LIMIT 10";
+            where t.name != 'featured' AND t.name != '' AND t.name IN ( ".$slug." ) AND p.ID NOT IN ( " . $arrayTvShowError . " ) LIMIT 10";
             $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
         }
         
