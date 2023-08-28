@@ -104,8 +104,8 @@ class TvshowController extends Controller
 
         $movies = [];
         
-        $topWeeks = $this->tvshowService->getTopWeeks();
-        $populars = $this->tvshowService->getPopulars();
+        $topWeeks = $this->tvshowService->getTopWeeks($type);
+        $populars = $this->tvshowService->getPopulars($type);
         
         $titleEpisode = '';
         $link = '';
@@ -317,7 +317,7 @@ class TvshowController extends Controller
         //Get topweek
         $topWeeks = $this->tvshowService->getTopWeeks();
 
-        //Get populars
+        //Get topmonth
         $topMonths = $this->tvshowService->getTopMonths();
 
         //get 8 movies related

@@ -6,33 +6,57 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 class TvshowService {
-    public function getTopWeeks()
+    public function getTopWeeks($type='')
     {
-        $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
-                            LEFT JOIN wp_posts p ON p.ID = mp.post_id
-                            WHERE mp.post_type = 'tv_show' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
-                            ORDER BY mp.7_day_stats DESC
-                            LIMIT 5";
+        if( $type == '' ) {
+            $queryByType = '';
+        } else {
+            $queryByType =  "AND t.slug = '" . $type . "'" ;
+        }
+        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p
+                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
+                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+                        WHERE p.post_type = 'tv_show' " . $queryByType . "
+                        ORDER BY mp.7_day_stats DESC
+                        LIMIT 5;";
         return $this->getItems($queryTopWeek);
     }
 
-    public function getTopMonths()
+    public function getTopMonths($type='')
     {
-        $queryTopMonth = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
-                            LEFT JOIN wp_posts p ON p.ID = mp.post_id
-                            WHERE mp.post_type = 'tv_show' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
-                            ORDER BY mp.30_day_stats DESC
-                            LIMIT 5";
-        return $this->getItems($queryTopMonth);
+        if( $type == '' ) {
+            $queryByType = '';
+        } else {
+            $queryByType =  "AND t.slug = '" . $type . "'" ;
+        }
+        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p
+                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
+                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+                        WHERE p.post_type = 'tv_show' " . $queryByType . "
+                        ORDER BY mp.30_day_stats DESC
+                        LIMIT 5;";
+        return $this->getItems($queryTopWeek);
     }
 
-    public function getPopulars() {
-        $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
-                            LEFT JOIN wp_posts p ON p.ID = wp.post_id 
-                            WHERE wp.post_type = 'tv_show' AND wp.post_id != '' AND p.ID != ''
-                            ORDER BY wp.`7_day_stats` DESC
-                            LIMIT 5";
-        return $this->getItems($queryPopular);
+    public function getPopulars($type='') {
+        if( $type == '' ) {
+            $queryByType = '';
+        } else {
+            $queryByType =  "AND t.slug = '" . $type . "'" ;
+        }
+        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p
+                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
+                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+                        WHERE p.post_type = 'tv_show' " . $queryByType . "
+                        ORDER BY mp.7_day_stats DESC
+                        LIMIT 5;";
+        return $this->getItems($queryTopWeek);
     }
 
     public function getWebOTT() {

@@ -10,7 +10,7 @@ class MovieService {
     {
         $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
-                            WHERE mp.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
+                            WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
                             ORDER BY mp.7_day_stats DESC
                             LIMIT 5";
         return $this->getItems($queryTopWeek);
@@ -19,7 +19,7 @@ class MovieService {
     public function getPopulars() {
         $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
-                            WHERE wp.post_type = 'movie' AND wp.post_id != '' AND p.ID != ''
+                            WHERE p.post_type = 'movie' AND wp.post_id != '' AND p.ID != ''
 
                             ORDER BY wp.`1_day_stats` DESC
                             LIMIT 6";
