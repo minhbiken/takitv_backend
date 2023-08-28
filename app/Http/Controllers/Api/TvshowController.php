@@ -104,8 +104,13 @@ class TvshowController extends Controller
 
         $movies = [];
         
-        $topWeeks = $this->tvshowService->getTopWeeks($type);
-        $populars = $this->tvshowService->getPopulars($type);
+        if( $type == 'ott-web' ) {
+            $topWeeks = $this->tvshowService->getTopWeekOTT();
+            $populars = $this->tvshowService->getTopWeekOTT();
+        } else {
+            $topWeeks = $this->tvshowService->getTopWeeks($type);
+            $populars = $this->tvshowService->getPopulars($type);
+        }
         
         $titleEpisode = '';
         $link = '';
