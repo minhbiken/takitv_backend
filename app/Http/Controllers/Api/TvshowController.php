@@ -240,6 +240,7 @@ class TvshowController extends Controller
             "perPage" => $perPage,
             "currentPage" => $page,
             "data" => [
+                'ottChanels' => config('constants.ottChanels'),
                 'topWeeks' => $topWeeks,
                 'populars' => $populars,
                 'items' => $movies
