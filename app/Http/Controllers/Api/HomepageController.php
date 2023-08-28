@@ -183,7 +183,7 @@ class HomepageController extends Controller
                                 LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
                                 WHERE t.name != 'featured' AND t.name != ''
                                 ORDER BY p.post_date DESC
-                                LIMIT 6;";
+                                LIMIT 8;";
 
         $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
         
