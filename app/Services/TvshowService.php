@@ -229,7 +229,7 @@ class TvshowService {
     }
 
     public function getTopWeekOTT() {
-        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, mp.30_day_stats FROM wp_posts p
+        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, mp.7_day_stats FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
