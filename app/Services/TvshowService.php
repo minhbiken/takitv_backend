@@ -133,7 +133,7 @@ class TvshowService {
                 'id' => $dataItem->ID,
                 'year' => $releaseDate,
                 'genres' => $genres,
-                'tvShowTitle' => $dataItem->post_title,
+                'tvshowTitle' => $dataItem->post_title,
                 'title' => $episodeTitle,
                 'originalTitle' => $dataItem->original_title,
                 'description' => $dataItem->post_content,
