@@ -19,12 +19,16 @@ class HomepageController extends Controller
     protected $tvshowService;
     protected $searchService;
     protected $helperService;
+    protected $lifeTime;
+    protected $imageUrlUpload;
     public function __construct(MovieService $movieService, TvshowService $tvshowService, SearchService $searchService, HelperService $helperService)
     {
         $this->movieService = $movieService;
         $this->tvshowService = $tvshowService;
         $this->searchService = $searchService;
         $this->helperService = $helperService;
+        $this->lifeTime = env('SESSION_LIFETIME');
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
 
     /**
@@ -36,9 +40,6 @@ class HomepageController extends Controller
         if (Cache::has('data')) {
             $data = Cache::get('data');
         } else {
-            $seconds = env('SESSION_LIFETIME');
-            $imageUrlUpload = env('IMAGE_URL_UPLOAD');
-
             //Get header slider
             $sliderQuery = "SELECT meta_key, ID, post_title, post_name, post_type, post_date, meta_value, IF(pm.meta_value IS NOT NULL , CAST( pm.meta_value AS UNSIGNED ) , 0 ) as sort_order
             FROM wp_posts as p
@@ -47,6 +48,7 @@ class HomepageController extends Controller
                 AND p.post_status = 'publish'
             ORDER BY sort_order ASC, post_date DESC;";
 
+            //Cache slider
             $sliders = $this->helperService->getSliderItems($sliderQuery);
             
             //Get Chanel slider random between USA and Korea
@@ -70,6 +72,7 @@ class HomepageController extends Controller
             $randomSlider[1] = $queryUsaSlider;
 
             $queryRandom = $randomSlider[rand(0,1)];
+
             $sliderRandoms = $this->helperService->getSliderItems($queryRandom);
 
             //get 12 tv-show
@@ -122,7 +125,7 @@ class HomepageController extends Controller
                                 LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataMovie->ID .";";
                 $dataSrcMetaMovie = DB::select($querySrcMetaMovie);
 
-                $srcMovie = $imageUrlUpload.$dataSrcMetaMovie[0]->meta_value;
+                $srcMovie = $this->imageUrlUpload.$dataSrcMetaMovie[0]->meta_value;
                 
                 $releaseDate = '';
                 $dataMetaMovies = DB::select($queryMetaMovie);
@@ -215,7 +218,7 @@ class HomepageController extends Controller
                     'movieNewests' => $movieNewests
                 ],
             ];
-            Cache::put('data', $data, $seconds);
+            Cache::put('data', $data, $this->lifeTime);
         }
         
         return response()->json($data, Response::HTTP_OK);
