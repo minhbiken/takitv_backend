@@ -5,7 +5,15 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 class HelperService {
+
+    protected $lifeTime;
+    public function __construct()
+    {
+        $this->lifeTime = env('SESSION_LIFETIME');
+    }
+
     public function getSliderItems($query)
     {
         $sliders = [];
@@ -78,5 +86,15 @@ class HelperService {
             ];
         }
         return $sliders;
+    }
+
+    public function getCacheDataByQuery($query, $cacheName) {
+        if (Cache::has($cacheName)) {
+            $data = Cache::get($cacheName);
+        } else {
+            $data = DB::select($query);
+            Cache::put($cacheName, $data, $this->lifeTime);
+        }
+        return $data;
     }
 }

@@ -32,6 +32,7 @@ class HomepageController extends Controller
      */
     public function index()
     {
+        //Cache data
         if (Cache::has('data')) {
             $data = Cache::get('data');
         } else {

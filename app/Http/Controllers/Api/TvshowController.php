@@ -7,14 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\TvshowService;
+use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
 class TvshowController extends Controller
 {
     private $imageUrlUpload;
     protected $tvshowService;
-    public function __construct(TvshowService $tvshowService)
+    protected $helperService;
+    public function __construct(TvshowService $tvshowService, HelperService $helperService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->tvshowService = $tvshowService;
+        $this->helperService = $helperService;
     }
     /**
      * Display a listing of the resource.
@@ -93,23 +97,59 @@ class TvshowController extends Controller
         $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
         $queryTotal = $selectTotal . $where;
         
-        $dataTotal = DB::select($queryTotal);
-        $total = $dataTotal[0]->total;
+        //Cache total TV-Show
+
+        $seconds = env('SESSION_LIFETIME');
+
+        if (Cache::has('totalTvshow')) {
+            $total = Cache::get('totalTvshow');
+        } else {
+            $dataTotal = DB::select($queryTotal);
+            $total = $dataTotal[0]->total;
+            Cache::put('totalTvshow', $total, $seconds);
+        }
 
         //query limit tvshow
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
-        
-        $datas = DB::select($query);
 
+        //Cache total TV-Show
+        $datas = $this->helperService->getCacheDataByQuery($query, 'datasTvshow');
+        
         $movies = [];
         
         if( $type == 'ott-web' ) {
-            $topWeeks = $this->tvshowService->getTopWeekOTT();
-            $populars = $this->tvshowService->getTopWeekOTT();
+            //Cache topweek ott
+            if (Cache::has('tvshowTopWeeks')) {
+                $topWeeks = Cache::get('tvshowTopWeeks');
+            } else {
+                $topWeeks = $this->tvshowService->getTopWeekOTT();
+                Cache::put('tvshowTopWeeks', $topWeeks, $seconds);
+            }
+
+            //Cache popupar ott
+            if (Cache::has('tvshowPopulars')) {
+                $populars = Cache::get('tvshowPopulars');
+            } else {
+                $populars = $this->tvshowService->getTopWeekOTT();
+                Cache::put('tvshowPopulars', $populars, $seconds);
+            }
         } else {
-            $topWeeks = $this->tvshowService->getTopWeeks($type);
-            $populars = $this->tvshowService->getPopulars($type);
+            //Cache topweek ott
+            if (Cache::has('tvshowTopWeeks')) {
+                $topWeeks = Cache::get('tvshowTopWeeks');
+            } else {
+                $topWeeks = $this->tvshowService->getTopWeeks($type);
+                Cache::put('tvshowTopWeeks', $topWeeks, $seconds);
+            }
+
+            //Cache popupar ott
+            if (Cache::has('tvshowPopulars')) {
+                $populars = Cache::get('tvshowPopulars');
+            } else {
+                $populars = $this->tvshowService->getPopulars($type);
+                Cache::put('tvshowPopulars', $populars, $seconds);
+            }
         }
         
         $titleEpisode = '';
@@ -121,7 +161,7 @@ class TvshowController extends Controller
         $chanel = '';
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            $dataEpisode = DB::select($queryEpisode);
+            $dataEpisode = $this->helperService->getCacheDataByQuery($queryEpisode, 'dataEpisode_' . $data->ID);
             
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
