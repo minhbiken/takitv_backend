@@ -313,4 +313,8 @@ class HomepageController extends Controller
         
         return response()->json($data, Response::HTTP_OK);
     }
+
+    public function clearCache() {
+        \Artisan::call('cache:clear');
+    }
 }
