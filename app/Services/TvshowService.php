@@ -81,7 +81,7 @@ class TvshowService {
     }
     public function getItems($query='', $cacheName='') {
         $items = [];
-        $dataItems = $this->helperService->getCacheDataByQuery($query, $cacheName);
+        $dataItems = DB::select($query);
         $releaseDate = date('Y-M-D');
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $link = '';
