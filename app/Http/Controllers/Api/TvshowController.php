@@ -312,7 +312,12 @@ class TvshowController extends Controller
 
         $where = $where . $whereTitle;
         $movies = [];
-        $dataPost = DB::select($select . $where);
+        $dataPost = $this->helperService->getCacheDataByQuery($select . $where, $title . '_tv_show_');
+        if (Cache::has('라이어니스: 특수 작전팀_tv_show_')) {
+            die('co');
+        } else {
+            die('ko');
+        }
         $link = '';
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
