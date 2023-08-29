@@ -14,11 +14,13 @@ class TvshowController extends Controller
     private $imageUrlUpload;
     protected $tvshowService;
     protected $helperService;
+    protected $lifeTime;
     public function __construct(TvshowService $tvshowService, HelperService $helperService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->tvshowService = $tvshowService;
         $this->helperService = $helperService;
+        $this->lifeTime = env('SESSION_LIFETIME');
     }
     /**
      * Display a listing of the resource.
@@ -312,7 +314,8 @@ class TvshowController extends Controller
 
         $where = $where . $whereTitle;
         $movies = [];
-        $dataPost = $this->helperService->getCacheDataByQuery($select . $where, $title . '_tv_show_');
+        
+        $dataPost = $this->helperService->getCacheDataByQuery($select . $where, $title . '_tv_show');
     
         $link = '';
         if (count($dataPost) == 0) {
@@ -338,7 +341,13 @@ class TvshowController extends Controller
         $dataSeason = $dataPost[0];
     
         $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
-        $seasons = $this->tvshowService->getSeasons($queryEpisode);
+
+        if (Cache::has($dataSeason->ID . '_seasons')) {
+            $seasons = Cache::get($dataSeason->ID . '_seasons');
+        } else {
+            $seasons = $this->tvshowService->getSeasons($queryEpisode);
+            Cache::put($dataSeason->ID . '_seasons', $seasons, $this->lifeTime);
+        }
         
         $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
