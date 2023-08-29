@@ -10,6 +10,8 @@ use App\Services\MovieService;
 use App\Services\TvshowService;
 use App\Services\SearchService;
 use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
+
 class HomepageController extends Controller
 {
 
@@ -30,6 +32,8 @@ class HomepageController extends Controller
      */
     public function index()
     {
+        $seconds = env('SESSION_LIFETIME');
+
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         //Get header slider
