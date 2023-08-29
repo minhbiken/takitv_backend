@@ -114,7 +114,7 @@ class TvshowController extends Controller
         $query = $query . $limit;
 
         //Cache total TV-Show
-        $datas = $this->helperService->getCacheDataByQuery($query, 'datasTvshow');
+        $datas = $this->helperService->getCacheDataByQuery($query, $type . '_datasTvshow');
         
         $movies = [];
         
@@ -161,7 +161,7 @@ class TvshowController extends Controller
         $chanel = '';
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            $dataEpisode = $this->helperService->getCacheDataByQuery($queryEpisode, $type . 'dataEpisode_' . $data->ID);
+            $dataEpisode = $this->helperService->getCacheDataByQuery($queryEpisode, $type . '_dataEpisode_' . $data->ID);
             
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
