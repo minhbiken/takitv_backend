@@ -161,7 +161,7 @@ class TvshowController extends Controller
         $chanel = '';
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            $dataEpisode = $this->helperService->getCacheDataByQuery($queryEpisode, 'dataEpisode_' . $data->ID);
+            $dataEpisode = $this->helperService->getCacheDataByQuery($queryEpisode, $type . 'dataEpisode_' . $data->ID);
             
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
