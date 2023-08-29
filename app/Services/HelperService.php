@@ -14,11 +14,11 @@ class HelperService {
         $this->lifeTime = env('SESSION_LIFETIME');
     }
 
-    public function getSliderItems($query)
+    public function getSliderItems($query='', $cacheName='')
     {
         $sliders = [];
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
-        $sliderDatas = DB::select($query);
+        $sliderDatas = $this->getCacheDataByQuery($query, $cacheName);
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
@@ -85,6 +85,7 @@ class HelperService {
                 'episodeNumber' => $episodeNumber,
             ];
         }
+        Cache::put($cacheName, $sliders, $this->lifeTime);
         return $sliders;
     }
 

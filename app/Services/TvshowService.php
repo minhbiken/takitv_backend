@@ -5,7 +5,17 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Services\HelperService;
 class TvshowService {
+    protected $helperService;
+    protected $lifeTime;
+    protected $imageUrlUpload;
+    public function __construct(HelperService $helperService)
+    {
+        $this->helperService = $helperService;
+        $this->lifeTime = env('SESSION_LIFETIME');
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
+    }
     public function getTopWeeks($type='')
     {
         if( $type == '' ) {
@@ -69,9 +79,9 @@ class TvshowService {
         ORDER BY p.post_date DESC;";
         return $this->getItems($query);
     }
-    public function getItems($query) {
+    public function getItems($query='', $cacheName='') {
         $items = [];
-        $dataItems = DB::select($query);
+        $dataItems = $this->helperService->getCacheDataByQuery($query, $cacheName);
         $releaseDate = date('Y-M-D');
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $link = '';
