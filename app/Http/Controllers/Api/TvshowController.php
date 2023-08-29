@@ -96,8 +96,6 @@ class TvshowController extends Controller
 
         $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
         $queryTotal = $selectTotal . $where;
-        
-        //Cache total TV-Show
 
         $seconds = env('SESSION_LIFETIME');
 
@@ -113,8 +111,7 @@ class TvshowController extends Controller
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
 
-        //Cache total TV-Show
-        $datas = $this->helperService->getCacheDataByQuery($query, $type . '_datasTvshow');
+        $datas = DB::select($query);
         
         $movies = [];
         
@@ -161,7 +158,8 @@ class TvshowController extends Controller
         $chanel = '';
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            $dataEpisode = $this->helperService->getCacheDataByQuery($queryEpisode, 'tv_show' .  $type . '_dataEpisode_' . $data->ID);
+            
+            $dataEpisode = DB::select($queryEpisode);
             
             $episodeData = $dataEpisode[0]->meta_value;
             $episodeData = unserialize($episodeData);
