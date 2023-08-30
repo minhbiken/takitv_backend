@@ -51,6 +51,7 @@ class HomepageController extends Controller
             $sliders = Cache::get('homepage_sliders_top');
         } else {
             $sliders = $this->helperService->getSliderItems($sliderQuery, 'homepage_sliders_top');
+            Cache::put('homepage_sliders_top', $sliders, $this->lifeTime);
         }
         
         //Get Chanel slider random between USA and Korea
