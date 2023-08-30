@@ -324,8 +324,6 @@ class HomepageController extends Controller
         $data = [
             "total" => $total,
             "perPage" => $perPage,
-            "currentPage" => $page,
-            "lastPage" => 4,
             "from" => ( $page - 1 ) * $perPage,
             "to" => $perPage,
             "data" => [
