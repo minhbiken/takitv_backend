@@ -10,7 +10,7 @@ use App\Services\TvshowService;
 use App\Services\HelperService;
 class EpisodeController extends Controller
 {
-    private $imageUrlUpload;
+    protected $imageUrlUpload;
     protected $tvshowService;
     protected $helperService;
     public function __construct(TvshowService $tvshowService, HelperService $helperService)
@@ -116,7 +116,7 @@ class EpisodeController extends Controller
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
             'originalTitle' => $datapostId[0]->original_title,
-            'description' => $datapostId[0]->post_content,
+            'description' => $dataSeason->post_content,
             'genres' => $genres,
             'src' => $src,
             'outlink' => $outlink,
