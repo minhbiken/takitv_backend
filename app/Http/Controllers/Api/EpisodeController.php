@@ -7,14 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\TvshowService;
+use App\Services\HelperService;
 class EpisodeController extends Controller
 {
     private $imageUrlUpload;
     protected $tvshowService;
-    public function __construct(TvshowService $tvshowService)
+    protected $helperService;
+    public function __construct(TvshowService $tvshowService, HelperService $helperService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->tvshowService = $tvshowService;
+        $this->helperService = $helperService;
     }
     /**
      * Display a listing of the resource.
@@ -54,7 +57,9 @@ class EpisodeController extends Controller
         $where = $where . $whereTitle;
         $movies = [];
         $query = $select . $where;
+
         $dataPost = DB::select($query);
+        
         $tvshowTitle = '';
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);

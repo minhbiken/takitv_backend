@@ -101,13 +101,8 @@ class TvshowController extends Controller
 
         $seconds = env('SESSION_LIFETIME');
 
-        if (Cache::has('totalTvshow')) {
-            $total = Cache::get('totalTvshow');
-        } else {
-            $dataTotal = DB::select($queryTotal);
-            $total = $dataTotal[0]->total;
-            Cache::put('totalTvshow', $total, $seconds);
-        }
+        $dataTotal = DB::select($queryTotal);
+        $total = $dataTotal[0]->total;
 
         //query limit tvshow
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
@@ -119,35 +114,35 @@ class TvshowController extends Controller
         
         if( $type == 'ott-web' ) {
             //Cache topweek ott
-            if (Cache::has('tvshowTopWeeks')) {
-                $topWeeks = Cache::get('tvshowTopWeeks');
+            if (Cache::has('ott_web_tvshowTopWeeks')) {
+                $topWeeks = Cache::get('ott_web_tvshowTopWeeks');
             } else {
                 $topWeeks = $this->tvshowService->getTopWeekOTT();
-                Cache::put('tvshowTopWeeks', $topWeeks, $seconds);
+                Cache::put('ott_web_tvshowTopWeeks', $topWeeks, $seconds);
             }
 
             //Cache popupar ott
-            if (Cache::has('tvshowPopulars')) {
-                $populars = Cache::get('tvshowPopulars');
+            if (Cache::has('ott_web_tvshowPopulars')) {
+                $populars = Cache::get('ott_web_tvshowPopulars');
             } else {
                 $populars = $this->tvshowService->getTopWeekOTT();
-                Cache::put('tvshowPopulars', $populars, $seconds);
+                Cache::put('ott_web_tvshowPopulars', $populars, $seconds);
             }
         } else {
             //Cache topweek ott
-            if (Cache::has('tvshowTopWeeks')) {
-                $topWeeks = Cache::get('tvshowTopWeeks');
+            if (Cache::has( $type . 'tvshowTopWeeks')) {
+                $topWeeks = Cache::get($type . 'tvshowTopWeeks');
             } else {
                 $topWeeks = $this->tvshowService->getTopWeeks($type);
-                Cache::put('tvshowTopWeeks', $topWeeks, $seconds);
+                Cache::put($type . 'tvshowTopWeeks', $topWeeks, $seconds);
             }
 
             //Cache popupar ott
-            if (Cache::has('tvshowPopulars')) {
-                $populars = Cache::get('tvshowPopulars');
+            if (Cache::has($type . 'tvshowPopulars')) {
+                $populars = Cache::get($type . 'tvshowPopulars');
             } else {
                 $populars = $this->tvshowService->getPopulars($type);
-                Cache::put('tvshowPopulars', $populars, $seconds);
+                Cache::put($type . 'tvshowPopulars', $populars, $seconds);
             }
         }
         
@@ -315,8 +310,7 @@ class TvshowController extends Controller
         $where = $where . $whereTitle;
         $movies = [];
         
-        $dataPost = $this->helperService->getCacheDataByQuery($select . $where, $title . '_tv_show');
-    
+        $dataPost = DB::select($select . $where);
         $link = '';
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
@@ -342,12 +336,7 @@ class TvshowController extends Controller
     
         $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
 
-        if (Cache::has($dataSeason->ID . '_seasons')) {
-            $seasons = Cache::get($dataSeason->ID . '_seasons');
-        } else {
-            $seasons = $this->tvshowService->getSeasons($queryEpisode);
-            Cache::put($dataSeason->ID . '_seasons', $seasons, $this->lifeTime);
-        }
+        $seasons = $this->tvshowService->getSeasons($queryEpisode);
         
         $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
@@ -376,6 +365,7 @@ class TvshowController extends Controller
 
         //get 8 movies related
         $slug = join(",", $slug);
+
         if ( $slug == '' ) {
             $dataRelateds = [];
         } else {
