@@ -71,7 +71,7 @@ class TvshowController extends Controller
             $queryGenre = "SELECT tr.object_id FROM wp_terms t
                 left join wp_term_taxonomy tx on tx.term_id = t.term_id
                 left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
-                WHERE t.slug IN (". $genre .") ";
+                WHERE t.name IN (". $genre .") ";
             $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
         }
 
