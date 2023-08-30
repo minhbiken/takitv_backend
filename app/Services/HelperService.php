@@ -85,7 +85,6 @@ class HelperService {
                 'episodeNumber' => $episodeNumber,
             ];
         }
-        Cache::put($cacheName, $sliders, $this->lifeTime);
         return $sliders;
     }
 

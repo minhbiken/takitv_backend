@@ -75,11 +75,12 @@ class HomepageController extends Controller
 
         $queryRandom = $randomSlider[rand(0,1)];
 
-            //Cache slider random
-            if (Cache::has('homepage_sliders_random')) {
+        //Cache slider random
+        if (Cache::has('homepage_sliders_random')) {
             $sliderRandoms = Cache::get('homepage_sliders_random');
         } else {
             $sliderRandoms = $this->helperService->getSliderItems($queryRandom, 'homepage_sliders_random');
+            Cache::put('homepage_sliders_random', $sliderRandoms, $this->lifeTime);
         }
 
         //get 12 tv-show
@@ -191,18 +192,31 @@ class HomepageController extends Controller
             ];
         }
 
-        $topWeeks = $this->movieService->getTopWeeks();
+        //Cache movies topweek
+        if (Cache::has('homepage_top_weeks')) {
+            $topWeeks = Cache::get('homepage_top_weeks');
+        } else {
+            //Get movies topweek
+            $topWeeks = $this->movieService->getTopWeeks();
+            Cache::put('homepage_top_weeks', $topWeeks, $this->lifeTime);
+        }
 
-        //Get movies newest of Korea for slider in bottom
-        $queryKoreaMovie = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
-                                LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
-                                LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                                LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
-                                WHERE t.name != 'featured' AND t.name != ''
-                                ORDER BY p.post_date DESC
-                                LIMIT 8;";
+        //Cache movies newest
+        if (Cache::has('homepage_movies_newest')) {
+            $movieKoreas = Cache::get('homepage_movies_newest');
+        } else {
+            //Get movies newest of Korea for slider in bottom
+            $queryKoreaMovie = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+            LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
+            LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+            LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
+            WHERE t.name != 'featured' AND t.name != ''
+            ORDER BY p.post_date DESC
+            LIMIT 8;";
 
-        $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
+            $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
+            Cache::put('homepage_movies_newest', $movieKoreas, $this->lifeTime);
+        }
         
         $data = [
             'sliders' => $sliders,
