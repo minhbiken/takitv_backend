@@ -282,7 +282,7 @@ class HomepageController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
 
-        $select = "SELECT p.ID, p.post_title, p.post_type, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.post_type, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
 
         if( $title != '' ) {
@@ -324,8 +324,6 @@ class HomepageController extends Controller
         $data = [
             "total" => $total,
             "perPage" => $perPage,
-            "from" => ( $page - 1 ) * $perPage,
-            "to" => $perPage,
             "data" => [
                 'topWeeks' => $topWeeks,
                 'items' => $items

@@ -178,7 +178,8 @@ class TvshowService {
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
-                'postDateGmt' => $dataItem->post_date_gmt
+                'postDateGmt' => $dataItem->post_date_gmt,
+                'postDate' => $dataItem->post_date
             ];
         }
         return $items;
@@ -197,13 +198,14 @@ class TvshowService {
             arsort($episodeDatas);
             $episodes = [];
             foreach ( $episodeDatas as $episodeSubData ) {
-                $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
+                $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
                 $dataEpiso = DB::select($queryEpiso);
                 if( count($dataEpiso) > 0 ) {
                     $episodes[] = [
                         'id' => $episodeSubData,
                         'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
                         'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
+                        'postDate' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date : '',
                     ];
                 }
             }

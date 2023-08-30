@@ -129,7 +129,8 @@ class SearchService {
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
-                'postDateGmt' => $data->post_date_gmt
+                'postDateGmt' => $data->post_date_gmt,
+                'postDate' => $data->post_date
             ];
         }
         return $items;

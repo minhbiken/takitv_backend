@@ -50,7 +50,7 @@ class EpisodeController extends Controller
     {
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
-        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $episodeTitle ."' ";
 
@@ -121,6 +121,7 @@ class EpisodeController extends Controller
             'src' => $src,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
+            'postDate' => $dataSeason->post_date,
             'seasonName' => $seasonName,
             'tvshowTitle' => $tvshowTitle,
             'seasons' => $seasons

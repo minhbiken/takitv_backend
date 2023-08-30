@@ -223,7 +223,7 @@ class TvshowController extends Controller
                     $chanel = env('IMAGE_PLACEHOLDER');
                 }
 
-                $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
                 $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                 $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -264,7 +264,8 @@ class TvshowController extends Controller
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
-                'postDateGmt' => $data->post_date_gmt
+                'postDateGmt' => $data->post_date_gmt,
+                'postDate' => $data->post_date
             ];
         }
 
@@ -301,7 +302,7 @@ class TvshowController extends Controller
      */
     public function show($title = '')
     {
-        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $title ."'  LIMIT 1; ";
 
@@ -378,7 +379,7 @@ class TvshowController extends Controller
         }
         
 
-        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
         $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -399,6 +400,7 @@ class TvshowController extends Controller
             'link' => $link,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
+            'postDate' => $dataSeason->post_date,
             'seasons' => $seasons,
             'topWeeks' => $topWeeks,
             'topMonths' => $topMonths,
