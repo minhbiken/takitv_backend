@@ -116,7 +116,7 @@ class EpisodeController extends Controller
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
             'originalTitle' => $datapostId[0]->original_title,
-            'description' => $dataSeason->post_content,
+            'description' => $tvshowTitleData[0]->post_content,
             'genres' => $genres,
             'src' => $src,
             'outlink' => $outlink,
