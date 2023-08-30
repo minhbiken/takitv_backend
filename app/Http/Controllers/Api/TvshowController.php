@@ -71,7 +71,7 @@ class TvshowController extends Controller
             $queryGenre = "SELECT tr.object_id FROM wp_terms t
                 left join wp_term_taxonomy tx on tx.term_id = t.term_id
                 left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
-                WHERE t.name IN (". $genre .") ";
+                WHERE t.slug IN (". $genre .") ";
             $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
         }
 
@@ -99,8 +99,6 @@ class TvshowController extends Controller
         $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
         $queryTotal = $selectTotal . $where;
 
-        $seconds = env('SESSION_LIFETIME');
-
         $dataTotal = DB::select($queryTotal);
         $total = $dataTotal[0]->total;
 
@@ -118,7 +116,7 @@ class TvshowController extends Controller
                 $topWeeks = Cache::get('ott_web_tvshowTopWeeks');
             } else {
                 $topWeeks = $this->tvshowService->getTopWeekOTT();
-                Cache::put('ott_web_tvshowTopWeeks', $topWeeks, $seconds);
+                Cache::put('ott_web_tvshowTopWeeks', $topWeeks, $this->lifeTime);
             }
 
             //Cache popupar ott
@@ -126,7 +124,7 @@ class TvshowController extends Controller
                 $populars = Cache::get('ott_web_tvshowPopulars');
             } else {
                 $populars = $this->tvshowService->getTopWeekOTT();
-                Cache::put('ott_web_tvshowPopulars', $populars, $seconds);
+                Cache::put('ott_web_tvshowPopulars', $populars, $this->lifeTime);
             }
         } else {
             //Cache topweek ott
@@ -134,7 +132,7 @@ class TvshowController extends Controller
                 $topWeeks = Cache::get($type . 'tvshowTopWeeks');
             } else {
                 $topWeeks = $this->tvshowService->getTopWeeks($type);
-                Cache::put($type . 'tvshowTopWeeks', $topWeeks, $seconds);
+                Cache::put($type . 'tvshowTopWeeks', $topWeeks, $this->lifeTime);
             }
 
             //Cache popupar ott
@@ -142,7 +140,7 @@ class TvshowController extends Controller
                 $populars = Cache::get($type . 'tvshowPopulars');
             } else {
                 $populars = $this->tvshowService->getPopulars($type);
-                Cache::put($type . 'tvshowPopulars', $populars, $seconds);
+                Cache::put($type . 'tvshowPopulars', $populars, $this->lifeTime);
             }
         }
         
