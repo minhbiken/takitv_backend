@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
+use Illuminate\Support\Facades\Cache;
 class MovieController extends Controller
 {
     protected $movieService;
+    protected $lifeTime;
     public function __construct(MovieService $movieService)
     {
         $this->movieService = $movieService;
+        $this->lifeTime = env('SESSION_LIFETIME');
     }
     /**
      * Display a listing of the resource.
@@ -187,8 +190,22 @@ class MovieController extends Controller
             }
         }
 
-        $topWeeks = $this->movieService->getTopWeeks();
-        $populars = $this->movieService->getPopulars();
+        //Cache movies topweek
+        if (Cache::has('movies_top_week')) {
+            $topWeeks = Cache::get('movies_top_week');
+        } else {
+            $topWeeks = $this->movieService->getTopWeeks();
+            Cache::put('movies_top_week', $topWeeks, $this->lifeTime);
+        }
+
+        //Cache movies popular
+        if (Cache::has('movies_popular')) {
+            $populars = Cache::get('movies_popular');
+        } else {
+            $populars = $this->movieService->getPopulars();
+            Cache::put('movies_popular', $populars, $this->lifeTime);
+        }
+
         $data = [
             "total" => $total,
             "perPage" => $perPage,
