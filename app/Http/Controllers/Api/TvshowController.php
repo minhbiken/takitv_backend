@@ -127,23 +127,21 @@ class TvshowController extends Controller
                 Cache::put('ott_web_tvshowPopulars', $populars, $this->lifeTime);
             }
         } else {
-            $topWeeks = $this->tvshowService->getTopWeeks($type);
-            $populars = $this->tvshowService->getPopulars($type);
             //Cache topweek ott
-            // if (Cache::has( $type . 'tvshowTopWeeks')) {
-            //     $topWeeks = Cache::get($type . 'tvshowTopWeeks');
-            // } else {
-            //     $topWeeks = $this->tvshowService->getTopWeeks($type);
-            //     Cache::put($type . 'tvshowTopWeeks', $topWeeks, $this->lifeTime);
-            // }
+            if (Cache::has( $type . 'tvshowTopWeeks')) {
+                $topWeeks = Cache::get($type . 'tvshowTopWeeks');
+            } else {
+                $topWeeks = $this->tvshowService->getTopWeeks($type);
+                Cache::put($type . 'tvshowTopWeeks', $topWeeks, $this->lifeTime);
+            }
 
             //Cache popupar ott
-            // if (Cache::has($type . 'tvshowPopulars')) {
-            //     $populars = Cache::get($type . 'tvshowPopulars');
-            // } else {
-            //     $populars = $this->tvshowService->getPopulars($type);
-            //     Cache::put($type . 'tvshowPopulars', $populars, $this->lifeTime);
-            // }
+            if (Cache::has($type . 'tvshowPopulars')) {
+                $populars = Cache::get($type . 'tvshowPopulars');
+            } else {
+                $populars = $this->tvshowService->getPopulars($type);
+                Cache::put($type . 'tvshowPopulars', $populars, $this->lifeTime);
+            }
         }
         
         $titleEpisode = '';
