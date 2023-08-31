@@ -115,7 +115,7 @@ class HelperService {
             if( $fileDir[0] == 'image_webp' ) {
                 $fileDirReal = $fileDir[0] . '/' . $fileDir[1] . '/' . $fileDir[2] . "/";
             } else {
-                $fileDirReal = 'image_webp/' . $fileDir[0] . '/' . $fileDir[1] . "/";
+                $fileDirReal = $fileDir[0] . '/' . $fileDir[1] . "/";
             }
 
             if( isset($attachmentsData['sizes']) ) {
