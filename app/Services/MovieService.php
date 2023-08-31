@@ -99,7 +99,7 @@ class MovieService {
                     'originalTitle' => $dataItem->original_title,
                     'src' => $src,
                     'srcSet' => $srcSet,
-                    'movieRunTime' => $movieRunTime,
+                    'duration' => $movieRunTime,
                     'outlink' => $outlink
                 ];
             }

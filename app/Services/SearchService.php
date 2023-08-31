@@ -125,7 +125,7 @@ class SearchService {
                 'description' => $data->post_content,
                 'src' => $src,
                 'link' => $link,
-                'movieRunTime' => $movieRunTime,
+                'duration' => $movieRunTime,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
