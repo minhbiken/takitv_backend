@@ -68,7 +68,7 @@ class TvshowController extends Controller
             }
             $genre = join(",", $genre);
 
-            if( $genre == "'action-adventure'") {
+            if( $genre == "'action-adventure'" || $genre == "'war-politics'" ) {
                 $queryGenre = "SELECT tr.object_id FROM wp_terms t
                 left join wp_term_taxonomy tx on tx.term_id = t.term_id
                 left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
