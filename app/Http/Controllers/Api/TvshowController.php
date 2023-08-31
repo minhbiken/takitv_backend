@@ -127,7 +127,7 @@ class TvshowController extends Controller
                 Cache::put('ott_web_tvshowPopulars', $populars, $this->lifeTime);
             }
         } else {
-            //Cache topweek ott
+            //Cache topweek 
             if (Cache::has( $type . 'tvshowTopWeeks')) {
                 $topWeeks = Cache::get($type . 'tvshowTopWeeks');
             } else {
@@ -135,7 +135,7 @@ class TvshowController extends Controller
                 Cache::put($type . 'tvshowTopWeeks', $topWeeks, $this->lifeTime);
             }
 
-            //Cache popupar ott
+            //Cache popupar
             if (Cache::has($type . 'tvshowPopulars')) {
                 $populars = Cache::get($type . 'tvshowPopulars');
             } else {
