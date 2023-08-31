@@ -120,15 +120,15 @@ class HelperService {
                 $fileDirReal = $fileDirNew[0] . "/"  . $fileDirNew[1] . "/";    
             }
             if( isset($attachmentsData['sizes']) ) {
-                foreach( $attachmentsData['sizes'] as $key => $attachment ) {
-                    $srcSet[$key] = [
-                        'src' => $this->imageUrlUpload.$fileDirReal.$attachment['file'],
-                        'width' => $attachment['width'],
-                        'height' => $attachment['height']
-                    ];
+                foreach( $attachmentsData['sizes'] as $attachment ) {
+                    if( $attachment['width'] == '220' || $attachment['width'] == '200' || $attachment['width'] == '150' || $attachment['width'] == '32' || $attachment['width'] == '24' || $attachment['width'] == '16' ) {
+                        $srcSet[] = $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w';
+                    }
+                   
                 }
             }
         }
+        $srcSet = join(", ", $srcSet);
         return $srcSet;
     }
 }
