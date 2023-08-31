@@ -106,29 +106,25 @@ class HelperService {
 
     public function getAttachmentsByPostId($id) {
         $query = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_wp_attachment_metadata' AND post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'attachment' AND post_parent = " . $id . ") LIMIT 1;";
-        $srcSet = [];
+        $srcSet[$id] = [];
         $attachments = DB::select($query);
         if( count($attachments) > 0 ) {
             $attachmentsData = unserialize($attachments[0]->meta_value);
-            $fileDir = explode('image_webp/', $attachmentsData['file']);
+            $fileDir = explode('/', $attachmentsData['file']);
 
-            if( isset($fileDir[1]) ) {
-                $fileDirNew = explode('/', $fileDir[1]);
-                $fileDirReal = $fileDirNew[0] . "/"  . $fileDir[1];
+            if( $fileDir[0] == 'image_webp' ) {
+                $fileDirReal = $fileDir[0] . '/' . $fileDir[1] . '/' . $fileDir[2] . "/";
             } else {
-                $fileDirNew = explode('/', $fileDir[0]);
-                $fileDirReal = $fileDirNew[0] . "/"  . $fileDirNew[1] . "/";    
+                $fileDirReal = 'image_webp/' . $fileDir[0] . '/' . $fileDir[1] . "/";
             }
+
             if( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $attachment ) {
-                    if( $attachment['width'] == '220' || $attachment['width'] == '200' || $attachment['width'] == '150' || $attachment['width'] == '32' || $attachment['width'] == '24' || $attachment['width'] == '16' ) {
-                        $srcSet[] = $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w';
-                    }
-                   
+                        $srcSet[$id][$attachment['width']] = $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w';
                 }
             }
         }
-        $srcSet = join(", ", $srcSet);
+        $srcSet = join(", ", $srcSet[$id]);
         return $srcSet;
     }
 }
