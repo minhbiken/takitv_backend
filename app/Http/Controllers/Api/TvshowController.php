@@ -158,6 +158,7 @@ class TvshowController extends Controller
         $src = '';
         $outlink = '';
         $chanel = '';
+        $srcSet = [];
         foreach( $datas as $key => $data ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
             
@@ -257,6 +258,8 @@ class TvshowController extends Controller
                 ];
             }
 
+            $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+
             $movies[$key] = [
                 'id' => $data->ID,
                 'year' => $releaseDate,
@@ -266,6 +269,7 @@ class TvshowController extends Controller
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
                 'src' => $src,
+                'srcSet' => $srcSet,
                 'link' => $link,
                 'outlink' => $outlink,
                 'chanelImage' => $chanel,

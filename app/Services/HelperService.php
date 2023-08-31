@@ -9,16 +9,18 @@ use Illuminate\Support\Facades\Cache;
 class HelperService {
 
     protected $lifeTime;
+    protected $imageUrlUpload;
     public function __construct()
     {
         $this->lifeTime = env('SESSION_LIFETIME');
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
 
-    public function getSliderItems($query='', $cacheName='')
+    public function getSliderItems($query='')
     {
         $sliders = [];
-        $imageUrlUpload = env('IMAGE_URL_UPLOAD');
-        $sliderDatas = $this->getCacheDataByQuery($query, $cacheName);
+        $srcSet = [];
+        $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
@@ -75,12 +77,13 @@ class HelperService {
                 $dataEpisodeNumber = DB::select($queryEpisodeNumber);
                 $episodeNumber = $dataEpisodeNumber[0]->meta_value;
             }
-
+            $srcSet = $this->getAttachmentsByPostId($sliderData->ID);
             $sliders[] = [
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
-                'src' => $imageUrlUpload.$dataResult[0]->meta_value,
+                'src' => $this->imageUrlUpload.$dataResult[0]->meta_value,
+                'srcSet' => $srcSet,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
             ];
@@ -88,13 +91,45 @@ class HelperService {
         return $sliders;
     }
 
-    public function getCacheDataByQuery($query, $cacheName) {
+    public function getCacheDataByQuery($query='', $cacheName='') {
         if (Cache::has($cacheName)) {
             $data = Cache::get($cacheName);
         } else {
             $data = DB::select($query);
+            if( count($data) == 0 ) {
+                $data = '';
+            }
             Cache::put($cacheName, $data, $this->lifeTime);
         }
         return $data;
+    }
+
+    public function getAttachmentsByPostId($id) {
+        $query = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_wp_attachment_metadata' AND post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'attachment' AND post_parent = " . $id . ") LIMIT 1;";
+        
+        $attachments = DB::select($query);
+        if( count($attachments) > 0 ) {
+            $attachmentsData = unserialize($attachments[0]->meta_value);
+            $fileDir = explode('image_webp/', $attachmentsData['file']);
+
+            if( isset($fileDir[1]) ) {
+                $fileDirNew = explode('/', $fileDir[1]);
+                $fileDirReal = $fileDirNew[0] . "/"  . $fileDir[1];
+            } else {
+                $fileDirNew = explode('/', $fileDir[0]);
+                $fileDirReal = $fileDirNew[0] . "/"  . $fileDirNew[1] . "/";    
+            }
+            $srcSet = [];
+            if( isset($attachmentsData['sizes']) ) {
+                foreach( $attachmentsData['sizes'] as $key => $attachment ) {
+                    $srcSet[$key] = [
+                        'src' => $this->imageUrlUpload.$fileDirReal.$attachment['file'],
+                        'width' => $attachment['width'],
+                        'height' => $attachment['height']
+                    ];
+                }
+            }
+        }
+        return $srcSet;
     }
 }

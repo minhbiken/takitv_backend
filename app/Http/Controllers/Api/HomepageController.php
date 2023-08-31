@@ -90,7 +90,7 @@ class HomepageController extends Controller
                             LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                             LEFT JOIN wp_terms t ON tx.term_id = t.term_id 
                             WHERE t.name != 'featured' AND t.name != '' AND ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12;";
-        $dataTvshow = $this->tvshowService->getItems($queryTvshow, 'homepage_12_tv_show');
+        $dataTvshow = $this->tvshowService->getItems($queryTvshow);
 
         $categories = [
             'menu' => [
@@ -126,7 +126,7 @@ class HomepageController extends Controller
         $dataMovies = DB::select($queryMovie);
 
         $movieNewests = [];
-        
+        $srcSet = [];
         foreach ( $dataMovies as $key => $dataMovie ) {
             $queryMetaMovie = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
 
@@ -135,6 +135,8 @@ class HomepageController extends Controller
             $dataSrcMetaMovie = DB::select($querySrcMetaMovie);
 
             $srcMovie = $this->imageUrlUpload.$dataSrcMetaMovie[0]->meta_value;
+
+            $srcSet = $this->helperService->getAttachmentsByPostId($dataMovie->ID);
             
             $releaseDate = '';
             $dataMetaMovies = DB::select($queryMetaMovie);
@@ -178,6 +180,7 @@ class HomepageController extends Controller
                     'originalTitle' => $dataMovie->original_title,
                     'description' => $dataMovie->post_content,
                     'src' => $srcMovie,
+                    'srcSet' => $srcSet,
                     'movieRunTime' => $movieRunTime
                 ];
             }
@@ -189,6 +192,7 @@ class HomepageController extends Controller
                 'originalTitle' => $dataMovie->original_title,
                 'description' => $dataMovie->post_content,
                 'src' => $srcMovie,
+                'srcSet' => $srcSet,
                 'movieRunTime' => $movieRunTime
             ];
         }

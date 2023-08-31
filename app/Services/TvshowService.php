@@ -79,12 +79,13 @@ class TvshowService {
         ORDER BY p.post_date DESC;";
         return $this->getItems($query);
     }
-    public function getItems($query='', $cacheName='') {
+    public function getItems($query='') {
         $items = [];
         $dataItems = DB::select($query);
         $releaseDate = date('Y-M-D');
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $link = '';
+        $srcSet = [];
         foreach ( $dataItems as $dataItem ) {
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
@@ -164,6 +165,7 @@ class TvshowService {
                 $link = 'episode/' . $episodeTitle . "/";                
             }
             
+            $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
             $items[] = [
                 'id' => $dataItem->ID,
                 'year' => $releaseDate,
@@ -174,6 +176,7 @@ class TvshowService {
                 'originalTitle' => $dataItem->original_title,
                 'description' => $dataItem->post_content,
                 'src' => $src,
+                'srcSet' => $srcSet,
                 'link' => $link,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,

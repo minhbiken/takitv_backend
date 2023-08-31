@@ -5,7 +5,18 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Services\HelperService;
 class MovieService {
+    protected $helperService;
+    protected $lifeTime;
+    protected $imageUrlUpload;
+    public function __construct(HelperService $helperService)
+    {
+        $this->helperService = $helperService;
+        $this->lifeTime = env('SESSION_LIFETIME');
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
+    }
+
     public function getTopWeeks()
     {
         $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
@@ -33,6 +44,7 @@ class MovieService {
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $movieRunTime = '';
         $outlink = '';
+        $srcSet = [];
         if( count($dataItems) > 0 ) {
             foreach ( $dataItems as $dataItem ) {
                 $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataItem->ID .";";
@@ -77,6 +89,8 @@ class MovieService {
                         ];
                     }
                 }
+
+                $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
                 
                 $items[] = [
                     'year' => $releaseDate,
@@ -84,6 +98,7 @@ class MovieService {
                     'title' => $dataItem->post_title,
                     'originalTitle' => $dataItem->original_title,
                     'src' => $src,
+                    'srcSet' => $srcSet,
                     'movieRunTime' => $movieRunTime,
                     'outlink' => $outlink
                 ];
