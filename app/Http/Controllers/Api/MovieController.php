@@ -180,7 +180,7 @@ class MovieController extends Controller
                 'description' => $data->post_content,
                 'src' => $src,
                 'srcSet' => $srcSet,
-                'movieRunTime' => $movieRunTime,
+                'duration' => $movieRunTime,
                 'outlink' => $outlink
             ];
 

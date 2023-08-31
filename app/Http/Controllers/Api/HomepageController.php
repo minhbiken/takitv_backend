@@ -181,7 +181,7 @@ class HomepageController extends Controller
                     'description' => $dataMovie->post_content,
                     'src' => $srcMovie,
                     'srcSet' => $srcSet,
-                    'movieRunTime' => $movieRunTime
+                    'duration' => $movieRunTime
                 ];
             }
             
@@ -193,7 +193,7 @@ class HomepageController extends Controller
                 'description' => $dataMovie->post_content,
                 'src' => $srcMovie,
                 'srcSet' => $srcSet,
-                'movieRunTime' => $movieRunTime
+                'duration' => $movieRunTime
             ];
         }
 
