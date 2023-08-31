@@ -106,7 +106,7 @@ class HelperService {
 
     public function getAttachmentsByPostId($id) {
         $query = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_wp_attachment_metadata' AND post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'attachment' AND post_parent = " . $id . ") LIMIT 1;";
-        
+        $srcSet = [];
         $attachments = DB::select($query);
         if( count($attachments) > 0 ) {
             $attachmentsData = unserialize($attachments[0]->meta_value);
@@ -119,7 +119,6 @@ class HelperService {
                 $fileDirNew = explode('/', $fileDir[0]);
                 $fileDirReal = $fileDirNew[0] . "/"  . $fileDirNew[1] . "/";    
             }
-            $srcSet = [];
             if( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $key => $attachment ) {
                     $srcSet[$key] = [
