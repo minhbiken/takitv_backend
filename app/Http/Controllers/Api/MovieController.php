@@ -7,14 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
+use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
 class MovieController extends Controller
 {
     protected $movieService;
+    protected $helperService;
     protected $lifeTime;
-    public function __construct(MovieService $movieService)
+    public function __construct(MovieService $movieService, HelperService $helperService)
     {
         $this->movieService = $movieService;
+        $this->helperService = $helperService;
         $this->lifeTime = env('SESSION_LIFETIME');
     }
     /**
@@ -105,6 +108,8 @@ class MovieController extends Controller
         $datas = DB::select($query);
 
         $movies = [];
+        $src = '';
+        $srcSet = [];
         foreach( $datas as $key => $data ) {
             $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $data->ID .";";
 
@@ -165,6 +170,8 @@ class MovieController extends Controller
                 $outlink = '';
             }
 
+            $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+
             $movies[$key] = [
                 'year' => $releaseDate,
                 'genres' => $genres,
@@ -172,6 +179,7 @@ class MovieController extends Controller
                 'originalTitle' => $data->original_title,
                 'description' => $data->post_content,
                 'src' => $src,
+                'srcSet' => $srcSet,
                 'movieRunTime' => $movieRunTime,
                 'outlink' => $outlink
             ];

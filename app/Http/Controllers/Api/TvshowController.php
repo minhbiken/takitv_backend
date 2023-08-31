@@ -401,6 +401,8 @@ class TvshowController extends Controller
             $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
         }
 
+        $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
+
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
@@ -408,6 +410,7 @@ class TvshowController extends Controller
             'description' => $dataSeason->post_content,
             'genres' => $genres,
             'src' => $src,
+            'srcSet' => $srcSet,
             'link' => $link,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
