@@ -117,7 +117,8 @@ class HelperService {
             } else {
                 $fileDirReal = $fileDir[0] . '/' . $fileDir[1] . "/";
             }
-
+            
+            $srcSet[$id][$attachmentsData['width']] = $this->imageUrlUpload.$attachmentsData['file']. " " . $attachmentsData['width'] . 'w';
             if( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $attachment ) {
                         $srcSet[$id][$attachment['width']] = $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w';
