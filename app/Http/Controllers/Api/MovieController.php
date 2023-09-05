@@ -71,7 +71,7 @@ class MovieController extends Controller
         }
 
         if( $title != '' ) {
-            $whereTitle = " AND ( p.original_title LIKE '%". $title ."%' OR p.post_title LIKE '%". $title ."%' ) ";
+            $whereTitle = " AND ( p.original_title = '". $title ."' OR p.post_title = '". $title ."' ) ";
             $where = $where . $whereTitle;
         }
 
