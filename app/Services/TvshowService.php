@@ -188,9 +188,8 @@ class TvshowService {
         return $items;
     }
 
-    public function getSeasons($query) {
+    public function getSeasons($dataEpisode) {
         $seasons = [];
-        $dataEpisode = DB::select($query);
         
         $episodeData = $dataEpisode[0]->meta_value;
         $episodeData = unserialize($episodeData);
