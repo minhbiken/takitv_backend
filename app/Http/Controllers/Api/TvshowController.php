@@ -345,8 +345,8 @@ class TvshowController extends Controller
         $dataSeason = $dataPost[0];
     
         $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
-
-        $seasons = $this->tvshowService->getSeasons($queryEpisode);
+        $dataEpisode = DB::select($queryEpisode);
+        $seasons = $this->tvshowService->getSeasons($dataEpisode);
         
         $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
