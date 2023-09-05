@@ -154,6 +154,8 @@ class TvshowController extends Controller
         $titleEpisode = '';
         $link = '';
         $episodeNumber = '';
+        $seasonNumber = '';
+        $episodeId = '';
         $releaseDate = '';
         $src = '';
         $outlink = '';
@@ -163,13 +165,14 @@ class TvshowController extends Controller
             $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
             
             $dataEpisode = DB::select($queryEpisode);
-            
-            $episodeData = $dataEpisode[0]->meta_value;
-            $episodeData = unserialize($episodeData);
-            
-            $lastSeason = end($episodeData);
-            $seasonNumber = $lastSeason['name'];     
-            $episodeId = end($lastSeason['episodes']);
+            if( count($dataEpisode) > 0 ) {
+                $episodeData = $dataEpisode[0]->meta_value;
+                $episodeData = unserialize($episodeData);
+                
+                $lastSeason = end($episodeData);
+                $seasonNumber = $lastSeason['name'];     
+                $episodeId = end($lastSeason['episodes']);
+            }
 
             if( $episodeId != '' ) {
                 $querryTitleEpisode = "SELECT p.post_title FROM wp_posts p WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = " .  $episodeId . " ";
