@@ -188,7 +188,7 @@ class TvshowService {
         return $items;
     }
 
-    public function getSeasons($dataEpisode) {
+    public function getSeasons($dataEpisode=array()) {
         $seasons = [];
         if( count($dataEpisode) > 0 ) {
             $episodeData = $dataEpisode[0]->meta_value;
