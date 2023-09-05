@@ -190,34 +190,35 @@ class TvshowService {
 
     public function getSeasons($dataEpisode) {
         $seasons = [];
-        
-        $episodeData = $dataEpisode[0]->meta_value;
-        $episodeData = unserialize($episodeData);
-        arsort($episodeData);
-        //Get seasons
-        foreach ( $episodeData as $episodeSeasonData ) {
-            $episodeDatas = $episodeSeasonData['episodes'];
-            arsort($episodeDatas);
-            $episodes = [];
-            foreach ( $episodeDatas as $episodeSubData ) {
-                $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
-                $dataEpiso = DB::select($queryEpiso);
-                if( count($dataEpiso) > 0 ) {
-                    $episodes[] = [
-                        'id' => $episodeSubData,
-                        'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
-                        'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
-                        'postDate' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date : '',
-                    ];
+        if( count($dataEpisode) > 0 ) {
+            $episodeData = $dataEpisode[0]->meta_value;
+            $episodeData = unserialize($episodeData);
+            arsort($episodeData);
+            //Get seasons
+            foreach ( $episodeData as $episodeSeasonData ) {
+                $episodeDatas = $episodeSeasonData['episodes'];
+                arsort($episodeDatas);
+                $episodes = [];
+                foreach ( $episodeDatas as $episodeSubData ) {
+                    $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
+                    $dataEpiso = DB::select($queryEpiso);
+                    if( count($dataEpiso) > 0 ) {
+                        $episodes[] = [
+                            'id' => $episodeSubData,
+                            'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
+                            'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
+                            'postDate' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date : '',
+                        ];
+                    }
                 }
+                
+                $seasons[] = [
+                    'name' => $episodeSeasonData['name'],
+                    'year' => $episodeSeasonData['year'],
+                    'number' => count($episodeSeasonData['episodes']),
+                    'episodes' => $episodes
+                ];
             }
-            
-            $seasons[] = [
-                'name' => $episodeSeasonData['name'],
-                'year' => $episodeSeasonData['year'],
-                'number' => count($episodeSeasonData['episodes']),
-                'episodes' => $episodes
-            ];
         }
         return $seasons;
     }
