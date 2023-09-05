@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
 class TvshowService {
     protected $helperService;
     protected $lifeTime;
@@ -31,8 +32,14 @@ class TvshowService {
                         WHERE p.post_type = 'tv_show' " . $queryByType . "
                         ORDER BY mp.7_day_stats DESC
                         LIMIT 5;";
-        
-        return $this->getItems($queryTopWeek);
+                        
+        if (Cache::has('top_week_' . $type)) {
+            $dataTopWeek = Cache::get('top_week_' . $type);
+        } else {
+            $dataTopWeek = $this->getItems($queryTopWeek);
+            Cache::put('top_week_' . $type, $dataTopWeek, $this->lifeTime);
+        }
+        return $dataTopWeek;
     }
 
     public function getTopMonths($type='')
