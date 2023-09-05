@@ -69,6 +69,7 @@ class EpisodeController extends Controller
         }
 
         //get all seasons and episode
+        $src = '';
         $querySeasonEpisode = "SELECT * FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' LIMIT 1;";
         $tvshowTitleData = DB::select($querySeasonEpisode);
         
@@ -101,8 +102,11 @@ class EpisodeController extends Controller
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowTitleData[0]->ID .";";
         
         $dataSrcMeta = DB::select($querySrcMeta);
-        $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
-
+        
+        if( count($dataSrcMeta) > 0 ) {
+            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+        }
+        
         $seasonName = '';
         foreach ( $seasons as $season ) {
             foreach ( $season['episodes'] as $episode ) {
