@@ -117,16 +117,9 @@ class HelperService {
             } else {
                 $fileDirReal = $fileDir[0] . '/' . $fileDir[1] . "/";
             }
+
+            array_push($srcSet[$id], $this->imageUrlUpload.$attachmentsData['file']. " " . $attachmentsData['width'] . 'w');
             
-            $dataQuery = "SELECT * FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $id .";";
-            $dataResult = DB::select($dataQuery);
-            if($id == 187881) {
-                array_push($srcSet[$id], $this->imageUrlUpload.$dataResult[0]->meta_value  . " " .'220w');
-            } else {
-                array_push($srcSet[$id], $this->imageUrlUpload.$attachmentsData['file']. " " . $attachmentsData['width'] . 'w');
-            }
-           
             if( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $attachment ) {
                         array_push($srcSet[$id], $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w');
