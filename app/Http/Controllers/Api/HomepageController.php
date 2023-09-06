@@ -290,7 +290,13 @@ class HomepageController extends Controller
         $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
 
         if( $title != '' ) {
-            $whereTitle = " AND ( p.original_title LIKE '%". $title ."%' OR p.post_title LIKE '%". $title ."%' ) ";
+            $s_rp = str_replace(" ","", $title);
+            $whereTitle = " AND ( p.post_title LIKE '%".$title."%' OR  
+            REPLACE(p.post_title, ' ', '') like '%".$s_rp."%' OR
+            p.original_title LIKE '%".$title."%' OR
+            REPLACE(p.original_title, ' ', '') like '%".$s_rp."%'
+        ) ";
+
             $where = $where . $whereTitle;
         }
 
