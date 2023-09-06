@@ -78,42 +78,49 @@ class SearchService {
 
                 $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
-                
-                $episodeData = $dataEpisode[0]->meta_value;
-                $episodeData = unserialize($episodeData);
+                $episodeId = '';
+                if( count($dataEpisode) > 0 ) {
+                    $episodeData = $dataEpisode[0]->meta_value;
+                    $episodeData = unserialize($episodeData);
 
-                $lastSeason = end($episodeData);
-                $seasonNumber = $lastSeason['name'];      
+                    $lastSeason = end($episodeData);
+                    $seasonNumber = $lastSeason['name'];      
 
-                $episodeId = end($lastSeason['episodes']);
-                $queryMetaTv = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
-                $dataMetaTvs = DB::select($queryMetaTv);
-                foreach($dataMetaTvs as $dataMetaTv) {
-                    if( $dataMetaTv->meta_key == '_episode_release_date' ) {
-                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaTv->meta_value)) {
-                            $newDataReleaseDateTv = explode('-', $dataMetaTv->meta_value);
-                            $releaseDate = $newDataReleaseDateTv[0];
-                        } else {
-                            $releaseDate = $dataMetaTv->meta_value > 0 ? date('Y-m-d', $dataMetaTv->meta_value) : date('Y-m-d');
+                    $episodeId = end($lastSeason['episodes']);
+                    if( $episodeId != '' ) {
+                        $queryMetaTv = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
+                        $dataMetaTvs = DB::select($queryMetaTv);
+                        foreach($dataMetaTvs as $dataMetaTv) {
+                            if( $dataMetaTv->meta_key == '_episode_release_date' ) {
+                                if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaTv->meta_value)) {
+                                    $newDataReleaseDateTv = explode('-', $dataMetaTv->meta_value);
+                                    $releaseDate = $newDataReleaseDateTv[0];
+                                } else {
+                                    $releaseDate = $dataMetaTv->meta_value > 0 ? date('Y-m-d', $dataMetaTv->meta_value) : date('Y-m-d');
+                                }
+                            }
+            
+                            if( $dataMetaTv->meta_key == '_episode_number' ) {
+                                $episodeNumber = $dataMetaTv->meta_value;
+                            }
+                        }
+
+                        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                        $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
+                        $whereTitleSub = " AND p.ID='". $episodeId ."' ";
+            
+                        $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
+                        $dataEpisoTitle = DB::select($queryTitle);
+                        
+                        if( count($dataEpisoTitle) > 0 ) {
+                            $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
                         }
                     }
-    
-                    if( $dataMetaTv->meta_key == '_episode_number' ) {
-                        $episodeNumber = $dataMetaTv->meta_value;
-                    }
+                } else {
+                    $link = '';
+                    $episodeNumber = '';
+                    $seasonNumber = '';
                 }
-
-                $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
-                $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-                $whereTitleSub = " AND p.ID='". $episodeId ."' ";
-    
-                $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
-                $dataEpisoTitle = DB::select($queryTitle);
-                
-                if( count($dataEpisoTitle) > 0 ) {
-                    $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
-                }
-
             }
 
             $items[$key] = [
