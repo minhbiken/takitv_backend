@@ -33,12 +33,7 @@ class TvshowService {
                         ORDER BY mp.7_day_stats DESC
                         LIMIT 5;";
                         
-        if (Cache::has('top_week_' . $type)) {
-            $dataTopWeek = Cache::get('top_week_' . $type);
-        } else {
-            $dataTopWeek = $this->getItems($queryTopWeek);
-            Cache::put('top_week_' . $type, $dataTopWeek, $this->lifeTime);
-        }
+        $dataTopWeek = $this->getItems($queryTopWeek);
         return $dataTopWeek;
     }
 
@@ -58,12 +53,7 @@ class TvshowService {
                         ORDER BY mp.30_day_stats DESC
                         LIMIT 5;";
 
-        if (Cache::has('top_month_' . $type)) {
-            $dataTopMonth = Cache::get('top_month_' . $type);
-        } else {
-            $dataTopMonth = $this->getItems($queryTopMonth);
-            Cache::put('top_month_' . $type, $dataTopMonth, $this->lifeTime);
-        }
+        $dataTopMonth = $this->getItems($queryTopMonth);
         return $dataTopMonth;
     }
 
