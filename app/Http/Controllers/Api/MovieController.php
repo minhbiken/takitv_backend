@@ -173,6 +173,7 @@ class MovieController extends Controller
             $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
 
             $movies[$key] = [
+                'id' => $data->ID,
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $data->post_title,
