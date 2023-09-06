@@ -166,7 +166,7 @@ class TvshowService {
             $episodeTitle = '';
             if( count($dataEpisoTitle) > 0 ) {
                 $episodeTitle = $dataEpisoTitle[0]->post_title;
-                $link = 'episode/' . $episodeTitle . "/";                
+                $link = 'episode/' . $episodeTitle;                
             }
             
             $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);

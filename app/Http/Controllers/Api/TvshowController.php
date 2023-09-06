@@ -235,7 +235,7 @@ class TvshowController extends Controller
                 $dataEpisoTitle = DB::select($queryTitle);
                 
                 if( count($dataEpisoTitle) > 0 ) {
-                    $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
+                    $link = 'episode/' . $dataEpisoTitle[0]->post_title;
                 }
             }
 

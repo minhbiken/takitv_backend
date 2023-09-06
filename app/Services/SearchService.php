@@ -58,7 +58,7 @@ class SearchService {
             }
             
 
-            $link = 'movie/' . $data->post_title."/";
+            $link = 'movie/' . $data->post_title;
 
             if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT * FROM `wp_term_relationships` wp
@@ -113,7 +113,7 @@ class SearchService {
                         $dataEpisoTitle = DB::select($queryTitle);
                         
                         if( count($dataEpisoTitle) > 0 ) {
-                            $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
+                            $link = 'episode/' . $dataEpisoTitle[0]->post_title;
                         }
                     }
                 } else {

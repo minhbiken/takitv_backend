@@ -27,7 +27,7 @@ class HelperService {
             $dataResult = DB::select($dataQuery);
 
             $titleSlider = $sliderData->post_title; 
-            $linkSlider = 'movie/' . $sliderData->post_title."/";
+            $linkSlider = 'movie/' . $sliderData->post_title;
             $seasonNumber = '';
             $episodeNumber = '';
             $year = '';
@@ -70,7 +70,7 @@ class HelperService {
                 $dataEpisoSlider = DB::select($query);
                 
                 if( count($dataEpisoSlider) > 0 ) {
-                    $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title . "/";
+                    $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
                 }
 
                 $queryEpisodeNumber = "SELECT * FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
