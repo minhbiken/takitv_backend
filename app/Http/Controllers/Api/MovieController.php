@@ -8,17 +8,18 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
 use App\Services\HelperService;
-use Illuminate\Support\Facades\Cache;
 class MovieController extends Controller
 {
     protected $movieService;
     protected $helperService;
     protected $lifeTime;
+    protected $imageUrlUpload;
     public function __construct(MovieService $movieService, HelperService $helperService)
     {
         $this->movieService = $movieService;
         $this->helperService = $helperService;
         $this->lifeTime = env('SESSION_LIFETIME');
+        $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
     /**
      * Display a listing of the resource.
@@ -203,22 +204,8 @@ class MovieController extends Controller
                 
             }
         }
-
-        //Cache movies topweek
-        if (Cache::has('movies_top_week')) {
-            $topWeeks = Cache::get('movies_top_week');
-        } else {
-            $topWeeks = $this->movieService->getTopWeeks();
-            Cache::put('movies_top_week', $topWeeks, $this->lifeTime);
-        }
-
-        //Cache movies popular
-        if (Cache::has('movies_popular')) {
-            $populars = Cache::get('movies_popular');
-        } else {
-            $populars = $this->movieService->getPopulars();
-            Cache::put('movies_popular', $populars, $this->lifeTime);
-        }
+        $topWeeks = $this->movieService->getTopWeeks();
+        $populars = $this->movieService->getPopulars();
 
         $data = [
             "total" => $total,
@@ -252,7 +239,105 @@ class MovieController extends Controller
      */
     public function show($title)
     {
+        $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
+        $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
+        $whereTitle = " AND p.post_title='". $title ."'  LIMIT 1; ";
+
+        $where = $where . $whereTitle;
+        $movies = [];
         
+        $data = DB::select($select . $where);
+        
+        if (count($data) == 0) {
+            return response()->json($movies, Response::HTTP_NOT_FOUND);
+        }
+        $dataMovie = $data[0];
+        $srcSet = [];
+        $releaseYear = '';
+        
+        $queryTaxonomy = "SELECT * FROM `wp_posts` p
+                        left join wp_term_relationships t_r on t_r.object_id = p.ID
+                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                        left join wp_terms t on tx.term_id = t.term_id
+                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $dataMovie->ID .";";
+        $dataTaxonomys = DB::select($queryTaxonomy);
+
+        $genres = [];
+        $slug = [];
+        foreach( $dataTaxonomys as $dataTaxonomy ) {
+            $genres[] = [
+                'name' => $dataTaxonomy->name,
+                'link' =>  $dataTaxonomy->slug
+            ];
+            $slug[] = "'" . $dataTaxonomy->name . "'";
+        }
+
+        $outlink = env('OUTLINK');
+        $outlink = @file_get_contents($outlink);
+        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
+        $outlink =  $outlink . '?pid=' . $dataMovie->ID;
+
+        //get 8 movies related
+        $slug = join(",", $slug);
+        if( $slug != '' ) {
+            $queryTaxonomyRelated = "SELECT * FROM `wp_posts` p
+            left join wp_term_relationships t_r on t_r.object_id = p.ID
+            left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+            left join wp_terms t on tx.term_id = t.term_id
+            where t.name != 'featured' AND t.name != '' AND t.name IN ( ".$slug." ) LIMIT 8";
+        } else {
+            $queryTaxonomyRelated = "SELECT * FROM `wp_posts` p
+                left join wp_term_relationships t_r on t_r.object_id = p.ID
+                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                left join wp_terms t on tx.term_id = t.term_id
+                where t.name != 'featured' AND t.name != '' LIMIT 8";
+        }
+        
+        $dataRelateds = $this->movieService->getItems($queryTaxonomyRelated);
+
+        $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
+        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                        LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataMovie->ID .";";
+        $dataSrcMeta = DB::select($querySrcMeta);
+
+        $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
+
+        $dataMetas = DB::select($queryMeta);
+        $movieRunTime = '';
+        foreach($dataMetas as $dataMeta) {
+            if( $releaseYear == '' ) {
+                if( $dataMeta->meta_key == '_movie_release_date' ) {
+                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                        $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                        $releaseDate = $newDataReleaseDate[0];
+                    } else {
+                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                    }
+                }
+            } else {
+                $releaseDate = $releaseYear;
+            }
+        
+            if( $dataMeta->meta_key == '_movie_run_time' ) {
+                $movieRunTime = $dataMeta->meta_value;
+            }
+        }
+        $srcSet = $this->helperService->getAttachmentsByPostId($dataMovie->ID);
+
+        $movies = [
+            'id' => $dataMovie->ID,
+            'year' => $releaseDate,
+            'genres' => $genres,
+            'title' => $dataMovie->post_title,
+            'originalTitle' => $dataMovie->original_title,
+            'description' => $dataMovie->post_content,
+            'src' => $src,
+            'srcSet' => $srcSet,
+            'duration' => $movieRunTime,
+            'outlink' => $outlink,
+            'relateds' => $dataRelateds
+        ];
+        return response()->json($movies, Response::HTTP_OK);
     }
 
     /**

@@ -8,7 +8,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\TvshowService;
 use App\Services\HelperService;
-use Illuminate\Support\Facades\Cache;
 class EpisodeController extends Controller
 {
     protected $imageUrlUpload;
