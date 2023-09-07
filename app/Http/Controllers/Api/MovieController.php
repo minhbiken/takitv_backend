@@ -237,11 +237,12 @@ class MovieController extends Controller
      * @param  string  $title
      * @return \Illuminate\Http\Response
      */
-    public function show($title)
+    public function show($title, Request $request)
     {
+        $titleMoive = $request->get('title', '');
         $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
         $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND p.post_title='". $title ."'  LIMIT 1; ";
+        $whereTitle = " AND p.post_title='". $titleMoive ."'  LIMIT 1; ";
 
         $where = $where . $whereTitle;
         $movies = [];
