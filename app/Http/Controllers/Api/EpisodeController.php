@@ -48,13 +48,14 @@ class EpisodeController extends Controller
      * @param  string  $episodeTitle
      * @return \Illuminate\Http\Response
      */
-    public function show($episodeTitle)
+    public function show($episodeTitle, Request $request)
     {
+        $title = $request->get('title', '');
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
         $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND p.post_title='". $episodeTitle ."' ";
+        $whereTitle = " AND p.post_title='". $title ."' ";
 
         $where = $where . $whereTitle;
         $movies = [];
