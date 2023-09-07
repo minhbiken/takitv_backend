@@ -122,13 +122,13 @@ class HomepageController extends Controller
         
         //Get 12 movies 
         $movies = [];
-        $queryMovie = "SELECT * FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
+        $queryMovie = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
         $dataMovies = DB::select($queryMovie);
 
         $movieNewests = [];
         $srcSet = [];
         foreach ( $dataMovies as $key => $dataMovie ) {
-            $queryMetaMovie = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
+            $queryMetaMovie = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
 
             $querySrcMetaMovie = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataMovie->ID .";";
@@ -155,7 +155,7 @@ class HomepageController extends Controller
                 }
             }
             
-            $queryTaxonomyMovie = "SELECT * FROM `wp_posts` p
+            $queryTaxonomyMovie = "SELECT t.name, t.slug FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                         left join wp_terms t on tx.term_id = t.term_id
