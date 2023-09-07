@@ -137,11 +137,11 @@ class MovieController extends Controller
                 }
             }
 
-            $queryTaxonomy = "SELECT t.name, t.slug, tx.count FROM `wp_posts` p
+            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                         left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID ." ORDER BY tx.count DESC;";
+                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID .";";
 
             $dataTaxonomys = DB::select($queryTaxonomy);
 
