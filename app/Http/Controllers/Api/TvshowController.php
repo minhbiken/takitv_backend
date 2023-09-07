@@ -119,7 +119,7 @@ class TvshowController extends Controller
             $topWeeks = $this->tvshowService->getTopWeekOTT();
             $populars = $this->tvshowService->getTopWeekOTT();
         } else {
-            //if( $genre != '' ) $type = $genre;
+            if( $request->get('genre', '') != '' ) $type = $request->get('genre', '');
             $topWeeks = $this->tvshowService->getTopWeeks($type);
             $populars = $this->tvshowService->getPopulars($type);
         }
