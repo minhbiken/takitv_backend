@@ -91,7 +91,7 @@ class TvshowService {
         $link = '';
         $srcSet = [];
         foreach ( $dataItems as $dataItem ) {
-            $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataItem->ID . " LIMIT 1;";
+            $queryEpisode = "SELECT meta_key, meta_value, post_id FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
             
             $episodeData = $dataEpisode[0]->meta_value;
@@ -101,7 +101,7 @@ class TvshowService {
             $seasonNumber = $lastSeason['name'];      
 
             $episodeId = end($lastSeason['episodes']);
-            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
+            $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
             $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataItem->ID .";";
@@ -126,7 +126,7 @@ class TvshowService {
                 }
             }
 
-            $queryTaxonomy = "SELECT * FROM `wp_posts` p
+            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                         LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
                         LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre' 
                         LEFT JOIN wp_terms t on tx.term_id = t.term_id
@@ -141,7 +141,7 @@ class TvshowService {
                 ];
             }
 
-            $queryChanel = "SELECT * FROM `wp_term_relationships` wp
+            $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                         LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $dataItem->ID .";";
             $dataChanel = DB::select($queryChanel);

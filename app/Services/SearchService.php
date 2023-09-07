@@ -61,7 +61,7 @@ class SearchService {
             $link = 'movie/' . $data->post_title;
 
             if( $data->post_type == 'tv_show'  ) {
-                $queryChanel = "SELECT wt.description FROM `wp_term_relationships` wp
+                $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                 WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
                 $dataChanel = DB::select($queryChanel);
