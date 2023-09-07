@@ -75,7 +75,7 @@ class TvshowService {
     }
 
     public function getWebOTT() {
-        $query = "SELECT * FROM `wp_term_taxonomy` tx
+        $query = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_status, tx.taxonomy, tx.parent FROM `wp_term_taxonomy` tx
         LEFT JOIN wp_terms t ON t.term_id = tx.term_id AND t.slug = 'ott-web'
         LEFT JOIN wp_term_relationships tr ON tr.term_taxonomy_id = tx.term_taxonomy_id
         LEFT JOIN wp_posts p ON p.ID = tr.object_id

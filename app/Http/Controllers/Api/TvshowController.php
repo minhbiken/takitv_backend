@@ -38,7 +38,7 @@ class TvshowController extends Controller
         $type = $request->get('type', '');
         $genre = $request->get('genre', '');
 
-        $select = "SELECT * FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
 
         if( $title != '' ) {
@@ -135,7 +135,7 @@ class TvshowController extends Controller
         $chanel = '';
         $srcSet = [];
         foreach( $datas as $key => $data ) {
-            $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
+            $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
             
             $dataEpisode = DB::select($queryEpisode);
             if( count($dataEpisode) > 0 ) {
@@ -155,7 +155,7 @@ class TvshowController extends Controller
                     $titleEpisode = $dataTitleEpisode[0]->post_title;
                 }
 
-                $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
+                $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $episodeId .";";
 
                 $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                                 LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
@@ -192,7 +192,7 @@ class TvshowController extends Controller
                     $outlink = '';
                 }
 
-                $queryChanel = "SELECT * FROM `wp_term_relationships` wp
+                $queryChanel = "SELECT wt.description FROM `wp_term_relationships` wp
                             LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                             WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
                 $dataChanel = DB::select($queryChanel);
@@ -219,7 +219,7 @@ class TvshowController extends Controller
                 }
             }
 
-            $queryTaxonomy = "SELECT * FROM `wp_posts` p
+            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                         left join wp_terms t on tx.term_id = t.term_id
@@ -301,7 +301,7 @@ class TvshowController extends Controller
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
-        $queryTaxonomy = "SELECT * FROM `wp_posts` p
+        $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                         left join wp_term_relationships t_r on t_r.object_id = p.ID
                         left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                         left join wp_terms t on tx.term_id = t.term_id
@@ -320,7 +320,7 @@ class TvshowController extends Controller
 
         $dataSeason = $dataPost[0];
     
-        $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
+        $queryEpisode = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
         $dataEpisode = DB::select($queryEpisode);
         $seasons = $this->tvshowService->getSeasons($dataEpisode);
         

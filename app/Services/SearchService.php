@@ -61,7 +61,7 @@ class SearchService {
             $link = 'movie/' . $data->post_title;
 
             if( $data->post_type == 'tv_show'  ) {
-                $queryChanel = "SELECT * FROM `wp_term_relationships` wp
+                $queryChanel = "SELECT wt.description FROM `wp_term_relationships` wp
                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                 WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
                 $dataChanel = DB::select($queryChanel);
@@ -76,7 +76,7 @@ class SearchService {
                     $chanel = env('IMAGE_PLACEHOLDER');
                 }
 
-                $queryEpisode = "SELECT * FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
+                $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 $episodeId = '';
                 if( count($dataEpisode) > 0 ) {
@@ -88,7 +88,7 @@ class SearchService {
 
                     $episodeId = end($lastSeason['episodes']);
                     if( $episodeId != '' ) {
-                        $queryMetaTv = "SELECT * FROM wp_postmeta WHERE post_id = ". $episodeId .";";
+                        $queryMetaTv = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $episodeId .";";
                         $dataMetaTvs = DB::select($queryMetaTv);
                         foreach($dataMetaTvs as $dataMetaTv) {
                             if( $dataMetaTv->meta_key == '_episode_release_date' ) {
