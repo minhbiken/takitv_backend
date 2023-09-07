@@ -116,37 +116,12 @@ class TvshowController extends Controller
         $movies = [];
         
         if( $type == 'ott-web' ) {
-            //Cache topweek ott
-            if (Cache::has('ott_web_tvshowTopWeeks')) {
-                $topWeeks = Cache::get('ott_web_tvshowTopWeeks');
-            } else {
-                $topWeeks = $this->tvshowService->getTopWeekOTT();
-                Cache::put('ott_web_tvshowTopWeeks', $topWeeks, $this->lifeTime);
-            }
-
-            //Cache popupar ott
-            if (Cache::has('ott_web_tvshowPopulars')) {
-                $populars = Cache::get('ott_web_tvshowPopulars');
-            } else {
-                $populars = $this->tvshowService->getTopWeekOTT();
-                Cache::put('ott_web_tvshowPopulars', $populars, $this->lifeTime);
-            }
+            $topWeeks = $this->tvshowService->getTopWeekOTT();
+            $populars = $this->tvshowService->getTopWeekOTT();
         } else {
-            //Cache topweek 
-            if (Cache::has( $type . 'tvshowTopWeeks')) {
-                $topWeeks = Cache::get($type . 'tvshowTopWeeks');
-            } else {
-                $topWeeks = $this->tvshowService->getTopWeeks($type);
-                Cache::put($type . 'tvshowTopWeeks', $topWeeks, $this->lifeTime);
-            }
-
-            //Cache popupar
-            if (Cache::has($type . 'tvshowPopulars')) {
-                $populars = Cache::get($type . 'tvshowPopulars');
-            } else {
-                $populars = $this->tvshowService->getPopulars($type);
-                Cache::put($type . 'tvshowPopulars', $populars, $this->lifeTime);
-            }
+            //if( $genre != '' ) $type = $genre;
+            $topWeeks = $this->tvshowService->getTopWeeks($type);
+            $populars = $this->tvshowService->getPopulars($type);
         }
         
         $titleEpisode = '';
