@@ -36,7 +36,7 @@ class MovieController extends Controller
 
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
-        $select = "SELECT * FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
         $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
 
         if( $releaseYear != '' ) {
@@ -62,7 +62,12 @@ class MovieController extends Controller
         }
 
         if( $title != '' ) {
-            $whereTitle = " AND ( p.original_title = '". $title ."' OR p.post_title = '". $title ."' ) ";
+            $s_rp = str_replace(" ","", $title);
+            $whereTitle = " AND ( p.post_title LIKE '%".$title."%' OR  
+            REPLACE(p.post_title, ' ', '') like '%".$s_rp."%' OR
+            p.original_title LIKE '%".$title."%' OR
+            REPLACE(p.original_title, ' ', '') like '%".$s_rp."%'
+            ) ";
             $where = $where . $whereTitle;
         }
 
