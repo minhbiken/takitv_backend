@@ -22,7 +22,7 @@ class TvshowService {
         if( $type == '' ) {
             $queryByType = '';
         } else {
-            $queryByType =  "AND t.slug = '" . $type . "'" ;
+            $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
         $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
@@ -42,7 +42,7 @@ class TvshowService {
         if( $type == '' ) {
             $queryByType = '';
         } else {
-            $queryByType =  "AND t.slug = '" . $type . "'" ;
+            $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
         $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
