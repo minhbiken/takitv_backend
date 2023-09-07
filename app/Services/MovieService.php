@@ -93,6 +93,7 @@ class MovieService {
                 $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
                 
                 $items[] = [
+                    'id' => $dataItem->ID,
                     'year' => $releaseDate,
                     'genres' => $genres,
                     'title' => $dataItem->post_title,
