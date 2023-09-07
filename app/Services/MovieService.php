@@ -47,7 +47,7 @@ class MovieService {
         $srcSet = [];
         if( count($dataItems) > 0 ) {
             foreach ( $dataItems as $dataItem ) {
-                $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataItem->ID .";";
+                $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $dataItem->ID .";";
                 $dataMetas = DB::select($queryMeta);
                 if( count($dataMetas) > 0 ) {
                     foreach ( $dataMetas as $dataMeta ) {
@@ -73,7 +73,7 @@ class MovieService {
 
                 $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
 
-                $queryTaxonomy = "SELECT * FROM `wp_posts` p
+                $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                                     left join wp_term_relationships t_r on t_r.object_id = p.ID
                                     left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                                     left join wp_terms t on tx.term_id = t.term_id

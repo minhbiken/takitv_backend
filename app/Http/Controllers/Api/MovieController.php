@@ -108,7 +108,7 @@ class MovieController extends Controller
         $src = '';
         $srcSet = [];
         foreach( $datas as $key => $data ) {
-            $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $data->ID .";";
+            $queryMeta = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $data->ID .";";
 
             $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
@@ -296,7 +296,7 @@ class MovieController extends Controller
        
         $dataRelateds = $this->movieService->getItems($queryTaxonomyRelated);
 
-        $queryMeta = "SELECT * FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
+        $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
         $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                         LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataMovie->ID .";";
         $dataSrcMeta = DB::select($querySrcMeta);
