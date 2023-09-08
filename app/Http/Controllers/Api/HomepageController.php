@@ -76,14 +76,7 @@ class HomepageController extends Controller
 
         $queryRandom = $randomSlider[rand(0,1)];
 
-        //Cache slider random
-        if (Cache::has('homepage_sliders_random')) {
-            $sliderRandoms = Cache::get('homepage_sliders_random');
-        } else {
-            $sliderRandoms = $this->helperService->getSliderItems($queryRandom, 'homepage_sliders_random');
-            Cache::put('homepage_sliders_random', $sliderRandoms, $this->lifeTime);
-        }
-
+        $sliderRandoms = $this->helperService->getSliderItems($queryRandom);
         //get 12 tv-show
         $queryTvshow = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p 
                             LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID 
