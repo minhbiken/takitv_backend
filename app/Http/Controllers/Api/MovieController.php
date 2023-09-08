@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
 use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
 class MovieController extends Controller
 {
     protected $movieService;
@@ -108,69 +109,72 @@ class MovieController extends Controller
         $src = '';
         $srcSet = [];
         foreach( $datas as $key => $data ) {
-            $queryMeta = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $data->ID .";";
-
-            $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
-            $dataSrcMeta = DB::select($querySrcMeta);
-
-            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
-
-            $dataMetas = DB::select($queryMeta);
-            $movieRunTime = '';
-            foreach($dataMetas as $dataMeta) {
-                if( $releaseYear == '' ) {
-                    if( $dataMeta->meta_key == '_movie_release_date' ) {
-                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
-                            $newDataReleaseDate = explode('-', $dataMeta->meta_value);
-                            $releaseDate = $newDataReleaseDate[0];
-                        } else {
-                            $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
-                        }
-                    }
-                } else {
-                    $releaseDate = $releaseYear;
-                }
-            
-                if( $dataMeta->meta_key == '_movie_run_time' ) {
-                    $movieRunTime = $dataMeta->meta_value;
-                }
-            }
-
-            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
-                        left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                        left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID .";";
-
-            $dataTaxonomys = DB::select($queryTaxonomy);
-
-            $genres = [];
-            $slug = [];
-            foreach( $dataTaxonomys as $k => $dataTaxonomy ) {
-                $genres[$k] = [
-                    'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->slug
-                ];
-                $slug[] = "'" . $dataTaxonomy->name . "'";
-            }
-
-            //outlink only show in into
-            if(count($datas) == 1) {
-                $outlink = env('OUTLINK');
-                $outlink = @file_get_contents($outlink);
-
-                if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-
-                $outlink =  $outlink . '?pid=' . $data->ID;
+            if (Cache::has($data->ID)) {
+                $movie = Cache::get($data->ID);
             } else {
-                $outlink = '';
-            }
+                $queryMeta = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $data->ID .";";
 
-            $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+                $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                                LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
+                $dataSrcMeta = DB::select($querySrcMeta);
 
-            $movies[$key] = [
-                'id' => $data->ID,
+                $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+
+                $dataMetas = DB::select($queryMeta);
+                $movieRunTime = '';
+                foreach($dataMetas as $dataMeta) {
+                    if( $releaseYear == '' ) {
+                        if( $dataMeta->meta_key == '_movie_release_date' ) {
+                            if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                                $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                                $releaseDate = $newDataReleaseDate[0];
+                            } else {
+                                $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                            }
+                        }
+                    } else {
+                        $releaseDate = $releaseYear;
+                    }
+                
+                    if( $dataMeta->meta_key == '_movie_run_time' ) {
+                        $movieRunTime = $dataMeta->meta_value;
+                    }
+                }
+
+                $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
+                            left join wp_term_relationships t_r on t_r.object_id = p.ID
+                            left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                            left join wp_terms t on tx.term_id = t.term_id
+                            where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID .";";
+
+                $dataTaxonomys = DB::select($queryTaxonomy);
+
+                $genres = [];
+                $slug = [];
+                foreach( $dataTaxonomys as $k => $dataTaxonomy ) {
+                    $genres[$k] = [
+                        'name' => $dataTaxonomy->name,
+                        'link' =>  $dataTaxonomy->slug
+                    ];
+                    $slug[] = "'" . $dataTaxonomy->name . "'";
+                }
+
+                //outlink only show in into
+                if(count($datas) == 1) {
+                    $outlink = env('OUTLINK');
+                    $outlink = @file_get_contents($outlink);
+
+                    if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
+
+                    $outlink =  $outlink . '?pid=' . $data->ID;
+                } else {
+                    $outlink = '';
+                }
+
+                $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+
+                $movie = [
+                    'id' => $data->ID,
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'title' => $data->post_title,
@@ -180,7 +184,12 @@ class MovieController extends Controller
                 'srcSet' => $srcSet,
                 'duration' => $movieRunTime,
                 'outlink' => $outlink
-            ];
+                ];
+
+                Cache::put($data->ID, $movie, $this->lifeTime);
+            }
+
+            $movies[$key] = $movie;
 
             if(count($datas) == 1) {
                 //get 8 movies related
