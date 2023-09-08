@@ -167,6 +167,7 @@ class HomepageController extends Controller
             //Get 8 movies newlest
             if( $key < 8 ) {
                 $movieNewests[] = [
+                    'id' => $dataMovie->ID,
                     'year' => $releaseDate,
                     'genres' => $genreMovies,
                     'title' => $dataMovie->post_title,
@@ -179,6 +180,7 @@ class HomepageController extends Controller
             }
             
             $movies[] = [
+                'id' => $dataMovie->ID,
                 'year' => $releaseDate,
                 'genres' => $genreMovies,
                 'title' => $dataMovie->post_title,
