@@ -79,6 +79,7 @@ class HelperService {
             }
             $srcSet = $this->getAttachmentsByPostId($sliderData->ID);
             $sliders[] = [
+                'id' => $sliderData->ID,
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
