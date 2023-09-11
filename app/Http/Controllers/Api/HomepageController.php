@@ -340,5 +340,11 @@ class HomepageController extends Controller
 
     public function clearCache() {
         Artisan::call('cache:clear');
+        return "OK!";
+    }
+
+    public function clearCacheByKey($key='') {
+        Cache::forget($key);
+        return "OK!";
     }
 }
