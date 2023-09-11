@@ -133,8 +133,6 @@ class EpisodeController extends Controller
             'tvshowTitle' => $tvshowTitle,
             'seasons' => $seasons
         ];
-        
-
         return response()->json($movies, Response::HTTP_OK);
     }
 
