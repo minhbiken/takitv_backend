@@ -156,60 +156,26 @@ class MovieController extends Controller
                     ];
                     $slug[] = "'" . $dataTaxonomy->name . "'";
                 }
-
-                //outlink only show in into
-                if(count($datas) == 1) {
-                    $outlink = env('OUTLINK');
-                    $outlink = @file_get_contents($outlink);
-
-                    if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-
-                    $outlink =  $outlink . '?pid=' . $data->ID;
-                } else {
-                    $outlink = '';
-                }
-
+           
                 $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
 
                 $movie = [
                     'id' => $data->ID,
-                'year' => $releaseDate,
-                'genres' => $genres,
-                'title' => $data->post_title,
-                'originalTitle' => $data->original_title,
-                'description' => $data->post_content,
-                'src' => $src,
-                'srcSet' => $srcSet,
-                'duration' => $movieRunTime,
-                'outlink' => $outlink
+                    'year' => $releaseDate,
+                    'genres' => $genres,
+                    'title' => $data->post_title,
+                    'originalTitle' => $data->original_title,
+                    'description' => $data->post_content,
+                    'src' => $src,
+                    'srcSet' => $srcSet,
+                    'duration' => $movieRunTime,
+                    'outlink' => ''
                 ];
 
                 Cache::forever($data->ID, $movie);
             }
 
             $movies[$key] = $movie;
-
-            if(count($datas) == 1) {
-                //get 8 movies related
-                $slug = join(",", $slug);
-                if( $slug != '' ) {
-                    $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
-                    left join wp_term_relationships t_r on t_r.object_id = p.ID
-                    left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                    left join wp_terms t on tx.term_id = t.term_id
-                    where t.name != 'featured' AND t.name != '' AND t.name IN ( ".$slug." ) LIMIT 8";
-                } else {
-                    $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
-                        left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                        left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND t.name != '' LIMIT 8";
-                }
-                
-                $dataRelateds = $this->movieService->getItems($queryTaxonomyRelated);
-                $movies[$key]['relateds'] = $dataRelateds;
-                
-            }
         }
         $topWeeks = $this->movieService->getTopWeeks();
         $populars = $this->movieService->getPopulars();
@@ -253,7 +219,7 @@ class MovieController extends Controller
 
         $where = $where . $whereTitle;
         $movies = [];
-        
+        print_r($select . $where); die;
         $data = DB::select($select . $where);
 
         if (count($data) == 0) {
