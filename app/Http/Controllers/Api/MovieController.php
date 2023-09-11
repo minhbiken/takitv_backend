@@ -246,16 +246,16 @@ class MovieController extends Controller
      */
     public function show($title, Request $request)
     {
-        $titleMoive = $request->get('title', '');
+        $titleMovie = $request->get('title', '');
         $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
         $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND p.post_title='". $titleMoive ."'  LIMIT 1; ";
+        $whereTitle = " AND p.post_title='". $titleMovie ."'  LIMIT 1; ";
 
         $where = $where . $whereTitle;
         $movies = [];
         
         $data = DB::select($select . $where);
-        
+
         if (count($data) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
