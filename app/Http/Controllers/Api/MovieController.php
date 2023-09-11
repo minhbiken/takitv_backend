@@ -219,7 +219,7 @@ class MovieController extends Controller
 
         $where = $where . $whereTitle;
         $movies = [];
-        print_r($select . $where); die;
+
         $data = DB::select($select . $where);
 
         if (count($data) == 0) {
