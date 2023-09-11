@@ -14,13 +14,11 @@ class TvshowController extends Controller
     private $imageUrlUpload;
     protected $tvshowService;
     protected $helperService;
-    protected $lifeTime;
     public function __construct(TvshowService $tvshowService, HelperService $helperService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->tvshowService = $tvshowService;
         $this->helperService = $helperService;
-        $this->lifeTime = env('SESSION_LIFETIME');
     }
     /**
      * Display a listing of the resource.
@@ -258,7 +256,7 @@ class TvshowController extends Controller
                     'postDate' => $data->post_date
                 ];
 
-                Cache::put($data->ID, $movie, $this->lifeTime);
+                Cache::forever($data->ID, $movie);
             }
             
 

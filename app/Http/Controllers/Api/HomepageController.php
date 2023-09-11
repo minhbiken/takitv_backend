@@ -20,7 +20,6 @@ class HomepageController extends Controller
     protected $tvshowService;
     protected $searchService;
     protected $helperService;
-    protected $lifeTime;
     protected $imageUrlUpload;
     public function __construct(MovieService $movieService, TvshowService $tvshowService, SearchService $searchService, HelperService $helperService)
     {
@@ -28,7 +27,6 @@ class HomepageController extends Controller
         $this->tvshowService = $tvshowService;
         $this->searchService = $searchService;
         $this->helperService = $helperService;
-        $this->lifeTime = env('SESSION_LIFETIME');
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
 
@@ -51,7 +49,7 @@ class HomepageController extends Controller
             $sliders = Cache::get('homepage_sliders_top');
         } else {
             $sliders = $this->helperService->getSliderItems($sliderQuery, 'homepage_sliders_top');
-            Cache::put('homepage_sliders_top', $sliders, $this->lifeTime);
+            Cache::forever('homepage_sliders_top', $sliders);
         }
         
         //Get Chanel slider random between USA and Korea
@@ -198,7 +196,7 @@ class HomepageController extends Controller
         } else {
             //Get movies topweek
             $topWeeks = $this->movieService->getTopWeeks();
-            Cache::put('homepage_top_weeks', $topWeeks, $this->lifeTime);
+            Cache::forever('homepage_top_weeks', $topWeeks);
         }
 
         //Cache movies newest
@@ -215,7 +213,7 @@ class HomepageController extends Controller
             LIMIT 8;";
 
             $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
-            Cache::put('homepage_movies_newest', $movieKoreas, $this->lifeTime);
+            Cache::forever('homepage_movies_newest', $movieKoreas);
         }
         
         $data = [

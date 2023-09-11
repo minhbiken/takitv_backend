@@ -9,12 +9,10 @@ use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
 class TvshowService {
     protected $helperService;
-    protected $lifeTime;
     protected $imageUrlUpload;
     public function __construct(HelperService $helperService)
     {
         $this->helperService = $helperService;
-        $this->lifeTime = env('SESSION_LIFETIME');
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
     public function getTopWeeks($type='')

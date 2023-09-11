@@ -13,13 +13,11 @@ class EpisodeController extends Controller
     protected $imageUrlUpload;
     protected $tvshowService;
     protected $helperService;
-    protected $lifeTime;
     public function __construct(TvshowService $tvshowService, HelperService $helperService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->tvshowService = $tvshowService;
         $this->helperService = $helperService;
-        $this->lifeTime = env('SESSION_LIFETIME');
     }
     /**
      * Display a listing of the resource.

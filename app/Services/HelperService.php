@@ -7,12 +7,9 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 class HelperService {
-
-    protected $lifeTime;
     protected $imageUrlUpload;
     public function __construct()
     {
-        $this->lifeTime = env('SESSION_LIFETIME');
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
 
@@ -101,7 +98,7 @@ class HelperService {
             if( count($data) == 0 ) {
                 $data = '';
             }
-            Cache::put($cacheName, $data, $this->lifeTime);
+            Cache::forever($cacheName, $data);
         }
         return $data;
     }

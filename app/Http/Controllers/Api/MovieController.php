@@ -13,13 +13,11 @@ class MovieController extends Controller
 {
     protected $movieService;
     protected $helperService;
-    protected $lifeTime;
     protected $imageUrlUpload;
     public function __construct(MovieService $movieService, HelperService $helperService)
     {
         $this->movieService = $movieService;
-        $this->helperService = $helperService;
-        $this->lifeTime = env('SESSION_LIFETIME');
+        $this->helperService = $helperService;        
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
     /**
@@ -186,7 +184,7 @@ class MovieController extends Controller
                 'outlink' => $outlink
                 ];
 
-                Cache::put($data->ID, $movie, $this->lifeTime);
+                Cache::forever($data->ID, $movie);
             }
 
             $movies[$key] = $movie;

@@ -6,14 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
 class MovieService {
     protected $helperService;
-    protected $lifeTime;
     protected $imageUrlUpload;
     public function __construct(HelperService $helperService)
     {
-        $this->helperService = $helperService;
-        $this->lifeTime = env('SESSION_LIFETIME');
+        $this->helperService = $helperService;        
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
 
