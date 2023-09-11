@@ -123,6 +123,7 @@ class SearchService {
                 }
                 $item = [
                     'postType'  => $data->post_type,
+                    'id' => $data->ID,
                     'year' => $releaseDate,
                     'genres' => $genres,
                     'title' => $data->post_title,
