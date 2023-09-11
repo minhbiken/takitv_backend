@@ -127,7 +127,7 @@ class MovieController extends Controller
                                 $newDataReleaseDate = explode('-', $dataMeta->meta_value);
                                 $releaseDate = $newDataReleaseDate[0];
                             } else {
-                                $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                                $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '';
                             }
                         }
                     } else {
@@ -320,7 +320,7 @@ class MovieController extends Controller
                         $newDataReleaseDate = explode('-', $dataMeta->meta_value);
                         $releaseDate = $newDataReleaseDate[0];
                     } else {
-                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '2023';
+                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '';
                     }
                 }
             } else {

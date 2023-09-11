@@ -137,7 +137,7 @@ class HomepageController extends Controller
                         $newDataReleaseDate = explode('-', $dataMetaMovie->meta_value);
                         $releaseDate = $newDataReleaseDate[0];
                     } else {
-                        $releaseDate = $dataMetaMovie->meta_value > 0 ? date('Y', $dataMetaMovie->meta_value) : '2023';
+                        $releaseDate = $dataMetaMovie->meta_value > 0 ? date('Y', $dataMetaMovie->meta_value) : '';
                     }
                 }
                 
