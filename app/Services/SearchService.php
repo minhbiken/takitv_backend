@@ -1,10 +1,6 @@
 <?php
 
 namespace App\Services;
-
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 class SearchService {
     public function getItems($query) {
@@ -117,25 +113,24 @@ class SearchService {
                     $episodeNumber = '';
                     $seasonNumber = '';
                 }
-                $item = [
-                    'postType'  => $data->post_type,
-                    'id' => $data->ID,
-                    'year' => $releaseDate,
-                    'genres' => $genres,
-                    'title' => $data->post_title,
-                    'originalTitle' => $data->original_title,
-                    'description' => $data->post_content,
-                    'src' => $src,
-                    'link' => $link,
-                    'duration' => $movieRunTime,
-                    'chanelImage' => $chanel,
-                    'seasonNumber' => $seasonNumber,
-                    'episodeNumber' => $episodeNumber,
-                    'postDateGmt' => $data->post_date_gmt,
-                    'postDate' => $data->post_date
-                ];
             }
-            $items[$key] = $item;
+            $items[$key] = [
+                'postType'  => $data->post_type,
+                'id' => $data->ID,
+                'year' => $releaseDate,
+                'genres' => $genres,
+                'title' => $data->post_title,
+                'originalTitle' => $data->original_title,
+                'description' => $data->post_content,
+                'src' => $src,
+                'link' => $link,
+                'duration' => $movieRunTime,
+                'chanelImage' => $chanel,
+                'seasonNumber' => $seasonNumber,
+                'episodeNumber' => $episodeNumber,
+                'postDateGmt' => $data->post_date_gmt,
+                'postDate' => $data->post_date
+            ];
         }
         return $items;
     }
