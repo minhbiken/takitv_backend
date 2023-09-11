@@ -137,6 +137,7 @@ class SearchService {
                     'postDateGmt' => $data->post_date_gmt,
                     'postDate' => $data->post_date
                 ];
+                Cache::forever($data->ID, $item);
             }
             $items[$key] = $item;
         }
