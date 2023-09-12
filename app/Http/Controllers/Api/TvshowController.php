@@ -102,13 +102,13 @@ class TvshowController extends Controller
         $selectTotal = "SELECT COUNT(1) as total FROM wp_posts p ";
         $queryTotal = $selectTotal . $where;
 
-        if( Cache::has('query_total') && Cache::get('query_total') === $queryTotal && Cache::has('data_total')) {
-            $total = Cache::get('data_total');
+        if( Cache::has('tv_show_query_total') && Cache::get('tv_show_query_total') === $queryTotal && Cache::has('tv_show_data_total')) {
+            $total = Cache::get('tv_show_data_total');
         } else {
             $dataTotal = DB::select($queryTotal);
             $total = $dataTotal[0]->total;
-            Cache::forever('query_total', $queryTotal);
-            Cache::forever('data_total', $total);
+            Cache::forever('tv_show_query_total', $queryTotal);
+            Cache::forever('tv_show_data_total', $total);
         }
 
         //query limit tvshow
