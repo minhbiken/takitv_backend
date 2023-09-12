@@ -115,171 +115,14 @@ class TvshowController extends Controller
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
 
-        $datas = DB::select($query);
-        
-        $movies = [];
-        
-        if( $type == 'ott-web' ) {
-            $topWeeks = $this->tvshowService->getTopWeekOTT();
-            $populars = $this->tvshowService->getTopWeekOTT();
+        if( $perPage == 12 && Cache::has('tv_show_'. $type) ) {
+            $data = Cache::get('tv_show_'. $type);
+        } else if ( $perPage == 12 && !Cache::has('tv_show_'. $type)) {
+            $data = $this->getData($query, $type, $request, $total, $perPage, $page);
+            Cache::forever('tv_show_'. $type, $data);
         } else {
-            if( $request->get('genre', '') != '' ) $type = $request->get('genre', '');
-            $topWeeks = $this->tvshowService->getTopWeeks($type);
-            $populars = $this->tvshowService->getPopulars($type);
+            $data = $this->getData($query, $type, $request, $total, $perPage, $page);
         }
-        
-        $titleEpisode = '';
-        $link = '';
-        $episodeNumber = '';
-        $seasonNumber = '';
-        $episodeId = '';
-        $releaseDate = '';
-        $src = '';
-        $outlink = '';
-        $chanel = '';
-        $srcSet = [];
-        foreach( $datas as $key => $data ) {
-            if (Cache::has($data->ID)) {
-                $movie = Cache::get($data->ID);
-            } else {
-                $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            
-                $dataEpisode = DB::select($queryEpisode);
-                if( count($dataEpisode) > 0 ) {
-                    $episodeData = $dataEpisode[0]->meta_value;
-                    $episodeData = unserialize($episodeData);
-                    
-                    $lastSeason = end($episodeData);
-                    $seasonNumber = $lastSeason['name'];     
-                    $episodeId = end($lastSeason['episodes']);
-                }
-
-                if( $episodeId != '' ) {
-                    $querryTitleEpisode = "SELECT p.post_title FROM wp_posts p WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = " .  $episodeId . " ";
-                    $dataTitleEpisode = DB::select($querryTitleEpisode);
-        
-                    if( count($dataTitleEpisode) > 0 ) {
-                        $titleEpisode = $dataTitleEpisode[0]->post_title;
-                    }
-
-                    $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $episodeId .";";
-
-                    $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
-                    $dataSrcMeta = DB::select($querySrcMeta);
-                    
-                    $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
-
-                    $dataMetas = DB::select($queryMeta);
-
-                    foreach($dataMetas as $dataMeta) {
-                        if( $dataMeta->meta_key == '_episode_release_date' ) {
-                            if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
-                                $newDataReleaseDate = explode('-', $dataMeta->meta_value);
-                                $releaseDate = $newDataReleaseDate[0];
-                            } else {
-                                $releaseDate = $dataMeta->meta_value > 0 ? date('Y-m-d', $dataMeta->meta_value) : date('Y-m-d');
-                            }
-                        }
-
-                        if( $dataMeta->meta_key == '_episode_number' ) {
-                            $episodeNumber = $dataMeta->meta_value;
-                        }
-                    }
-
-                    //outlink only show in into
-                    if(count($datas) == 1) {
-                        $outlink = env('OUTLINK');
-                        $outlink = @file_get_contents($outlink);
-
-                        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-
-                        $outlink =  $outlink . '?pid=' . $episodeId;
-                    } else {
-                        $outlink = '';
-                    }
-
-                    $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
-                                LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
-                                WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
-                    $dataChanel = DB::select($queryChanel);
-
-                    if( count($dataChanel) > 0 ) {
-                        $chanel = $dataChanel[0]->description;
-                        $newChanel = explode('src="', $chanel);
-                        $newChanel = explode('" alt', $newChanel[1]);
-                        $newChanel = $newChanel[0];
-                        $chanel = 'https://image002.modooup.com' . $newChanel;
-                    } else {
-                        $chanel = env('IMAGE_PLACEHOLDER');
-                    }
-
-                    $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
-                    $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-                    $whereTitleSub = " AND p.ID='". $episodeId ."' ";
-
-                    $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
-                    $dataEpisoTitle = DB::select($queryTitle);
-                    
-                    if( count($dataEpisoTitle) > 0 ) {
-                        $link = 'episode/' . $dataEpisoTitle[0]->post_title;
-                    }
-                }
-
-                $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
-                            left join wp_term_relationships t_r on t_r.object_id = p.ID
-                            left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
-                            left join wp_terms t on tx.term_id = t.term_id
-                            where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID .";";
-                $dataTaxonomys = DB::select($queryTaxonomy);
-
-                $genres = [];
-                foreach( $dataTaxonomys as $dataTaxonomy ) {
-                    $genres[] = [
-                        'name' => $dataTaxonomy->name,
-                        'link' =>  $dataTaxonomy->slug
-                    ];
-                }
-
-                $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
-
-                $movie = [
-                    'id' => $data->ID,
-                    'year' => $releaseDate,
-                    'genres' => $genres,
-                    'title' => $titleEpisode,
-                    'tvshowTitle' => $data->post_title,
-                    'originalTitle' => $data->original_title,
-                    'description' => $data->post_content,
-                    'src' => $src,
-                    'srcSet' => $srcSet,
-                    'link' => $link,
-                    'outlink' => $outlink,
-                    'chanelImage' => $chanel,
-                    'seasonNumber' => $seasonNumber,
-                    'episodeNumber' => $episodeNumber,
-                    'postDateGmt' => $data->post_date_gmt,
-                    'postDate' => $data->post_date
-                ];
-
-                Cache::forever($data->ID, $movie);
-            }
-            
-
-            $movies[$key] = $movie;
-        }
-
-        $data = [
-            "total" => $total,
-            "perPage" => $perPage,
-            "currentPage" => $page,
-            "data" => [
-                'ottChanels' => config('constants.ottChanels'),
-                'topWeeks' => $topWeeks,
-                'populars' => $populars,
-                'items' => $movies
-            ]
-        ];
         return response()->json($data, Response::HTTP_OK);
     }
 
@@ -436,5 +279,172 @@ class TvshowController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function getData($query='', $type='', Request $request, $total=0, $perPage=0, $page=0) {
+        $datas = DB::select($query);
+        
+        $movies = [];
+        
+        if( $type == 'ott-web' ) {
+            $topWeeks = $this->tvshowService->getTopWeekOTT();
+            $populars = $this->tvshowService->getTopWeekOTT();
+        } else {
+            if( $request->get('genre', '') != '' ) $type = $request->get('genre', '');
+            $topWeeks = $this->tvshowService->getTopWeeks($type);
+            $populars = $this->tvshowService->getPopulars($type);
+        }
+        
+        $titleEpisode = '';
+        $link = '';
+        $episodeNumber = '';
+        $seasonNumber = '';
+        $episodeId = '';
+        $releaseDate = '';
+        $src = '';
+        $outlink = '';
+        $chanel = '';
+        $srcSet = [];
+        foreach( $datas as $key => $data ) {
+            if (Cache::has($data->ID)) {
+                $movie = Cache::get($data->ID);
+            } else {
+                $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
+            
+                $dataEpisode = DB::select($queryEpisode);
+                if( count($dataEpisode) > 0 ) {
+                    $episodeData = $dataEpisode[0]->meta_value;
+                    $episodeData = unserialize($episodeData);
+                    
+                    $lastSeason = end($episodeData);
+                    $seasonNumber = $lastSeason['name'];     
+                    $episodeId = end($lastSeason['episodes']);
+                }
+
+                if( $episodeId != '' ) {
+                    $querryTitleEpisode = "SELECT p.post_title FROM wp_posts p WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = " .  $episodeId . " ";
+                    $dataTitleEpisode = DB::select($querryTitleEpisode);
+        
+                    if( count($dataTitleEpisode) > 0 ) {
+                        $titleEpisode = $dataTitleEpisode[0]->post_title;
+                    }
+
+                    $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $episodeId .";";
+
+                    $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                                    LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
+                    $dataSrcMeta = DB::select($querySrcMeta);
+                    
+                    $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
+
+                    $dataMetas = DB::select($queryMeta);
+
+                    foreach($dataMetas as $dataMeta) {
+                        if( $dataMeta->meta_key == '_episode_release_date' ) {
+                            if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                                $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                                $releaseDate = $newDataReleaseDate[0];
+                            } else {
+                                $releaseDate = $dataMeta->meta_value > 0 ? date('Y-m-d', $dataMeta->meta_value) : date('Y-m-d');
+                            }
+                        }
+
+                        if( $dataMeta->meta_key == '_episode_number' ) {
+                            $episodeNumber = $dataMeta->meta_value;
+                        }
+                    }
+
+                    //outlink only show in into
+                    if(count($datas) == 1) {
+                        $outlink = env('OUTLINK');
+                        $outlink = @file_get_contents($outlink);
+
+                        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
+
+                        $outlink =  $outlink . '?pid=' . $episodeId;
+                    } else {
+                        $outlink = '';
+                    }
+
+                    $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+                                LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                                WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
+                    $dataChanel = DB::select($queryChanel);
+
+                    if( count($dataChanel) > 0 ) {
+                        $chanel = $dataChanel[0]->description;
+                        $newChanel = explode('src="', $chanel);
+                        $newChanel = explode('" alt', $newChanel[1]);
+                        $newChanel = $newChanel[0];
+                        $chanel = 'https://image002.modooup.com' . $newChanel;
+                    } else {
+                        $chanel = env('IMAGE_PLACEHOLDER');
+                    }
+
+                    $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+                    $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
+                    $whereTitleSub = " AND p.ID='". $episodeId ."' ";
+
+                    $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
+                    $dataEpisoTitle = DB::select($queryTitle);
+                    
+                    if( count($dataEpisoTitle) > 0 ) {
+                        $link = 'episode/' . $dataEpisoTitle[0]->post_title;
+                    }
+                }
+
+                $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
+                            left join wp_term_relationships t_r on t_r.object_id = p.ID
+                            left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
+                            left join wp_terms t on tx.term_id = t.term_id
+                            where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID .";";
+                $dataTaxonomys = DB::select($queryTaxonomy);
+
+                $genres = [];
+                foreach( $dataTaxonomys as $dataTaxonomy ) {
+                    $genres[] = [
+                        'name' => $dataTaxonomy->name,
+                        'link' =>  $dataTaxonomy->slug
+                    ];
+                }
+
+                $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+
+                $movie = [
+                    'id' => $data->ID,
+                    'year' => $releaseDate,
+                    'genres' => $genres,
+                    'title' => $titleEpisode,
+                    'tvshowTitle' => $data->post_title,
+                    'originalTitle' => $data->original_title,
+                    'description' => $data->post_content,
+                    'src' => $src,
+                    'srcSet' => $srcSet,
+                    'link' => $link,
+                    'outlink' => $outlink,
+                    'chanelImage' => $chanel,
+                    'seasonNumber' => $seasonNumber,
+                    'episodeNumber' => $episodeNumber,
+                    'postDateGmt' => $data->post_date_gmt,
+                    'postDate' => $data->post_date
+                ];
+
+                Cache::forever($data->ID, $movie);
+            }
+            $movies[$key] = $movie;
+        }
+
+        $data = [
+            "total" => $total,
+            "perPage" => $perPage,
+            "currentPage" => $page,
+            "data" => [
+                'ottChanels' => config('constants.ottChanels'),
+                'topWeeks' => $topWeeks,
+                'populars' => $populars,
+                'items' => $movies
+            ]
+        ];
+        return $data;
     }
 }

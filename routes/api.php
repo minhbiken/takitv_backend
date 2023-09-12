@@ -23,3 +23,4 @@ Route::get('search', 'App\Http\Controllers\Api\HomepageController@search');
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
 Route::get('clearCacheHomePage', 'App\Http\Controllers\Api\HomepageController@clearCacheHomePage');
+Route::get('clearCacheTvShowHomePage', 'App\Http\Controllers\Api\HomepageController@clearCacheTvShowHomePage');
