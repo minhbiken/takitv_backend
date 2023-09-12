@@ -102,9 +102,6 @@ class MovieController extends Controller
             Cache::forever('movie_query_total', $queryTotal);
             Cache::forever('movie_data_total', $total);
         }
-
-        return response()->json($total, Response::HTTP_OK);
-
         //query limit movie
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
