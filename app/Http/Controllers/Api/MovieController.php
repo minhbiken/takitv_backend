@@ -91,11 +91,19 @@ class MovieController extends Controller
 
         //query all movie
         $query = $select . $where . $order;
-
         $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
         $queryTotal = $selectTotal . $where;
-        $dataTotal = DB::select($queryTotal);
-        $total = $dataTotal[0]->total;
+
+        if( Cache::has('movie_query_total') && Cache::get('movie_query_total') === $queryTotal && Cache::has('movie_data_total')) {
+            $total = Cache::get('movie_data_total');
+        } else {
+            $dataTotal = DB::select($queryTotal);
+            $total = $dataTotal[0]->total;
+            Cache::forever('movie_query_total', $queryTotal);
+            Cache::forever('movie_data_total', $total);
+        }
+
+        return response()->json($total, Response::HTTP_OK);
 
         //query limit movie
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
@@ -111,13 +119,10 @@ class MovieController extends Controller
                 $movie = Cache::get($data->ID);
             } else {
                 $queryMeta = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $data->ID .";";
-
                 $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                                 LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
                 $dataSrcMeta = DB::select($querySrcMeta);
-
                 $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
-
                 $dataMetas = DB::select($queryMeta);
                 $movieRunTime = '';
                 foreach($dataMetas as $dataMeta) {
