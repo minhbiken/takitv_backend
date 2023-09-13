@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::apiResource('homepage', 'Api\HomepageController')->only(['index']);
-Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show']);
-Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show']);
-Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
+Route::apiResource('homepage', 'Api\HomepageController')->only(['index'])->middleware('etag');
+Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show'])->middleware('etag');
+Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show'])->middleware('etag');
+Route::apiResource('episode', 'Api\EpisodeController')->only(['show'])->middleware('etag');
+Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->middleware('etag');
 
-Route::get('search', 'App\Http\Controllers\Api\HomepageController@search');
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
 Route::get('clearCacheHomePage', 'App\Http\Controllers\Api\HomepageController@clearCacheHomePage');
