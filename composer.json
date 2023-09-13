@@ -12,6 +12,7 @@
         "laravel/telescope": "^4.16",
         "laravel/tinker": "^2.7",
         "rakutentech/laravel-request-docs": "^2.22",
+        "spatie/laravel-responsecache": "^7.4",
         "werk365/etagconditionals": "^1.4"
     },
     "require-dev": {
