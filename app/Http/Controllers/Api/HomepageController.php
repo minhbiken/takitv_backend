@@ -346,4 +346,9 @@ class HomepageController extends Controller
         Cache::forget('tv_show_u-drama');
         return "OK!";
     }
+    public function timeCheck() {
+        return "OK!";
+    }
+
+    
 }
