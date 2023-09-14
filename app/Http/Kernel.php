@@ -43,7 +43,6 @@ class Kernel extends HttpKernel
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Rakutentech\LaravelRequestDocs\LaravelRequestDocsMiddleware::class,
-            \Abordage\LastModified\Middleware\LastModifiedHandling::class,
         ],
     ];
 
