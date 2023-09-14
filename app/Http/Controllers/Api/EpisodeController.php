@@ -71,72 +71,70 @@ class EpisodeController extends Controller
         $src = '';
 
         if( Cache::has($dataPost[0]->ID) ) {
-            $tvshowTitleData = Cache::get($dataPost[0]->ID);
+            $movies = Cache::get($dataPost[0]->ID);
         } else {
             $querySeasonEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, wp.meta_value FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE p.post_status = 'publish' AND wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' ORDER BY p.ID ASC LIMIT 1;";
             $tvshowTitleData = DB::select($querySeasonEpisode);
-            Cache::forever($dataPost[0]->ID, $tvshowTitleData);
-        }
-        $tvshowTitle = $tvshowTitleData[0]->post_title;
-        $seasons = $this->tvshowService->getSeasons($tvshowTitleData);
+            $tvshowTitle = $tvshowTitleData[0]->post_title;
+            $seasons = $this->tvshowService->getSeasons($tvshowTitleData);
 
-        $dataSeason = $dataPost[0];
-        $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
-                        left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
-                        left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $tvshowTitleData[0]->ID .";";
-        $dataTaxonomys = DB::select($queryTaxonomy);
-        $genres = [];
-        foreach( $dataTaxonomys as $dataTaxonomy ) {
-            $genres[] = [
-                'name' => $dataTaxonomy->name,
-                'link' =>  $dataTaxonomy->slug
-            ];
-        }
-    
-        //outlink only show in into
-        $outlink = env('OUTLINK');
-        $outlink = @file_get_contents($outlink);
-
-        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-        $outlink =  $outlink . '?pid=' . $dataSeason->ID;
-
-        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowTitleData[0]->ID .";";
-        $dataSrcMeta = DB::select($querySrcMeta);
+            $dataSeason = $dataPost[0];
+            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
+                            left join wp_term_relationships t_r on t_r.object_id = p.ID
+                            left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
+                            left join wp_terms t on tx.term_id = t.term_id
+                            where t.name != 'featured' AND t.name != '' AND p.ID = ". $tvshowTitleData[0]->ID .";";
+            $dataTaxonomys = DB::select($queryTaxonomy);
+            $genres = [];
+            foreach( $dataTaxonomys as $dataTaxonomy ) {
+                $genres[] = [
+                    'name' => $dataTaxonomy->name,
+                    'link' =>  $dataTaxonomy->slug
+                ];
+            }
         
-        if( count($dataSrcMeta) > 0 ) {
-            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
-        }
-        
-        $seasonName = '';
-        foreach ( $seasons as $season ) {
-            foreach ( $season['episodes'] as $episode ) {
-                if ( $dataSeason->post_title == $episode['title'] ) {
-                    $seasonName = $season['name'];
-                    break;
+            //outlink only show in into
+            $outlink = env('OUTLINK');
+            $outlink = @file_get_contents($outlink);
+
+            if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
+            $outlink =  $outlink . '?pid=' . $dataSeason->ID;
+
+            $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                                LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowTitleData[0]->ID .";";
+            $dataSrcMeta = DB::select($querySrcMeta);
+            
+            if( count($dataSrcMeta) > 0 ) {
+                $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+            }
+            
+            $seasonName = '';
+            foreach ( $seasons as $season ) {
+                foreach ( $season['episodes'] as $episode ) {
+                    if ( $dataSeason->post_title == $episode['title'] ) {
+                        $seasonName = $season['name'];
+                        break;
+                    }
                 }
             }
+            $srcSet = $this->helperService->getAttachmentsByPostId($tvshowTitleData[0]->ID);
+            $movies = [
+                'id' => $dataSeason->ID,
+                'title' => $dataSeason->post_title,
+                'originalTitle' => $tvshowTitleData[0]->original_title,
+                'description' => $tvshowTitleData[0]->post_content,
+                'genres' => $genres,
+                'src' => $src,
+                'srcSet' => $srcSet,
+                'outlink' => $outlink,
+                'postDateGmt' => $dataSeason->post_date_gmt,
+                'postDate' => $dataSeason->post_date,
+                'seasonName' => $seasonName,
+                'tvshowTitle' => $tvshowTitle,
+                'seasons' => $seasons
+            ];
+            Cache::forever($dataPost[0]->ID, $movies);
         }
-
-        $srcSet = $this->helperService->getAttachmentsByPostId($tvshowTitleData[0]->ID);
-
-        $movies = [
-            'id' => $dataSeason->ID,
-            'title' => $dataSeason->post_title,
-            'originalTitle' => $tvshowTitleData[0]->original_title,
-            'description' => $tvshowTitleData[0]->post_content,
-            'genres' => $genres,
-            'src' => $src,
-            'srcSet' => $srcSet,
-            'outlink' => $outlink,
-            'postDateGmt' => $dataSeason->post_date_gmt,
-            'postDate' => $dataSeason->post_date,
-            'seasonName' => $seasonName,
-            'tvshowTitle' => $tvshowTitle,
-            'seasons' => $seasons
-        ];
         return response()->json($movies, Response::HTTP_OK);
     }
 
