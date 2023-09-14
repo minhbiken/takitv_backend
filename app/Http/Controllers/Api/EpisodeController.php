@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\TvshowService;
 use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
 class EpisodeController extends Controller
 {
     protected $imageUrlUpload;
@@ -68,9 +69,14 @@ class EpisodeController extends Controller
 
         //get all seasons and episode
         $src = '';
-        $querySeasonEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, wp.meta_value FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE p.post_status = 'publish' AND wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' ORDER BY p.ID ASC LIMIT 1;";
-        $tvshowTitleData = DB::select($querySeasonEpisode);
-        
+
+        if( Cache::has($dataPost[0]->ID) ) {
+            $tvshowTitleData = Cache::get($dataPost[0]->ID);
+        } else {
+            $querySeasonEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, wp.meta_value FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID WHERE p.post_status = 'publish' AND wp.meta_key = '_seasons' AND meta_value LIKE '%" . $dataPost[0]->ID . "%' ORDER BY p.ID ASC LIMIT 1;";
+            $tvshowTitleData = DB::select($querySeasonEpisode);
+            Cache::forever($dataPost[0]->ID, $tvshowTitleData);
+        }
         $tvshowTitle = $tvshowTitleData[0]->post_title;
         $seasons = $this->tvshowService->getSeasons($tvshowTitleData);
 
