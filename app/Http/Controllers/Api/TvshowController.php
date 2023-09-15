@@ -120,11 +120,11 @@ class TvshowController extends Controller
             $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
     
-            if( $perPage == 12 && Cache::has('tv_show_'. $type) ) {
-                $data = Cache::get('tv_show_'. $type);
-            } else if ( $perPage == 12 && !Cache::has('tv_show_'. $type)) {
+            if( $perPage == 12 && $orderBy == '' && $genre == '' && Cache::has('tv_show_homepage_'. $type) ) {
+                $data = Cache::get('tv_show_homepage_'. $type);
+            } else if (  $perPage == 12 && $orderBy == '' && $genre == '' ) {
                 $data = $this->getData($query, $type, $request, $total, $perPage, $page);
-                Cache::forever('tv_show_'. $type, $data);
+                Cache::forever('tv_show_homepage_'. $type, $data);
             } else {
                 $data = $this->getData($query, $type, $request, $total, $perPage, $page);
             }
