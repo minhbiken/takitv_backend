@@ -323,8 +323,10 @@ class TvshowController extends Controller
             if (Cache::has($data->ID)) {
                 $movie = Cache::get($data->ID);
             } else {
+                $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $data->ID . " LIMIT 1;";
+                $dataOriginalTitle = DB::select($queryOriginalTitle);
+                $originalTitle = $dataOriginalTitle[0]->meta_value;
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
-            
                 $dataEpisode = DB::select($queryEpisode);
                 if( count($dataEpisode) > 0 ) {
                     $episodeData = $dataEpisode[0]->meta_value;
@@ -365,10 +367,6 @@ class TvshowController extends Controller
 
                         if( $dataMeta->meta_key == '_episode_number' ) {
                             $episodeNumber = $dataMeta->meta_value;
-                        }
-
-                        if( $dataMeta->meta_key == '_original_title' ) {
-                            $originalTitle = $dataMeta->meta_value;
                         }
                         
                     }
