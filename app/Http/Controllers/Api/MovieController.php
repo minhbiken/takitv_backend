@@ -34,7 +34,7 @@ class MovieController extends Controller
         $orderBy = $request->get('orderBy', '');
         $title = $request->get('title', '');
         
-        if( $page == 1 &&  $orderBy == 'date' && Cache::has('movie_first') ) {
+        if( $page == 1 &&  $orderBy == 'date' && $releaseYear == '' && $genre == '' && Cache::has('movie_first') ) {
             $data = Cache::get('movie_first');
         } else {
             $imageUrlUpload = env('IMAGE_URL_UPLOAD');
@@ -195,7 +195,7 @@ class MovieController extends Controller
                 ]
             ];
 
-            if( $page == 1 &&  $orderBy == 'date' ) {
+            if( $page == 1 &&  $orderBy == 'date' && $releaseYear == '' && $genre == '' ) {
                 Cache::forever('movie_first', $data);
             }
         }
