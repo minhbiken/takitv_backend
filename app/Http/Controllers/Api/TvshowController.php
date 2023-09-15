@@ -309,6 +309,7 @@ class TvshowController extends Controller
         }
         
         $titleEpisode = '';
+        $originalTitle = '';
         $link = '';
         $episodeNumber = '';
         $seasonNumber = '';
@@ -365,6 +366,11 @@ class TvshowController extends Controller
                         if( $dataMeta->meta_key == '_episode_number' ) {
                             $episodeNumber = $dataMeta->meta_value;
                         }
+
+                        if( $dataMeta->meta_key == '_original_title' ) {
+                            $originalTitle = $dataMeta->meta_value;
+                        }
+                        
                     }
 
                     //outlink only show in into
@@ -429,7 +435,7 @@ class TvshowController extends Controller
                     'genres' => $genres,
                     'title' => $titleEpisode,
                     'tvshowTitle' => $data->post_title,
-                    'originalTitle' => $data->original_title,
+                    'originalTitle' => $originalTitle,
                     'description' => $data->post_content,
                     'src' => $src,
                     'srcSet' => $srcSet,

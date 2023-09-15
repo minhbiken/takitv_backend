@@ -114,6 +114,7 @@ class MovieController extends Controller
             $movies = [];
             $src = '';
             $srcSet = [];
+            $originalTitle = '';
             foreach( $datas as $key => $data ) {
                 if (Cache::has($data->ID)) {
                     $movie = Cache::get($data->ID);
@@ -142,6 +143,10 @@ class MovieController extends Controller
                         if( $dataMeta->meta_key == '_movie_run_time' ) {
                             $movieRunTime = $dataMeta->meta_value;
                         }
+
+                        if( $dataMeta->meta_key == '_original_title' ) {
+                            $originalTitle = $dataMeta->meta_value;
+                        }
                     }
 
                     $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
@@ -169,7 +174,7 @@ class MovieController extends Controller
                         'year' => $releaseDate,
                         'genres' => $genres,
                         'title' => $data->post_title,
-                        'originalTitle' => $data->original_title,
+                        'originalTitle' => $originalTitle,
                         'description' => $data->post_content,
                         'src' => $src,
                         'srcSet' => $srcSet,
