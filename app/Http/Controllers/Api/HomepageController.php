@@ -323,6 +323,7 @@ class HomepageController extends Controller
 
     public function clearCache() {
         Artisan::call('cache:clear');
+        $this->helperService->makeCacheFirst();
         return "OK!";
     }
 
@@ -350,5 +351,8 @@ class HomepageController extends Controller
         return "OK!";
     }
 
-    
+    public function makeCacheFirst() {
+        $this->helperService->makeCacheFirst();
+        return "OK!";
+    }
 }

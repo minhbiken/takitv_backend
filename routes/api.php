@@ -26,3 +26,4 @@ Route::get('clearCacheHomePage', 'App\Http\Controllers\Api\HomepageController@cl
 Route::get('clearCacheTvShowHomePage', 'App\Http\Controllers\Api\HomepageController@clearCacheTvShowHomePage');
 
 Route::get('timeCheck', 'App\Http\Controllers\Api\HomepageController@timeCheck');
+Route::get('makeCacheFirst', 'App\Http\Controllers\Api\HomepageController@makeCacheFirst');

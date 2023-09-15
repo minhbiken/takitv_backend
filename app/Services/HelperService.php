@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+
 class HelperService {
     protected $imageUrlUpload;
     public function __construct()
@@ -141,5 +141,23 @@ class HelperService {
         $srcSet = join(", ", $srcSet[$id]);
         
         return $srcSet;
+    }
+
+    public function makeCacheFirst() {
+        Http::get(route('homepage.index'));
+        Http::get(route('movies.index',  ['orderBy' => 'date', 'page' => 1]));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1]));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-drama']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-show']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-sisa']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'u-drama']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'ott-web']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'netflix']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'disney']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'apple-tv']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'tving']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'wavve']));
+        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'amazon-prime-video']));
+        return true;
     }
 }
