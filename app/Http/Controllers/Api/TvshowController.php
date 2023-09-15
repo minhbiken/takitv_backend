@@ -41,8 +41,8 @@ class TvshowController extends Controller
 
         if( $page == 1 && $orderBy == 'date' && $genre == '' && $type == '' && Cache::has('tv_show_fist') ) {
             $data = Cache::get('tv_show_fist');
-        } else if ( $page == 1 && $orderBy == 'date' && $genre == '' && Cache::has('tv_show_'.$type) ) {
-            $data = Cache::has('tv_show_'.$type);
+        } else if ( $page == 1 && $orderBy == 'date' && $genre == '' && Cache::has('tv_show_first_'.$type) ) {
+            $data = Cache::get('tv_show_first_'.$type);
         } else {
             if( $title != '' ) {
                 $s_rp = str_replace(" ","", $title);
@@ -130,9 +130,9 @@ class TvshowController extends Controller
             }
 
             if( $page == 1 && $orderBy == 'date' && $genre == '' && $type == '' ) {
-                Cache::forever('tv_show_fist');
-            } else if ( $page == 1 && $orderBy == 'date' && $genre == '' && Cache::has('tv_show_'.$type) ) {
-                Cache::forever('tv_show_'.$type);
+                Cache::forever('tv_show_fist', $data);
+            } else if ( $page == 1 && $orderBy == 'date' && $genre == '' && $type != '' ) {
+                Cache::forever('tv_show_first_'.$type, $data);
             }
         }
 
