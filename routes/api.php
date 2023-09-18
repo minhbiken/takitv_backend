@@ -27,3 +27,6 @@ Route::get('clearCacheTvShowHomePage', 'App\Http\Controllers\Api\HomepageControl
 
 Route::get('timeCheck', 'App\Http\Controllers\Api\HomepageController@timeCheck');
 Route::get('makeCacheFirst', 'App\Http\Controllers\Api\HomepageController@makeCacheFirst');
+
+Route::get('putGmtTime', 'App\Http\Controllers\Api\HomepageController@putGmtTime');
+Route::get('getGmtTime', 'App\Http\Controllers\Api\HomepageController@getGmtTime');

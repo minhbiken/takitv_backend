@@ -324,7 +324,6 @@ class HomepageController extends Controller
     public function clearCache() {
         Artisan::call('cache:clear');
         $this->helperService->makeCacheFirst();
-        return "OK!";
     }
 
     public function clearCacheByKey($key='') {
@@ -355,4 +354,21 @@ class HomepageController extends Controller
         $this->helperService->makeCacheFirst();
         return "OK!";
     }
+
+    public function putGmtTime() {
+        $this->clearCache();
+        $this->helperService->makeCacheFirst();
+        Cache::forever('gmt_time', date('Y-m-d H:m:s'));
+        return Cache::get('gmt_time');
+    }
+
+    public function getGmtTime() {
+        if(Cache::has('gmt_time')) {
+            return Cache::get('gmt_time');
+        } else {
+            return '';
+        }
+    }
+
+    
 }

@@ -128,6 +128,8 @@ class HelperService {
             
             if ( $imgUrl != 'image_webp/' . $attachmentsData['file'] ) {
                 array_push($srcSet[$id], $this->imageUrlUpload.$imgUrl. " " . $attachmentsData['width'] . 'w');
+            } else if ( $imgUrl != $attachmentsData['file'] ) {
+                array_push($srcSet[$id], $this->imageUrlUpload.$imgUrl. " " . $attachmentsData['width'] . 'w');
             } else {
                 array_push($srcSet[$id], $this->imageUrlUpload.$attachmentsData['file']. " " . $attachmentsData['width'] . 'w');
             }

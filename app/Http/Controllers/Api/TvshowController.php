@@ -36,7 +36,7 @@ class TvshowController extends Controller
         $type = $request->get('type', '');
         $genre = $request->get('genre', '');
 
-        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
 
         if( $page == 1 && $orderBy == 'date' && $genre == '' && $type == '' && Cache::has('tv_show_fist') ) {
@@ -84,13 +84,13 @@ class TvshowController extends Controller
             }
     
             if( $orderBy == '' ) {
-                $order = "ORDER BY p.post_date DESC ";
+                $order = "ORDER BY p.post_modified DESC ";
             } else if( $orderBy == 'titleAsc' ) {
                 $order = "ORDER BY p.post_title ASC ";
              }else if( $orderBy == 'titleDesc' ) {
                 $order = "ORDER BY p.post_title DESC ";
             } else if($orderBy == 'date' ) {
-                $order = "ORDER BY p.post_date DESC ";
+                $order = "ORDER BY p.post_modified DESC ";
             } else if($orderBy == 'rating') {
                 $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID ";
                 $select = $select . $selectRating;
@@ -98,7 +98,7 @@ class TvshowController extends Controller
             } else if($orderBy == 'menuOrder') {
                 $order = "ORDER BY p.menu_order DESC ";
             } else {
-                $order = "ORDER BY p.post_date DESC ";
+                $order = "ORDER BY p.post_modified DESC ";
             }
     
             //query all tvshow
@@ -260,7 +260,7 @@ class TvshowController extends Controller
             'link' => $link,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
-            'postDate' => $dataSeason->post_date,
+            'postDate' => $dataSeason->post_modified,
             'seasons' => $seasons,
             'topWeeks' => $topWeeks,
             'topMonths' => $topMonths,
@@ -443,7 +443,7 @@ class TvshowController extends Controller
                     'seasonNumber' => $seasonNumber,
                     'episodeNumber' => $episodeNumber,
                     'postDateGmt' => $data->post_date_gmt,
-                    'postDate' => $data->post_date
+                    'postDate' => $data->post_modified
                 ];
 
                 Cache::forever($data->ID, $movie);
