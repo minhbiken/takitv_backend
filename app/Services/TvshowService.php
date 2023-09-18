@@ -88,6 +88,7 @@ class TvshowService {
         $imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $link = '';
         $srcSet = [];
+        $src= '';
         foreach ( $dataItems as $dataItem ) {
             $queryEpisode = "SELECT meta_key, meta_value, post_id FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
@@ -105,7 +106,9 @@ class TvshowService {
                             LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataItem->ID .";";
             $dataSrcMeta = DB::select($querySrcMeta);
             
-            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+            if ( count($dataSrcMeta) > 0 ) {
+                $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
+            }
 
             $dataMetas = DB::select($queryMeta);
 
