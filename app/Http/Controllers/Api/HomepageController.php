@@ -321,6 +321,31 @@ class HomepageController extends Controller
         return response()->json($data, Response::HTTP_OK);
     }
 
+    public function tvShowHomepage(Request $request) {
+        $type = $request->get('type', '');
+        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
+        $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish')))";
+        $tvShow = [];
+        if( $type != '' ) {
+            $categoryTvShowKorea = config('constants.categoryTvshowKoreas');
+            if( in_array($type, $categoryTvShowKorea) ) {
+                $idType = "SELECT wr.object_id
+                            FROM wp_terms t
+                            LEFT JOIN wp_term_taxonomy wt ON t.term_id = wt.term_id
+                            LEFT JOIN wp_term_relationships wr ON wr.term_taxonomy_id = wt.term_taxonomy_id
+                            WHERE slug = '". $type ."'";
+                $whereType = " AND p.ID IN ( ". $idType ." ) ";
+            } else {
+                $whereType = $this->tvshowService->getWhereByType($type);
+            }
+            $where = $where . $whereType;
+        }
+        $queryTvshow = $select . $where . " ORDER BY p.post_date DESC LIMIT 12";
+        $dataTvshow = $this->tvshowService->getItems($queryTvshow);
+        $tvShow['items'] = $dataTvshow;
+        return response()->json($tvShow, Response::HTTP_OK);
+    }
+
     public function clearCache() {
         Artisan::call('cache:clear');
         $this->helperService->makeCacheFirst();
@@ -369,6 +394,4 @@ class HomepageController extends Controller
             return '';
         }
     }
-
-    
 }
