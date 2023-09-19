@@ -19,6 +19,7 @@ Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show']);
 Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show']);
 Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
 Route::get('search', 'App\Http\Controllers\Api\HomepageController@search');
+Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage');
 
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
