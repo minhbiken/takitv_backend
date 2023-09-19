@@ -84,13 +84,13 @@ class TvshowController extends Controller
             }
     
             if( $orderBy == '' ) {
-                $order = "ORDER BY p.post_modified DESC ";
+                $order = "ORDER BY p.post_date DESC ";
             } else if( $orderBy == 'titleAsc' ) {
                 $order = "ORDER BY p.post_title ASC ";
              }else if( $orderBy == 'titleDesc' ) {
                 $order = "ORDER BY p.post_title DESC ";
             } else if($orderBy == 'date' ) {
-                $order = "ORDER BY p.post_modified DESC ";
+                $order = "ORDER BY p.post_date DESC ";
             } else if($orderBy == 'rating') {
                 $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID ";
                 $select = $select . $selectRating;
@@ -98,7 +98,7 @@ class TvshowController extends Controller
             } else if($orderBy == 'menuOrder') {
                 $order = "ORDER BY p.menu_order DESC ";
             } else {
-                $order = "ORDER BY p.post_modified DESC ";
+                $order = "ORDER BY p.post_date DESC ";
             }
     
             //query all tvshow
@@ -260,7 +260,7 @@ class TvshowController extends Controller
             'link' => $link,
             'outlink' => $outlink,
             'postDateGmt' => $dataSeason->post_date_gmt,
-            'postDate' => $dataSeason->post_modified,
+            'postDate' => $dataSeason->post_date,
             'seasons' => $seasons,
             'topWeeks' => $topWeeks,
             'topMonths' => $topMonths,
@@ -443,7 +443,7 @@ class TvshowController extends Controller
                     'seasonNumber' => $seasonNumber,
                     'episodeNumber' => $episodeNumber,
                     'postDateGmt' => $data->post_date_gmt,
-                    'postDate' => $data->post_modified
+                    'postDate' => $data->post_date
                 ];
 
                 Cache::forever($data->ID, $movie);
