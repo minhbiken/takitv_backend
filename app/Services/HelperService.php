@@ -127,16 +127,18 @@ class HelperService {
             }
             
             if ( $imgUrl != 'image_webp/' . $attachmentsData['file'] ) {
-                array_push($srcSet[$id], $this->imageUrlUpload.$imgUrl. " " . $attachmentsData['width'] . 'w');
+                array_push($srcSet[$id], $this->imageUrlUpload.$imgUrl. " " . '300' . 'w');
             } else if ( $imgUrl != $attachmentsData['file'] ) {
-                array_push($srcSet[$id], $this->imageUrlUpload.$imgUrl. " " . $attachmentsData['width'] . 'w');
+                array_push($srcSet[$id], $this->imageUrlUpload.$imgUrl. " " . '300' . 'w');
             } else {
-                array_push($srcSet[$id], $this->imageUrlUpload.$attachmentsData['file']. " " . $attachmentsData['width'] . 'w');
+                array_push($srcSet[$id], $this->imageUrlUpload.$attachmentsData['file']. " " . '300' . 'w');
             }
             
             if ( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $attachment ) {
-                    array_push($srcSet[$id], $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w');
+                    if ( $attachment['width'] != 300 ) {
+                        array_push($srcSet[$id], $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w');
+                    }
                 }
             }
         }
