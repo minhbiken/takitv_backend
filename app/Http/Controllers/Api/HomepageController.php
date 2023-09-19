@@ -342,7 +342,7 @@ class HomepageController extends Controller
         }
         $queryTvshow = $select . $where . " ORDER BY p.post_date DESC LIMIT 12";
         $dataTvshow = $this->tvshowService->getItems($queryTvshow);
-        $tvShow['items'] = $dataTvshow;
+        $tvShow[] = $dataTvshow;
         return response()->json($tvShow, Response::HTTP_OK);
     }
 
