@@ -144,7 +144,7 @@ class MovieController extends Controller
                             $movieRunTime = $dataMeta->meta_value;
                         }
 
-                        if( $dataMeta->meta_key == '_original_title' ) {
+                        if( $dataMeta->meta_key == '_movie_original_title' ) {
                             $originalTitle = $dataMeta->meta_value;
                         }
                     }
@@ -294,6 +294,7 @@ class MovieController extends Controller
 
         $dataMetas = DB::select($queryMeta);
         $movieRunTime = '';
+        $originalTitle = '';
         foreach($dataMetas as $dataMeta) {
             if( $releaseYear == '' ) {
                 if( $dataMeta->meta_key == '_movie_release_date' ) {
@@ -311,6 +312,10 @@ class MovieController extends Controller
             if( $dataMeta->meta_key == '_movie_run_time' ) {
                 $movieRunTime = $dataMeta->meta_value;
             }
+
+            if( $dataMeta->meta_key == '_movie_original_title' ) {
+                $originalTitle = $dataMeta->meta_value;
+            }
         }
         $srcSet = $this->helperService->getAttachmentsByPostId($dataMovie->ID);
 
@@ -319,7 +324,7 @@ class MovieController extends Controller
             'year' => $releaseDate,
             'genres' => $genres,
             'title' => $dataMovie->post_title,
-            'originalTitle' => $dataMovie->original_title,
+            'originalTitle' => $originalTitle,
             'description' => $dataMovie->post_content,
             'src' => $src,
             'srcSet' => $srcSet,
