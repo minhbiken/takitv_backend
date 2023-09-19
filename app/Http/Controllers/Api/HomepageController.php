@@ -12,6 +12,7 @@ use App\Services\SearchService;
 use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 
 class HomepageController extends Controller
 {
@@ -389,15 +390,10 @@ class HomepageController extends Controller
     public function putGmtTime() {
         $this->clearCache();
         $this->helperService->makeCacheFirst();
-        Cache::forever('gmt_time', date('Y-m-d H:m:s'));
-        return Cache::get('gmt_time');
+        Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:m:s'));
     }
 
     public function getGmtTime() {
-        if(Cache::has('gmt_time')) {
-            return Cache::get('gmt_time');
-        } else {
-            return '';
-        }
+        return Storage::disk('public')->get('gmtTime.txt');
     }
 }
