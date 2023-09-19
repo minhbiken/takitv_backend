@@ -115,6 +115,7 @@ class HomepageController extends Controller
 
             $movieNewests = [];
             $srcSet = [];
+            $originalTitleMovie = '';
             foreach ( $dataMovies as $key => $dataMovie ) {
                 $queryMetaMovie = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
 
@@ -141,6 +142,10 @@ class HomepageController extends Controller
                     if( $dataMetaMovie->meta_key == '_movie_run_time' ) {
                         $movieRunTime = $dataMetaMovie->meta_value;
                     }
+
+                    if( $dataMetaMovie->meta_key == '_movie_original_title' ) {
+                        $originalTitleMovie = $dataMetaMovie->meta_value;
+                    }
                 }
                 
                 $queryTaxonomyMovie = "SELECT t.name, t.slug FROM `wp_posts` p
@@ -166,7 +171,7 @@ class HomepageController extends Controller
                         'year' => $releaseDate,
                         'genres' => $genreMovies,
                         'title' => $dataMovie->post_title,
-                        'originalTitle' => $dataMovie->original_title,
+                        'originalTitle' => $originalTitleMovie,
                         'description' => $dataMovie->post_content,
                         'src' => $srcMovie,
                         'srcSet' => $srcSet,
@@ -179,7 +184,7 @@ class HomepageController extends Controller
                     'year' => $releaseDate,
                     'genres' => $genreMovies,
                     'title' => $dataMovie->post_title,
-                    'originalTitle' => $dataMovie->original_title,
+                    'originalTitle' => $originalTitleMovie,
                     'description' => $dataMovie->post_content,
                     'src' => $srcMovie,
                     'srcSet' => $srcSet,
