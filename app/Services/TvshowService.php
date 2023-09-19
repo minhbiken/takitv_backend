@@ -89,7 +89,12 @@ class TvshowService {
         $link = '';
         $srcSet = [];
         $src= '';
+        $originalTitle = '';
         foreach ( $dataItems as $dataItem ) {
+            $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataItem->ID . " LIMIT 1;";
+            $dataOriginalTitle = DB::select($queryOriginalTitle);
+            $originalTitle = $dataOriginalTitle[0]->meta_value;
+
             $queryEpisode = "SELECT meta_key, meta_value, post_id FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataEpisode = DB::select($queryEpisode);
             
@@ -178,7 +183,7 @@ class TvshowService {
                 'tvshowTitle' => $dataItem->post_title,
                 'title' => $episodeTitle,
                 'episodeId' => $episodeId,
-                'originalTitle' => $dataItem->original_title,
+                'originalTitle' => $originalTitle,
                 'description' => $dataItem->post_content,
                 'src' => $src,
                 'srcSet' => $srcSet,
