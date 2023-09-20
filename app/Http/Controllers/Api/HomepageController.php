@@ -313,12 +313,6 @@ class HomepageController extends Controller
 
     public function clearCacheByKey($key='') {
         Cache::forget($key);
-        $this->clearCacheHomePage();
-        return "OK!";
-    }
-
-    public function clearCacheHomePage() {
-        Cache::forget('homepage');
         return "OK!";
     }
 
