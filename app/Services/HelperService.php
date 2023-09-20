@@ -136,7 +136,7 @@ class HelperService {
             
             if ( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $attachment ) {
-                    if ( $attachment['width'] != 300 ) {
+                    if ( $attachment['width'] != 300 || ($attachment['width'] < $attachment['height']) ) {
                         array_push($srcSet[$id], $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w');
                     }
                 }
