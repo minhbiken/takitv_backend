@@ -44,6 +44,7 @@ class MovieService {
         $movieRunTime = '';
         $outlink = '';
         $srcSet = [];
+        $originalTitle = '';
         if( count($dataItems) > 0 ) {
             foreach ( $dataItems as $dataItem ) {
                 $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $dataItem->ID .";";
@@ -61,6 +62,10 @@ class MovieService {
                     
                         if( $dataMeta->meta_key == '_movie_run_time' ) {
                             $movieRunTime = $dataMeta->meta_value;
+                        }
+
+                        if( $dataMeta->meta_key == '_movie_original_title' ) {
+                            $originalTitle = $dataMeta->meta_value;
                         }
                     }
                 }
@@ -92,7 +97,7 @@ class MovieService {
                     'year' => $releaseDate,
                     'genres' => $genres,
                     'title' => $dataItem->post_title,
-                    'originalTitle' => $dataItem->original_title,
+                    'originalTitle' => $originalTitle,
                     'description' => $dataItem->post_content,
                     'src' => $src,
                     'srcSet' => $srcSet,

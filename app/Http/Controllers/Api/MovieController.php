@@ -108,7 +108,6 @@ class MovieController extends Controller
             //query limit movie
             $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
-
             $datas = DB::select($query);
 
             $movies = [];
