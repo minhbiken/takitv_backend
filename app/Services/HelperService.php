@@ -155,7 +155,7 @@ class HelperService {
             "x-nuxt-multi-cache-token" => 'O5ilxqx5k1ZzFMjEVr'
         ];
         Http::withHeaders($headers)->post('http://localhost:3000/__nuxt_multi_cache/purge/all');
-        Http::get("http://localhost:3000/api/modified/". date('Y-m-d H:m:s'));
+        Http::get("http://localhost:3000/api/modified/");
 
         //make cache back-end
         Http::get(route('homepage.index'));
