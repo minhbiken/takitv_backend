@@ -148,6 +148,16 @@ class HelperService {
     }
 
     public function makeCacheFirst() {
+
+        //make cache front-end
+        $headers = [
+            "Content-Type" => "application/json",
+            "x-nuxt-multi-cache-token" => 'O5ilxqx5k1ZzFMjEVr'
+        ];
+        Http::withHeaders($headers)->post('http://localhost:3000/__nuxt_multi_cache/purge/all');
+        Http::get("http://localhost:3000/api/modified/". date('Y-m-d H:m:s'));
+
+        //make cache back-end
         Http::get(route('homepage.index'));
         Http::get(route('movies.index',  ['orderBy' => 'date', 'page' => 1]));
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1]));
@@ -162,6 +172,7 @@ class HelperService {
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'tving']));
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'wavve']));
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'amazon-prime-video']));
+
         return true;
     }
 }
