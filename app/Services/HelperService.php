@@ -90,19 +90,6 @@ class HelperService {
         return $sliders;
     }
 
-    public function getCacheDataByQuery($query='', $cacheName='') {
-        if (Cache::has($cacheName)) {
-            $data = Cache::get($cacheName);
-        } else {
-            $data = DB::select($query);
-            if( count($data) == 0 ) {
-                $data = '';
-            }
-            Cache::forever($cacheName, $data);
-        }
-        return $data;
-    }
-
     public function getAttachmentsByPostId($id) {
         $queryImage = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
         LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $id .";";
