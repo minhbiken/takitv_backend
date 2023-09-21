@@ -316,7 +316,10 @@ class TvshowController extends Controller
             } else {
                 $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $data->ID . " LIMIT 1;";
                 $dataOriginalTitle = DB::select($queryOriginalTitle);
-                $originalTitle = $dataOriginalTitle[0]->meta_value;
+                if( count($dataOriginalTitle) > 0 ) {
+                    $originalTitle = $dataOriginalTitle[0]->meta_value;
+                }
+                
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $data->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 if( count($dataEpisode) > 0 ) {
