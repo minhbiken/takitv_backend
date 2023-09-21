@@ -34,14 +34,13 @@ class TvshowController extends Controller
         $type = $request->get('type', '');
         $genre = $request->get('genre', '');
 
-        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
-        $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
-
-        if( $page == 1 && $orderBy == 'date' && $genre == '' && $type == '' && Cache::has('tv_show_fist') ) {
-            $data = Cache::get('tv_show_fist');
+        if( $page == 1 && $orderBy == 'date' && $genre == '' && $type == '' && Cache::has('tv_show_first') ) {
+            $data = Cache::get('tv_show_first');
         } else if ( $page == 1 && $orderBy == 'date' && $genre == '' && Cache::has('tv_show_first_'.$type) ) {
             $data = Cache::get('tv_show_first_'.$type);
         } else {
+            $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
+            $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
             if( $title != '' ) {
                 $s_rp = str_replace(" ","", $title);
                 $whereTitle = " AND ( p.post_title LIKE '%".$title."%' OR  
@@ -119,7 +118,7 @@ class TvshowController extends Controller
             $query = $query . $limit;
             $data = $this->getData($query, $type, $request, $total, $perPage, $page);
             if( $page == 1 && $orderBy == 'date' && $genre == '' && $type == '' ) {
-                Cache::forever('tv_show_fist', $data);
+                Cache::forever('tv_show_first', $data);
             } else if ( $page == 1 && $orderBy == 'date' && $genre == '' && $type != '' ) {
                 Cache::forever('tv_show_first_'.$type, $data);
             }
