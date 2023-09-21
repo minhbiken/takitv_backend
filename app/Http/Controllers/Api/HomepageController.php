@@ -38,6 +38,7 @@ class HomepageController extends Controller
     {
         if( Cache::has('homepage')) {
             $homepage = Cache::get('homepage');
+            $homepage['otts']['ottSliders'] = $this->tvshowService->getTvShowRandom();
         } else {
             //Get header slider
             $sliderQuery = "SELECT meta_key, ID, post_title, post_name, post_type, post_date, meta_value, IF(pm.meta_value IS NOT NULL , CAST( pm.meta_value AS UNSIGNED ) , 0 ) as sort_order

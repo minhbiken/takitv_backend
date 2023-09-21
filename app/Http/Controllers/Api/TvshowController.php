@@ -211,7 +211,6 @@ class TvshowController extends Controller
             where t.name != 'featured' AND t.name != '' AND ( t.name IN ( ".$slug." ) OR t.slug IN ( ".$slug." ) )AND p.ID NOT IN ( " . $arrayTvShowError . " ) LIMIT 10";
             $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
         }
-        
 
         $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
@@ -324,7 +323,6 @@ class TvshowController extends Controller
                         if( $dataMeta->meta_key == '_episode_number' ) {
                             $episodeNumber = $dataMeta->meta_value;
                         }
-                        
                     }
 
                     $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
