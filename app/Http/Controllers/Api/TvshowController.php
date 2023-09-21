@@ -27,8 +27,6 @@ class TvshowController extends Controller
      */
     public function index(Request $request)
     {
-        ini_set('display_errors', 1);
-        ini_set('memory_limit', '-1');
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
