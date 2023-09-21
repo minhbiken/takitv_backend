@@ -45,7 +45,6 @@ class HelperService {
                 }
             }
 
-            
             if( $sliderData->post_type == 'tv_show' ) {
                 
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
@@ -123,7 +122,7 @@ class HelperService {
             
             if ( isset($attachmentsData['sizes']) ) {
                 foreach( $attachmentsData['sizes'] as $attachment ) {
-                    if ( $attachment['width'] != 300 && ($attachment['width'] < $attachment['height']) ) {
+                    if ($attachment['width'] != 300 && ($attachment['width'] < $attachment['height'])) {
                         array_push($srcSet[$id], $this->imageUrlUpload.$fileDirReal.$attachment['file']. " " . $attachment['width'] . 'w');
                     }
                 }
