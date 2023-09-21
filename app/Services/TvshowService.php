@@ -276,6 +276,79 @@ class TvshowService {
         $randomSlider[0] = $queryKoreaSlider;
         $randomSlider[1] = $queryUsaSlider;
         $queryRandom = $randomSlider[rand(0,1)];
-        return $this->helperService->getSliderItems($queryRandom);
+        return $this->getSliderRandomItems($queryRandom);
+        //return $this->helperService->getSliderItems($queryRandom);
+    }
+
+    public function getSliderRandomItems($query) {
+        $sliders = [];
+        $sliderDatas = DB::select($query);
+        foreach ( $sliderDatas as $sliderData ) {
+            $dataQuery = "SELECT * FROM `wp_postmeta` pm 
+                            LEFT JOIN wp_posts p ON p.ID = pm.post_id 
+                            WHERE pm.meta_key = '_wp_attached_file' AND p.post_type = 'attachment' AND pm.post_id = " . $sliderData->slide_img . " ORDER BY p.post_date DESC LIMIT 1;";
+            $dataResult = DB::select($dataQuery);
+
+            $titleSlider = $sliderData->post_title; 
+            $linkSlider = 'movie/' . $sliderData->post_title;
+            $seasonNumber = '';
+            $episodeNumber = '';
+            $year = '';
+
+            $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
+            $dataMetas = DB::select($queryMeta);
+            if( count($dataMetas) > 0 ) {
+                foreach ( $dataMetas as $dataMeta ) {
+                    if( $dataMeta->meta_key == '_movie_release_date' || $dataMeta->meta_key == '_episode_release_date' ) {
+                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
+                            $newDataReleaseDate = explode('-', $dataMeta->meta_value);
+                            $year = $newDataReleaseDate[0];
+                        } else {
+                            $year = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : date('Y');
+                        }
+                    }
+                }
+            }
+
+            if( $sliderData->post_type == 'tv_show' ) {
+                $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
+                $dataEpisode = DB::select($queryEpisode);
+                
+                $episodeData = $dataEpisode[0]->meta_value;
+                $episodeData = unserialize($episodeData);
+    
+                $lastSeason = end($episodeData);
+                $seasonNumber = $lastSeason['name'];
+
+                $episodeId = end($lastSeason['episodes']);
+                
+                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
+                $whereTitle = " AND p.ID='". $episodeId ."' ";
+    
+                $where = $where . $whereTitle;
+                $query = $select . $where;
+                $dataEpisoSlider = DB::select($query);
+                
+                if( count($dataEpisoSlider) > 0 ) {
+                    $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
+                }
+
+                $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
+                $dataEpisodeNumber = DB::select($queryEpisodeNumber);
+                $episodeNumber = $dataEpisodeNumber[0]->meta_value;
+            }
+
+            $sliders[] = [
+                'id' => $sliderData->ID,
+                'year' => $year,
+                'title' => $titleSlider,
+                'link' => $linkSlider,
+                'src' => $this->imageUrlUpload.$dataResult[0]->meta_value,
+                'seasonNumber' => $seasonNumber,
+                'episodeNumber' => $episodeNumber,
+            ];
+        }
+        return $sliders;
     }
 }
