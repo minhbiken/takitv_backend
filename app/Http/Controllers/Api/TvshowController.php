@@ -327,18 +327,6 @@ class TvshowController extends Controller
                         
                     }
 
-                    //outlink only show in into
-                    if(count($datas) == 1) {
-                        $outlink = env('OUTLINK');
-                        $outlink = @file_get_contents($outlink);
-
-                        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-
-                        $outlink =  $outlink . '?pid=' . $episodeId;
-                    } else {
-                        $outlink = '';
-                    }
-
                     $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                                 WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
