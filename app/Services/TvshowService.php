@@ -69,10 +69,10 @@ class TvshowService {
                         WHERE p.post_type = 'tv_show' " . $queryByType . " AND (p.post_status = 'publish')
                         ORDER BY mp.7_day_stats DESC
                         LIMIT 5;";
-        return $this->getItems($queryTopWeek);
+        return $this->getItems($queryTopWeek, $type);
     }
 
-    public function getItems($query='') {
+    public function getItems($query='', $type='') {
         $items = [];
         $dataItems = DB::select($query);
         $releaseDate = date('Y-M-D');
@@ -139,9 +139,18 @@ class TvshowService {
                 ];
             }
 
-            $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
-                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
-                        WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $dataItem->ID .";";
+            $constantChanelList = config('constants.chanelList');
+            if( in_array($type, $constantChanelList) ) {
+                $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+                LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                RIGHT JOIN wp_terms t ON t.term_id = wt.term_id AND t.slug = '" . $type . "'
+                WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $dataItem->ID .";";
+            } else {
+                $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+                LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $dataItem->ID .";";
+            }
+
             $dataChanel = DB::select($queryChanel);
             
             if( count($dataChanel) > 0 ) {

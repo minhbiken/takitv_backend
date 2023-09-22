@@ -28,5 +28,6 @@ return [
             'link' => 'ott-web/amazon-prime-video/',
             'src' => 'https://peekletv.takitv.net/outlink/prime.png'
         ]
-    ]
+    ],
+    'chanelList' => ['netflix', 'disney', 'apple-tv', 'tving', 'wavve', 'amazon-prime-video']
 ];

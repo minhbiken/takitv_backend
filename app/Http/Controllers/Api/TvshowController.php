@@ -325,9 +325,18 @@ class TvshowController extends Controller
                         }
                     }
 
-                    $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
-                                LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
-                                WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
+                    $constantChanelList = config('constants.chanelList');
+                    if( in_array($type, $constantChanelList) ) {
+                        $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                        RIGHT JOIN wp_terms t ON t.term_id = wt.term_id AND t.slug = '" . $type . "'
+                        WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
+                    } else {
+                        $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+                        LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+                        WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
+                    }
+
                     $dataChanel = DB::select($queryChanel);
 
                     if( count($dataChanel) > 0 ) {
