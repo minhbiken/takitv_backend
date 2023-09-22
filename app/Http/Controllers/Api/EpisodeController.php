@@ -20,6 +20,26 @@ class EpisodeController extends Controller
         $this->tvshowService = $tvshowService;
         $this->helperService = $helperService;
     }
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
 
     /**
      * Display the specified resource.
@@ -41,6 +61,7 @@ class EpisodeController extends Controller
         $query = $select . $where;
 
         $dataPost = DB::select($query);
+        
         $tvshowTitle = '';
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
@@ -48,6 +69,7 @@ class EpisodeController extends Controller
 
         //get all seasons and episode
         $src = '';
+
         if( Cache::has($dataPost[0]->ID) ) {
             $movies = Cache::get($dataPost[0]->ID);
         } else {
@@ -119,5 +141,28 @@ class EpisodeController extends Controller
             }
         }
         return response()->json($movies, Response::HTTP_OK);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
     }
 }
