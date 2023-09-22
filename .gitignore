@@ -16,3 +16,6 @@ yarn-error.log
 /.idea
 /.vscode
 .env
+composer.*
+config/app.php
+config/database.php
