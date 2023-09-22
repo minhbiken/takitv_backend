@@ -81,6 +81,7 @@ class TvshowService {
         $srcSet = [];
         $src= '';
         $originalTitle = '';
+        $episodeTitle = '';
         foreach ( $dataItems as $dataItem ) {
             $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataOriginalTitle = DB::select($queryOriginalTitle);
@@ -160,7 +161,6 @@ class TvshowService {
             $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
             $dataEpisoTitle = DB::select($queryTitle);
             
-            $episodeTitle = '';
             if( count($dataEpisoTitle) > 0 ) {
                 $episodeTitle = $dataEpisoTitle[0]->post_title;
                 $link = 'episode/' . $episodeTitle;                
@@ -273,14 +273,16 @@ class TvshowService {
                     LEFT JOIN wp_postmeta as pm1 ON p.ID = pm1.post_id and pm1.meta_key= '_sort_order_ott'
                     LEFT JOIN wp_postmeta as pm2 ON p.ID = pm2.post_id and pm2.meta_key= '_ott_image_id'
                     ORDER BY sort_order ASC, post_date DESC";
-        $randomSlider[0] = $queryKoreaSlider;
-        $randomSlider[1] = $queryUsaSlider;
+        
+        $randomSlider[0] = [ 'title' => '오늘의 한국 넷플릭스 순위', 'query' => $queryKoreaSlider ];
+        $randomSlider[1] = [ 'title' => '오늘의 미국 넷플릭스 순위', 'query' => $queryUsaSlider ];
         $queryRandom = $randomSlider[rand(0,1)];
         return $this->getSliderRandomItems($queryRandom);
         //return $this->helperService->getSliderItems($queryRandom);
     }
 
-    public function getSliderRandomItems($query) {
+    public function getSliderRandomItems($queryRandom) {
+        $query = $queryRandom['query'];
         $sliders = [];
         $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
@@ -339,7 +341,7 @@ class TvshowService {
                 $episodeNumber = $dataEpisodeNumber[0]->meta_value;
             }
 
-            $sliders[] = [
+            $sliders['items'] = [
                 'id' => $sliderData->ID,
                 'year' => $year,
                 'title' => $titleSlider,
@@ -348,6 +350,7 @@ class TvshowService {
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
             ];
+            $sliders['title'] = $queryRandom['title'];
         }
         return $sliders;
     }

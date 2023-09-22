@@ -38,7 +38,9 @@ class HomepageController extends Controller
     {
         if( Cache::has('homepage')) {
             $homepage = Cache::get('homepage');
-            $homepage['otts']['ottSliders'] = $this->tvshowService->getTvShowRandom();
+            $sliderRandoms = $this->tvshowService->getTvShowRandom();
+            $homepage['otts']['ottTitle'] = $sliderRandoms['title'];
+            $homepage['otts']['ottSliders'] = $sliderRandoms['items'];
         } else {
             //Get header slider
             $sliderQuery = "SELECT meta_key, ID, post_title, post_name, post_type, post_date, meta_value, IF(pm.meta_value IS NOT NULL , CAST( pm.meta_value AS UNSIGNED ) , 0 ) as sort_order
@@ -190,8 +192,8 @@ class HomepageController extends Controller
                 'sliders' => $sliders,
                 'otts' => [
                     'ottChanels' => config('constants.ottChanels'),
-                    'ottTitle' => '오늘의 미국 넷플릭스 순위',
-                    'ottSliders' => $sliderRandoms
+                    'ottTitle' => $sliderRandoms['title'],
+                    'ottSliders' => $sliderRandoms['items']
                 ],
                 'tvshows' => [
                     'title' => '최신등록 방송',
