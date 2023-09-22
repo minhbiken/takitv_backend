@@ -341,7 +341,7 @@ class TvshowService {
                 $episodeNumber = $dataEpisodeNumber[0]->meta_value;
             }
 
-            $sliders['items'] = [
+            $sliders['items'][] = [
                 'id' => $sliderData->ID,
                 'year' => $year,
                 'title' => $titleSlider,
