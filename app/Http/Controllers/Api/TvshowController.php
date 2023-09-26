@@ -227,14 +227,14 @@ class TvshowController extends Controller
 
         //get Persons
         $casts = [];
-        $queryCast = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_cast' AND post_id =". $dataSeason->ID . " LIMIT 1;";
-        $dataCast = DB::select($queryCast);
+        // $queryCast = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_cast' AND post_id =". $dataSeason->ID . " LIMIT 1;";
+        // $dataCast = DB::select($queryCast);
         
-        $dataCast = $dataCast[0]->meta_value;
-        $dataCast = unserialize($dataCast);
-        if( count($dataCast) > 0 ) {
-            $casts = $dataCast;
-        }
+        // $dataCast = $dataCast[0]->meta_value;
+        // $dataCast = unserialize($dataCast);
+        // if( count($dataCast) > 0 ) {
+        //     $casts = $dataCast;
+        // }
 
         $movies = [
             'id' => $dataSeason->ID,
