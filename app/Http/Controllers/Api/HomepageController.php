@@ -342,7 +342,7 @@ class HomepageController extends Controller
         $limitTo = $request->get('limit_to', 30);
         $queryMovie = "SELECT p.ID, pm.meta_value as tmdb_id
         FROM wp_posts p
-        LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_tmdb_id'
+        LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_tmdb_id' AND pm.meta_value != ''
         WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) 
         ORDER BY p.post_date DESC 
         LIMIT " . $limitFrom . ", " . $limitTo . " ;";
