@@ -347,6 +347,6 @@ class HomepageController extends Controller
         ORDER BY p.post_date DESC 
         LIMIT " . $limitFrom . ", " . $limitTo . " ;";
         $dataMovie =  DB::select($queryMovie);
-        Storage::disk('local')->put($limitFrom.$limitTo.'tmdb.xlsx', response()->json($dataMovie));
+        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tmdb.json', response()->json($dataMovie));
     }
 }
