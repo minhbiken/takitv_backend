@@ -305,6 +305,10 @@ class TvshowService {
             $seasonNumber = '';
             $episodeNumber = '';
             $year = '';
+            $src = '';
+            if( count($dataResult) > 0 ) {
+                $src = $dataResult[0]->meta_value;
+            }
 
             $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
             $dataMetas = DB::select($queryMeta);
@@ -355,7 +359,7 @@ class TvshowService {
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
-                'src' => $this->imageUrlUpload.$dataResult[0]->meta_value,
+                'src' => $this->imageUrlUpload.$src,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
             ];
