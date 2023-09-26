@@ -351,10 +351,10 @@ class HomepageController extends Controller
     }
 
     public function getMovieLimit() {
-        for($i=150; $i <= 6987; $i=$i+150) {
-            Http::get(route('movie.tmdb',  ['limit_from' => $i, 'limit_to' => 150]));
+        for($i=0; $i <= 6987; $i=$i+100) {
+            Http::get(route('movie.tmdb',  ['limit_from' => $i, 'limit_to' => 100]));
         }
-        Http::get(route('movie.tmdb',  ['limit_from' => 6900, 'limit_to' => 150]));
+        Http::get(route('movie.tmdb',  ['limit_from' => 6900, 'limit_to' => 100]));
     }
 
 }
