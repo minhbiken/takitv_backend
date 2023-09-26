@@ -13,7 +13,7 @@ use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
-use App\Exports\TmdbExport;
+use Illuminate\Support\Facades\Http;
 class HomepageController extends Controller
 {
 
@@ -349,4 +349,12 @@ class HomepageController extends Controller
         $dataMovie =  DB::select($queryMovie);
         Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tmdb.json', response()->json($dataMovie));
     }
+
+    public function getMovieLimit() {
+        for($i=150; $i <= 6987; $i=$i+150) {
+            Http::get(route('movie.tmdb',  ['limit_from' => $i, 'limit_to' => 150]));
+        }
+        Http::get(route('movie.tmdb',  ['limit_from' => 6900, 'limit_to' => 150]));
+    }
+
 }
