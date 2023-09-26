@@ -308,6 +308,11 @@ class TvshowService {
             $src = '';
             if( count($dataResult) > 0 ) {
                 $src = $dataResult[0]->meta_value;
+            } else {
+                $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
+                $dataSrcMeta = DB::select($querySrcMeta);
+                $src = $dataSrcMeta[0]->meta_value;
             }
 
             $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
