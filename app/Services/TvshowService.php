@@ -298,7 +298,7 @@ class TvshowService {
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT * FROM `wp_postmeta` pm 
             LEFT JOIN wp_posts p ON p.ID = pm.post_id 
-            WHERE pm.meta_key = '_wp_attached_file' AND p.post_type = 'attachment' AND p.post_parent = " . $sliderData->ID . " ORDER BY p.post_date DESC LIMIT 1;";
+            WHERE pm.meta_key = '_wp_attached_file' AND p.post_type = 'attachment' AND p.ID = " . $sliderData->slide_img . " ORDER BY p.post_date DESC LIMIT 1;";
 
             $dataResult = DB::select($dataQuery);
             if( count($dataResult) > 0 ) {
