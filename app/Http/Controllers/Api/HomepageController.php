@@ -357,4 +357,12 @@ class HomepageController extends Controller
         Http::get(route('movie.tmdb',  ['limit_from' => 6900, 'limit_to' => 100]));
     }
 
+    public function insertPerson() {
+        $queryPostPerson = "INSERT INTO wp_posts(post_title, post_content, post_status, guid,post_type, post_excerpt, to_ping, pinged, post_content_filtered, post_date, post_date_gmt, post_modified, post_modified_gmt) VALUES ( 'Mars Shelley 1', 'Mars Shelley 1', 'publish', 'https://try.chethemes.com/vodi/?post_type=person&amp;p=5346', 'person', 'test', ' ', ' ', '', now(), now(), now(), now() );";
+        DB::insert($queryPostPerson);
+        $queryNew = "SELECT ID FROM wp_posts where post_title = 'Mars Shelley 1'";
+        $idnewPerson = DB::select($queryNew);
+        print_r($idnewPerson[0]->ID); die;
+    }
+
 }
