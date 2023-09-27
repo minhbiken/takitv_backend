@@ -81,7 +81,7 @@ class HelperService {
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
-                'src' => $this->imageUrlUpload.$src->meta_value,
+                'src' => $this->imageUrlUpload.$src,
                 'srcSet' => $srcSet,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
