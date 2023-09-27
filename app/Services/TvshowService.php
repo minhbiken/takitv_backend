@@ -296,8 +296,10 @@ class TvshowService {
         $sliderDatas = DB::select($query);
         $src = '';
         foreach ( $sliderDatas as $sliderData ) {
-            $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
+            $dataQuery = "SELECT * FROM `wp_postmeta` pm 
+            LEFT JOIN wp_posts p ON p.ID = pm.post_id 
+            WHERE pm.meta_key = '_wp_attached_file' AND p.post_type = 'attachment' AND p.post_parent = " . $sliderData->ID . " ORDER BY p.post_date DESC LIMIT 1;";
+
             $dataResult = DB::select($dataQuery);
             if( count($dataResult) > 0 ) {
                 $src = $dataResult[0]->meta_value;
