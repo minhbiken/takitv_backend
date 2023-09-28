@@ -29,6 +29,9 @@ class MovieController extends Controller
     {
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
+        if( $perPage > env('PAGE_LIMIT') ) {
+            $perPage = env('PAGE_LIMIT');
+        }
         $releaseYear = $request->get('year', '');
         $genre = $request->get('genre', '');
         $orderBy = $request->get('orderBy', '');

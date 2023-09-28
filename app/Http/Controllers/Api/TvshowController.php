@@ -29,6 +29,9 @@ class TvshowController extends Controller
     {
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
+        if( $perPage > env('PAGE_LIMIT') ) {
+            $perPage = env('PAGE_LIMIT');
+        }
         $orderBy = $request->get('orderBy', '');
         $title = $request->get('title', '');
         $type = $request->get('type', '');
