@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
+use App\Models\Post;
+use App\Models\PostMeta;
 class HomepageController extends Controller
 {
 
@@ -358,11 +360,37 @@ class HomepageController extends Controller
     }
 
     public function insertPerson() {
-        $queryPostPerson = "INSERT INTO wp_posts(post_title, post_content, post_status, guid,post_type, post_excerpt, to_ping, pinged, post_content_filtered, post_date, post_date_gmt, post_modified, post_modified_gmt) VALUES ( 'Mars Shelley 1', 'Mars Shelley 1', 'publish', 'https://try.chethemes.com/vodi/?post_type=person&amp;p=5346', 'person', 'test', ' ', ' ', '', now(), now(), now(), now() );";
-        DB::insert($queryPostPerson);
-        $queryNew = "SELECT ID FROM wp_posts where post_title = 'Mars Shelley 1'";
-        $idnewPerson = DB::select($queryNew);
-        print_r($idnewPerson[0]->ID); die;
+        $idNewPerson = Post::insertGetId([
+            'post_title' => 'Mars Shelley 1',
+            'post_content' => 'Mars Shelley 1', 
+            'post_status' => 'puslish',
+            'guid' => 'https://try.chethemes.com/vodi/?post_type=person&amp;p=5346', 
+            'post_type' => 'person', 
+            'post_excerpt' => '', 
+            'to_ping' => '', 
+            'pinged' => '',
+            'post_content_filtered' => '',
+            'post_date' => now(),
+            'post_date_gmt' => now(),
+            'post_modified' => now(),
+            'post_modified_gmt' => now()
+        ]);
+        $idNewPersonMeta = PostMeta::insertGetId([
+            'post_id' => $idNewPerson, 
+            'meta_key' => '_tmdb_id',
+            'meta_value' => 1234, 
+        ]);
+        $idNewPersonMeta = PostMeta::insertGetId([
+            'post_id' => $idNewPerson, 
+            'meta_key' => '_movie_cast',
+            'meta_value' =>  serialize(array(184575)) 
+        ]);
+        $idNewPersonMeta = PostMeta::insertGetId([
+            'post_id' => $idNewPerson, 
+            'meta_key' => '_person_image_gallery',
+            'meta_value' => 'https://www.themoviedb.org/t/p/w300_and_h450_bestv2/qtkmRQthVbReDZruVN1YlBlQA8W.jpg', 
+        ]);
+        return "Ok!";
     }
 
 }
