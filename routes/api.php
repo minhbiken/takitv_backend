@@ -34,4 +34,6 @@ Route::get('putGmtTime', 'App\Http\Controllers\Api\HomepageController@putGmtTime
 Route::get('getGmtTime', 'App\Http\Controllers\Api\HomepageController@getGmtTime');
 Route::get('getMovieTMDBId', 'App\Http\Controllers\Api\HomepageController@getMovieTMDBId')->name('movie.tmdb');
 Route::get('getMovieLimit', 'App\Http\Controllers\Api\HomepageController@getMovieLimit');
+Route::get('getTvshowTMDBId', 'App\Http\Controllers\Api\HomepageController@getTvshowTMDBId')->name('tvshow.tmdb');
+Route::get('getTvshowLimit', 'App\Http\Controllers\Api\HomepageController@getTvshowLimit');
 Route::get('insertPerson', 'App\Http\Controllers\Api\HomepageController@insertPerson');

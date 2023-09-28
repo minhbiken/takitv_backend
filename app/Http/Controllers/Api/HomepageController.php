@@ -357,6 +357,26 @@ class HomepageController extends Controller
         Http::get(route('movie.tmdb',  ['limit_from' => 6900, 'limit_to' => 100]));
     }
 
+    public function getTvshowTMDBId(Request $request) {
+        $limitFrom = $request->get('limit_from', 0);
+        $limitTo = $request->get('limit_to', 30);
+        $queryMovie = "SELECT p.ID, pm.meta_value as tmdb_id
+        FROM wp_posts p
+        LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_tmdb_id' AND pm.meta_value != ''
+        WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) 
+        ORDER BY p.post_date DESC 
+        LIMIT " . $limitFrom . ", " . $limitTo . " ;";
+        $dataMovie =  DB::select($queryMovie);
+        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tv_show_tmdb.json', response()->json($dataMovie));
+    }
+
+    public function getTvshowLimit() {
+        for($i=0; $i <= 3057; $i=$i+100) {
+            Http::get(route('tvshow.tmdb',  ['limit_from' => $i, 'limit_to' => 100]));
+        }
+        Http::get(route('tvshow.tmdb',  ['limit_from' => 3000, 'limit_to' => 100]));
+    }
+
     public function insertPerson() {
         $queryPostPerson = "INSERT INTO wp_posts(post_title, post_content, post_status, guid,post_type, post_excerpt, to_ping, pinged, post_content_filtered, post_date, post_date_gmt, post_modified, post_modified_gmt) VALUES ( 'Mars Shelley 1', 'Mars Shelley 1', 'publish', 'https://try.chethemes.com/vodi/?post_type=person&amp;p=5346', 'person', 'test', ' ', ' ', '', now(), now(), now(), now() );";
         DB::insert($queryPostPerson);
