@@ -93,7 +93,7 @@ class HomepageController extends Controller
             
             //Get 12 movies 
             $movies = [];
-            $queryMovie = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
+            $queryMovie = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
             $dataMovies = DB::select($queryMovie);
 
             $movieNewests = [];
@@ -178,7 +178,7 @@ class HomepageController extends Controller
             $topWeeks = $this->movieService->getTopWeeks();
 
             //Get movies newest of Korea for slider in bottom
-            $queryKoreaMovie = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+            $queryKoreaMovie = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
             LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
             LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
             LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
@@ -283,7 +283,7 @@ class HomepageController extends Controller
         if( Cache::has('tvshow_homepage_' . $type) ) {
             $tvShow = Cache::get('tvshow_homepage_' . $type);
         } else {
-            $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
+            $select = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
             $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish')))";
             $tvShow = [];
             if( $type != '' ) {

@@ -222,7 +222,7 @@ class MovieController extends Controller
     public function show($title, Request $request)
     {
         $titleMovie = $request->get('title', '');
-        $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
         $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $titleMovie ."'  LIMIT 1; ";
 

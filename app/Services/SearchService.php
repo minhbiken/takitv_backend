@@ -98,7 +98,7 @@ class SearchService {
                             }
                         }
 
-                        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                        $selectTitleEpisode = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                         $whereTitleSub = " AND p.ID='". $episodeId ."' ";
             
