@@ -1,0 +1,22 @@
+<?php
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+class Post extends Model
+{
+    protected $table = 'wp_posts';
+    protected $fillable = [
+        'post_title', 
+        'post_content', 
+        'post_status',
+        'guid', 
+        'post_type', 
+        'post_excerpt', 
+        'to_ping', 
+        'pinged',
+        'post_content_filtered',
+        'post_date',
+        'post_date_gmt',
+        'post_modified',
+        'post_modified_gmt'
+    ];
+}
