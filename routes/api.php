@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Middleware\IfModifiedSince;
+use App\Http\Middleware\LastModified;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,12 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::apiResource('homepage', 'Api\HomepageController')->only(['index']);
-Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show']);
-Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show']);
-Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
-Route::get('search', 'App\Http\Controllers\Api\HomepageController@search');
-Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage');
+Route::apiResource('homepage', 'Api\HomepageController')->only(['index'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::apiResource('episode', 'Api\EpisodeController')->only(['show'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->middleware([IfModifiedSince::class, LastModified::class]);
+Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage')->middleware([IfModifiedSince::class, LastModified::class]);
 
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
