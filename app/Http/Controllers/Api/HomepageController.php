@@ -311,7 +311,7 @@ class HomepageController extends Controller
 
     public function clearCache() {
         Artisan::call('cache:clear');
-        $this->helperService->makeCacheFirst();
+        //$this->helperService->makeCacheFirst();
     }
 
     public function clearCacheByKey($key='') {
@@ -330,7 +330,7 @@ class HomepageController extends Controller
 
     public function putGmtTime() {
         $this->clearCache();
-        Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:m:s'));
+        Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:i:s'));
     }
 
     public function getGmtTime() {
