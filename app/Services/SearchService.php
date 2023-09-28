@@ -50,7 +50,8 @@ class SearchService {
                     'link' =>  $dataTaxonomy->slug
                 ];
             }
-            $link = 'movie/' . $data->post_title;
+            $postName = urldecode($data->post_name);
+            $link = 'movie/' . $postName;
 
             if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
@@ -97,7 +98,7 @@ class SearchService {
                             }
                         }
 
-                        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                        $selectTitleEpisode = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                         $whereTitleSub = " AND p.ID='". $episodeId ."' ";
             

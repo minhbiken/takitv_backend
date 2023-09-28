@@ -18,7 +18,7 @@ class MovieService {
 
     public function getTopWeeks()
     {
-        $queryTopWeek = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
+        $queryTopWeek = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
                             WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
                             ORDER BY mp.7_day_stats DESC
@@ -27,7 +27,7 @@ class MovieService {
     }
 
     public function getPopulars() {
-        $queryPopular = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
+        $queryPopular = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM `wp_most_popular` wp
                             LEFT JOIN wp_posts p ON p.ID = wp.post_id 
                             WHERE p.post_type = 'movie' AND wp.post_id != '' AND p.ID != ''
 
@@ -45,6 +45,7 @@ class MovieService {
         $outlink = '';
         $srcSet = [];
         $originalTitle = '';
+        $link = '';
         if( count($dataItems) > 0 ) {
             foreach ( $dataItems as $dataItem ) {
                 $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $dataItem->ID .";";
@@ -92,6 +93,8 @@ class MovieService {
                     }
                 }
                 $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
+
+                $link = 'movie/' . $dataItem->post_name;
                 $movie = [
                     'id' => $dataItem->ID,
                     'year' => $releaseDate,
@@ -99,6 +102,7 @@ class MovieService {
                     'title' => $dataItem->post_title,
                     'originalTitle' => $originalTitle,
                     'description' => $dataItem->post_content,
+                    'link' => $link,
                     'src' => $src,
                     'srcSet' => $srcSet,
                     'duration' => $movieRunTime,

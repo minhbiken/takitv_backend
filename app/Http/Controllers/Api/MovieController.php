@@ -29,6 +29,9 @@ class MovieController extends Controller
     {
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
+        if( $perPage > env('PAGE_LIMIT') ) {
+            $perPage = env('PAGE_LIMIT');
+        }
         $releaseYear = $request->get('year', '');
         $genre = $request->get('genre', '');
         $orderBy = $request->get('orderBy', '');
@@ -39,7 +42,7 @@ class MovieController extends Controller
         } else {
             $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
-            $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
+            $select = "SELECT p.ID, p.post_name, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
             $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
 
             if( $releaseYear != '' ) {
@@ -114,6 +117,7 @@ class MovieController extends Controller
             $src = '';
             $srcSet = [];
             $originalTitle = '';
+            $link = '';
             foreach( $datas as $key => $data ) {
                 if (Cache::has($data->ID)) {
                     $movie = Cache::get($data->ID);
@@ -168,6 +172,7 @@ class MovieController extends Controller
             
                     $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
 
+                    $link = 'movie/' . $data->post_name;
                     $movie = [
                         'id' => $data->ID,
                         'year' => $releaseDate,
@@ -175,6 +180,7 @@ class MovieController extends Controller
                         'title' => $data->post_title,
                         'originalTitle' => $originalTitle,
                         'description' => $data->post_content,
+                        'link' => $link,
                         'src' => $src,
                         'srcSet' => $srcSet,
                         'duration' => $movieRunTime,
@@ -216,7 +222,7 @@ class MovieController extends Controller
     public function show($title, Request $request)
     {
         $titleMovie = $request->get('title', '');
-        $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
         $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
         $whereTitle = " AND p.post_title='". $titleMovie ."'  LIMIT 1; ";
 
@@ -258,13 +264,13 @@ class MovieController extends Controller
         //get 8 movies related
         $slug = join(",", $slug);
         if( $slug != '' ) {
-            $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+            $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_name, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                 left join wp_terms t on tx.term_id = t.term_id
                 where t.name != 'featured' AND t.name != '' AND (t.name IN ( " . $slug . " ) OR t.slug IN ( " . $slug . " ) ) AND p.ID != ". $dataMovie->ID ." ORDER BY p.post_date DESC LIMIT 8";
         } else {
-            $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+            $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                 left join wp_terms t on tx.term_id = t.term_id
