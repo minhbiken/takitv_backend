@@ -42,7 +42,7 @@ class MovieController extends Controller
         } else {
             $imageUrlUpload = env('IMAGE_URL_UPLOAD');
 
-            $select = "SELECT p.ID, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
+            $select = "SELECT p.ID, p.post_name, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
             $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
 
             if( $releaseYear != '' ) {
@@ -117,6 +117,7 @@ class MovieController extends Controller
             $src = '';
             $srcSet = [];
             $originalTitle = '';
+            $link = '';
             foreach( $datas as $key => $data ) {
                 if (Cache::has($data->ID)) {
                     $movie = Cache::get($data->ID);
@@ -171,6 +172,7 @@ class MovieController extends Controller
             
                     $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
 
+                    $link = 'movie/' . $data->post_name;
                     $movie = [
                         'id' => $data->ID,
                         'year' => $releaseDate,
@@ -178,6 +180,7 @@ class MovieController extends Controller
                         'title' => $data->post_title,
                         'originalTitle' => $originalTitle,
                         'description' => $data->post_content,
+                        'link' => $link,
                         'src' => $src,
                         'srcSet' => $srcSet,
                         'duration' => $movieRunTime,

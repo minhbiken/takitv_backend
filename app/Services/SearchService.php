@@ -50,7 +50,7 @@ class SearchService {
                     'link' =>  $dataTaxonomy->slug
                 ];
             }
-            $link = 'movie/' . $data->post_title;
+            $link = 'movie/' . $data->post_name;
 
             if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
