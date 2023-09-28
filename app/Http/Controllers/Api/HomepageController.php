@@ -56,7 +56,7 @@ class HomepageController extends Controller
             $sliderRandoms = $this->tvshowService->getTvShowRandom();
 
             //get 12 tv-show
-            $queryTvshow = "SELECT DISTINCT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p 
+            $queryTvshow = "SELECT DISTINCT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p 
                                 LEFT JOIN wp_term_relationships t_r ON t_r.object_id = p.ID 
                                 LEFT JOIN wp_term_taxonomy tx ON t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
                                 LEFT JOIN wp_terms t ON tx.term_id = t.term_id 
