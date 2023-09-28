@@ -13,8 +13,7 @@
         "laravel/tinker": "^2.7",
         "predis/predis": "^2.2",
         "rakutentech/laravel-request-docs": "^2.22",
-        "spatie/laravel-responsecache": "^7.4",
-        "werk365/etagconditionals": "^1.4"
+        "spatie/laravel-responsecache": "^7.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
