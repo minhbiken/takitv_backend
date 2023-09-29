@@ -385,7 +385,7 @@ class HomepageController extends Controller
             'post_title' => 'Shao Yun',
             'post_name' => 'shao-yun',
             'post_content' => 'Shao Yun', 
-            'post_status' => 'puslish',
+            'post_status' => 'publish',
             'post_author' => 1,
             'comment_status' => 'closed',
             'ping_status' => 'closed',
@@ -400,21 +400,39 @@ class HomepageController extends Controller
             'post_modified' => now(),
             'post_modified_gmt' => now()
         ]);
-        $idNewPersonMeta = PostMeta::insertGetId([
+        PostMeta::insertGetId([
             'post_id' => $idNewPerson, 
             'meta_key' => '_tmdb_id',
             'meta_value' => 1234, 
         ]);
-        $idNewPersonMeta = PostMeta::insertGetId([
+
+        //insert cast movie
+        PostMeta::insertGetId([
             'post_id' => $idNewPerson, 
             'meta_key' => '_movie_cast',
-            'meta_value' =>  serialize(array(184575)) 
+            'meta_value' =>  serialize(array(2042089)) 
         ]);
-        $idNewPersonMeta = PostMeta::insertGetId([
+
+        //insert image custom
+        PostMeta::insertGetId([
             'post_id' => $idNewPerson, 
-            'meta_key' => '_person_image_gallery',
+            'meta_key' => '_person_image_custom',
             'meta_value' => 'https://www.themoviedb.org/t/p/w300_and_h450_bestv2/fujBBNxVxG7OnCiUflh5MWvKWyp.jpg', 
         ]);
+
+        //update movie cast
+        $cast = array (
+            0 => 
+            array (
+              'id' => $idNewPerson,
+              'character' => '',
+              'position' => 0,
+            )
+        );
+
+        PostMeta::where('meta_key', '_cast')
+            ->where('post_id', 2042089)
+            ->update(['meta_value' => serialize($cast)]);       
         return "Ok!";
     }
 
