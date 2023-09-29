@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
 use Carbon\Carbon;
+use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 
 class HomepageController extends Controller
 {
@@ -381,58 +382,108 @@ class HomepageController extends Controller
     }
 
     public function insertPerson() {
-        $idNewPerson = Post::insertGetId([
-            'post_title' => 'Shao Yun',
-            'post_name' => 'shao-yun',
-            'post_content' => 'Shao Yun', 
-            'post_status' => 'publish',
-            'post_author' => 1,
-            'comment_status' => 'closed',
-            'ping_status' => 'closed',
-            'guid' => 'https://www.themoviedb.org/person/2231099-shao-yun', 
-            'post_type' => 'person', 
-            'post_excerpt' => '', 
-            'to_ping' => '', 
-            'pinged' => '',
-            'post_content_filtered' => '',
-            'post_date' => now(),
-            'post_date_gmt' => now(),
-            'post_modified' => now(),
-            'post_modified_gmt' => now()
-        ]);
-        PostMeta::insertGetId([
-            'post_id' => $idNewPerson, 
-            'meta_key' => '_tmdb_id',
-            'meta_value' => 1234, 
-        ]);
+        $personList = json_decode(Storage::disk('local')->get('100_person_real.json'), true);
+        foreach( $personList as $key => $person) {
+            $person = json_decode($person, true);
+            $person = $person[0];
 
-        //insert cast movie
-        PostMeta::insertGetId([
-            'post_id' => $idNewPerson, 
-            'meta_key' => '_movie_cast',
-            'meta_value' =>  serialize(array(2042089)) 
-        ]);
+            $movieId = $person['movie_id'];
+            $tmdbId = $person['tmdb_id'];
+            $guid = $person['link'];
+            $image = $person['image'];
+            $title = $person['name'];
+            $name = str_replace(' ', '-',(strtolower($person['name'])));
 
-        //insert image custom
-        PostMeta::insertGetId([
-            'post_id' => $idNewPerson, 
-            'meta_key' => '_person_image_custom',
-            'meta_value' => 'https://www.themoviedb.org/t/p/w300_and_h450_bestv2/fujBBNxVxG7OnCiUflh5MWvKWyp.jpg', 
-        ]);
+            if( $key < 21 ) {
+                if (Post::where([ 'post_title' => $title, 'post_status' => 'publish'])->exists()) {
+                    $person = Post::select('ID')->where(['post_title'=> $title, 'post_status' => 'publish'])->first();
+                    $idPerson = $person->ID;
+                    $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idPerson, 'meta_key' => '_movie_cast'])->first();
+                    $movies = unserialize($dataMovie->meta_value);
+                    
+                    //check exist and update movie of cast
+                    if( !in_array($movieId, $movies) ) {
+                        array_push($movies, $movieId);
+                        $metaPost = PostMeta::find($dataMovie->meta_id);
+                        $metaPost->meta_value = serialize($movies);
+                        $metaPost->save();
+                    }
+                } else {
+                    $newPerson = Post::create(
+                        [
+                            'post_title' => $title,
+                            'post_name' => $name,
+                            'post_content' => $title, 
+                            'post_status' => 'publish',
+                            'post_author' => 1,
+                            'comment_status' => 'closed',
+                            'ping_status' => 'closed',
+                            'guid' => $guid, 
+                            'post_type' => 'person', 
+                            'post_excerpt' => '', 
+                            'to_ping' => '', 
+                            'pinged' => '',
+                            'post_content_filtered' => '',
+                            'post_date' => now(),
+                            'post_date_gmt' => now(),
+                            'post_modified' => now(),
+                            'post_modified_gmt' => now()
+                        ]
+                    );
 
-        //update movie cast
-        $cast = array (
-            0 => 
-            array (
-              'id' => $idNewPerson,
-              'character' => '',
-              'position' => 0,
-            )
-        );
+                    $idNewPerson = $newPerson->ID;
 
-        PostMeta::where('meta_key', '_cast')
-            ->where('post_id', 2042089)
-            ->update(['meta_value' => serialize($cast)]);       
+                    //insert tmdb id
+                    PostMeta::create([
+                        'post_id' => $idNewPerson, 
+                        'meta_key' => '_tmdb_id',
+                        'meta_value' => $tmdbId, 
+                    ]);
+
+                    //insert image custom
+                    PostMeta::create([
+                        'post_id' => $idNewPerson, 
+                        'meta_key' => '_person_image_custom',
+                        'meta_value' => $image,
+                    ]);
+
+                    //insert cast movie
+                    PostMeta::create([
+                        'post_id' => $idNewPerson, 
+                        'meta_key' => '_movie_cast',
+                        'meta_value' =>  serialize(array($movieId)) 
+                    ]);
+
+                    //update movie cast
+                    $dataMovieCast =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $movieId, 'meta_key' => '_cast'])->first();
+                    if( $dataMovieCast->meta_value == '' ) {
+                        $movieCasts = [];
+                        $newCastMovie = [
+                            'id' => $idNewPerson,
+                            'character' => '',
+                            'position' => 0,
+                        ];
+                        
+                    } else {
+                        $movieCasts = unserialize($dataMovieCast->meta_value);
+                        //check exist and update movie of cast
+                        foreach($movieCasts as $k => $movieCast ) {
+                            if( $movieCast['id'] != $idNewPerson ) {
+                                $newCastMovie = [
+                                    'id' => $idNewPerson,
+                                    'character' => '',
+                                    'position' => $k,
+                                ];
+                            }
+                        }    
+                    }
+                    array_push($movieCasts, $newCastMovie);
+                    $metaPostMovie = PostMeta::find($dataMovieCast->meta_id);
+                    $metaPostMovie->meta_value = serialize($movieCasts);
+                    $metaPostMovie->save();
+                }
+            }
+        }
         return "Ok!";
     }
 

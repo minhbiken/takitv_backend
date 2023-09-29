@@ -4,6 +4,9 @@ use Illuminate\Database\Eloquent\Model;
 class Post extends Model
 {
     protected $table = 'wp_posts';
+    const CREATED_AT = 'post_date';
+    const UPDATED_AT = 'post_modified';
+    protected $primaryKey = 'ID';
     protected $fillable = [
         'post_title',
         'post_name',
