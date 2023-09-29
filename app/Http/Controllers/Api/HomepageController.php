@@ -379,8 +379,9 @@ class HomepageController extends Controller
         Http::get(route('tvshow.tmdb',  ['limit_from' => 3000, 'limit_to' => 100]));
     }
 
-    public function insertPerson() {
-        $personList = json_decode(Storage::disk('local')->get('100.json'), true);
+    public function insertPerson(Request $request) {
+        $file = $request->get('file', '');
+        $personList = json_decode(Storage::disk('local')->get($file), true);
         $personListRollback = [];
         $personMetaListRollback = [];
         foreach( $personList as $person) {
@@ -485,20 +486,20 @@ class HomepageController extends Controller
             }
             array_push($personListRollback, $idNewPerson);
         }
-        Storage::disk('local')->put('100_rollback.json', json_encode($personListRollback));
-        Storage::disk('local')->put('100_meta_rollback.json', json_encode($personMetaListRollback));
+        Storage::disk('local')->put('rollback_person.json', json_encode($personListRollback));
+        Storage::disk('local')->put('rollback_person_meta.json', json_encode($personMetaListRollback));
         return "Ok!";
     }
 
     public function deletePerson() {
-        $personList = json_decode(Storage::disk('local')->get('100_rollback.json'), true);
+        $personList = json_decode(Storage::disk('local')->get('rollback_person.json'), true);
         foreach( $personList as $person) {
             $new = Post::find($person);
             if( $new != '' ) {
                 $new->delete();
             }
         }
-        $personMetaList = json_decode(Storage::disk('local')->get('100_meta_rollback.json'), true);
+        $personMetaList = json_decode(Storage::disk('local')->get('rollback_person_meta.json'), true);
         foreach( $personMetaList as $personMeta) {
             $newMeta = Post::find($personMeta);
             if( $newMeta != '' ) {

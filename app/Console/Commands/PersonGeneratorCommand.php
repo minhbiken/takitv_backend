@@ -12,7 +12,8 @@ class PersonGeneratorCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'person:insert';
+    protected $signature = 'person:insert {file : put your file into /home/vuejs/backend/storage/app and run: php artisan person:insert data.json}
+    ';
 
     /**
      * The console command description.
@@ -30,8 +31,8 @@ class PersonGeneratorCommand extends Command
     {
         try {
             DB::beginTransaction();
-          
-            $personList = json_decode(Storage::disk('local')->get('100.json'), true);
+            $file = $this->argument('file');
+            $personList = json_decode(Storage::disk('local')->get($file), true);
             $personListRollback = [];
             $personMetaListRollback = [];
             foreach( $personList as $person) {
@@ -136,8 +137,8 @@ class PersonGeneratorCommand extends Command
                 }
                 array_push($personListRollback, $idNewPerson);
             }
-            Storage::disk('local')->put('100_rollback.json', json_encode($personListRollback));
-            Storage::disk('local')->put('100_meta_rollback.json', json_encode($personMetaListRollback));         
+            Storage::disk('local')->put('rollback_person.json', json_encode($personListRollback));
+            Storage::disk('local')->put('rollback_person_meta.json', json_encode($personMetaListRollback));         
             
             DB::commit();
            
