@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
-use Carbon\Carbon;
-use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 
 class HomepageController extends Controller
 {
