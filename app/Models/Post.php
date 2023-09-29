@@ -5,9 +5,13 @@ class Post extends Model
 {
     protected $table = 'wp_posts';
     protected $fillable = [
-        'post_title', 
+        'post_title',
+        'post_name',
         'post_content', 
         'post_status',
+        'post_author',
+        'comment_status',
+        'ping_status',
         'guid', 
         'post_type', 
         'post_excerpt', 

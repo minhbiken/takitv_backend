@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
+use Carbon\Carbon;
+
 class HomepageController extends Controller
 {
 
@@ -381,10 +383,14 @@ class HomepageController extends Controller
 
     public function insertPerson() {
         $idNewPerson = Post::insertGetId([
-            'post_title' => 'Mars Shelley 1',
-            'post_content' => 'Mars Shelley 1', 
+            'post_title' => 'Shao Yun',
+            'post_name' => 'shao-yun',
+            'post_content' => 'Shao Yun', 
             'post_status' => 'puslish',
-            'guid' => 'https://try.chethemes.com/vodi/?post_type=person&amp;p=5346', 
+            'post_author' => 1,
+            'comment_status' => 'closed',
+            'ping_status' => 'closed',
+            'guid' => 'https://www.themoviedb.org/person/2231099-shao-yun', 
             'post_type' => 'person', 
             'post_excerpt' => '', 
             'to_ping' => '', 
@@ -408,7 +414,7 @@ class HomepageController extends Controller
         $idNewPersonMeta = PostMeta::insertGetId([
             'post_id' => $idNewPerson, 
             'meta_key' => '_person_image_gallery',
-            'meta_value' => 'https://www.themoviedb.org/t/p/w300_and_h450_bestv2/qtkmRQthVbReDZruVN1YlBlQA8W.jpg', 
+            'meta_value' => 'https://www.themoviedb.org/t/p/w300_and_h450_bestv2/fujBBNxVxG7OnCiUflh5MWvKWyp.jpg', 
         ]);
         return "Ok!";
     }
