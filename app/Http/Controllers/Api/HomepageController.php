@@ -195,7 +195,6 @@ class HomepageController extends Controller
             $homepage = [
                 'sliders' => $sliders,
                 'otts' => [
-                    'ottChanels' => config('constants.ottChanels'),
                     'ottTitle' => $sliderRandoms['title'],
                     'ottSliders' => $sliderRandoms['items']
                 ],
