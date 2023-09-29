@@ -351,7 +351,7 @@ class HomepageController extends Controller
         ORDER BY p.post_date DESC 
         LIMIT " . $limitFrom . ", " . $limitTo . " ;";
         $dataMovie =  DB::select($queryMovie);
-        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tmdb.json', response()->json($dataMovie));
+        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tmdb.json', json_encode($dataMovie));
     }
 
     public function getMovieLimit() {
@@ -371,7 +371,7 @@ class HomepageController extends Controller
         ORDER BY p.post_date DESC 
         LIMIT " . $limitFrom . ", " . $limitTo . " ;";
         $dataMovie =  DB::select($queryMovie);
-        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tv_show_tmdb.json', response()->json($dataMovie));
+        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'_tv_show_tmdb.json', json_encode($dataMovie));
     }
 
     public function getTvshowLimit() {
@@ -382,8 +382,10 @@ class HomepageController extends Controller
     }
 
     public function insertPerson() {
-        $personList = json_decode(Storage::disk('local')->get('100_person_real.json'), true);
-        foreach( $personList as $key => $person) {
+        $personList = json_decode(Storage::disk('local')->get('100.json'), true);
+        $personListRollback = [];
+        $personMetaListRollback = [];
+        foreach( $personList as $person) {
             $person = json_decode($person, true);
             $person = $person[0];
 
@@ -394,97 +396,117 @@ class HomepageController extends Controller
             $title = $person['name'];
             $name = str_replace(' ', '-',(strtolower($person['name'])));
 
-            if( $key < 21 ) {
-                if (Post::where([ 'post_title' => $title, 'post_status' => 'publish'])->exists()) {
-                    $person = Post::select('ID')->where(['post_title'=> $title, 'post_status' => 'publish'])->first();
-                    $idPerson = $person->ID;
-                    $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idPerson, 'meta_key' => '_movie_cast'])->first();
-                    $movies = unserialize($dataMovie->meta_value);
-                    
-                    //check exist and update movie of cast
-                    if( !in_array($movieId, $movies) ) {
-                        array_push($movies, $movieId);
-                        $metaPost = PostMeta::find($dataMovie->meta_id);
-                        $metaPost->meta_value = serialize($movies);
-                        $metaPost->save();
-                    }
-                } else {
-                    $newPerson = Post::create(
-                        [
-                            'post_title' => $title,
-                            'post_name' => $name,
-                            'post_content' => $title, 
-                            'post_status' => 'publish',
-                            'post_author' => 1,
-                            'comment_status' => 'closed',
-                            'ping_status' => 'closed',
-                            'guid' => $guid, 
-                            'post_type' => 'person', 
-                            'post_excerpt' => '', 
-                            'to_ping' => '', 
-                            'pinged' => '',
-                            'post_content_filtered' => '',
-                            'post_date' => now(),
-                            'post_date_gmt' => now(),
-                            'post_modified' => now(),
-                            'post_modified_gmt' => now()
-                        ]
-                    );
-
-                    $idNewPerson = $newPerson->ID;
-
-                    //insert tmdb id
-                    PostMeta::create([
-                        'post_id' => $idNewPerson, 
-                        'meta_key' => '_tmdb_id',
-                        'meta_value' => $tmdbId, 
-                    ]);
-
-                    //insert image custom
-                    PostMeta::create([
-                        'post_id' => $idNewPerson, 
-                        'meta_key' => '_person_image_custom',
-                        'meta_value' => $image,
-                    ]);
-
-                    //insert cast movie
-                    PostMeta::create([
-                        'post_id' => $idNewPerson, 
-                        'meta_key' => '_movie_cast',
-                        'meta_value' =>  serialize(array($movieId)) 
-                    ]);
-
-                    //update movie cast
-                    $dataMovieCast =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $movieId, 'meta_key' => '_cast'])->first();
-                    if( $dataMovieCast->meta_value == '' ) {
-                        $movieCasts = [];
-                        $newCastMovie = [
-                            'id' => $idNewPerson,
-                            'character' => '',
-                            'position' => 0,
-                        ];
-                        
-                    } else {
-                        $movieCasts = unserialize($dataMovieCast->meta_value);
-                        //check exist and update movie of cast
-                        foreach($movieCasts as $k => $movieCast ) {
-                            if( $movieCast['id'] != $idNewPerson ) {
-                                $newCastMovie = [
-                                    'id' => $idNewPerson,
-                                    'character' => '',
-                                    'position' => $k,
-                                ];
-                            }
-                        }    
-                    }
-                    array_push($movieCasts, $newCastMovie);
-                    $metaPostMovie = PostMeta::find($dataMovieCast->meta_id);
-                    $metaPostMovie->meta_value = serialize($movieCasts);
-                    $metaPostMovie->save();
+            if (Post::where([ 'post_title' => $title, 'post_status' => 'publish'])->exists()) {
+                $person = Post::select('ID')->where(['post_title'=> $title, 'post_status' => 'publish'])->first();
+                $idNewPerson = $person->ID;
+                $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idNewPerson, 'meta_key' => '_movie_cast'])->first();
+                $movies = unserialize($dataMovie->meta_value);
+                
+                //check exist and update movie of cast
+                if( !in_array($movieId, $movies) ) {
+                    array_push($movies, $movieId);
+                    $metaPost = PostMeta::find($dataMovie->meta_id);
+                    $metaPost->meta_value = serialize($movies);
+                    $metaPost->save();
                 }
+            } else {
+                $newPerson = Post::create(
+                    [
+                        'post_title' => $title,
+                        'post_name' => $name,
+                        'post_content' => $title, 
+                        'post_status' => 'publish',
+                        'post_author' => 1,
+                        'comment_status' => 'closed',
+                        'ping_status' => 'closed',
+                        'guid' => $guid, 
+                        'post_type' => 'person', 
+                        'post_excerpt' => '', 
+                        'to_ping' => '', 
+                        'pinged' => '',
+                        'post_content_filtered' => '',
+                        'post_date' => now(),
+                        'post_date_gmt' => now(),
+                        'post_modified' => now(),
+                        'post_modified_gmt' => now()
+                    ]
+                );
+
+                $idNewPerson = $newPerson->ID;
+
+                //insert tmdb id
+                $idPostMeta_tmdb_id = PostMeta::insertGetId([
+                    'post_id' => $idNewPerson, 
+                    'meta_key' => '_tmdb_id',
+                    'meta_value' => $tmdbId, 
+                ]);
+                array_push($personMetaListRollback, $idPostMeta_tmdb_id);
+
+                //insert image custom
+                $idPostMeta_person_image_custom = PostMeta::insertGetId([
+                    'post_id' => $idNewPerson, 
+                    'meta_key' => '_person_image_custom',
+                    'meta_value' => $image,
+                ]);
+                array_push($personMetaListRollback, $idPostMeta_person_image_custom);
+
+                //insert cast movie
+                $idPostMeta_movie_cast = PostMeta::insertGetId([
+                    'post_id' => $idNewPerson, 
+                    'meta_key' => '_movie_cast',
+                    'meta_value' =>  serialize(array($movieId)) 
+                ]);
+                array_push($personMetaListRollback, $idPostMeta_movie_cast);
+
+                //update movie cast
+                $dataMovieCast =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $movieId, 'meta_key' => '_cast'])->first();
+                if( $dataMovieCast->meta_value == '' ) {
+                    $movieCasts = [];
+                    $newCastMovie = [
+                        'id' => $idNewPerson,
+                        'character' => '',
+                        'position' => 0,
+                    ];
+                } else {
+                    $movieCasts = unserialize($dataMovieCast->meta_value);
+                    //check exist and update movie of cast
+                    foreach($movieCasts as $movieCast ) {
+                        if( $movieCast['id'] != $idNewPerson ) {
+                            $newCastMovie = [
+                                'id' => $idNewPerson,
+                                'character' => '',
+                                'position' => end($movieCasts)['position']++,
+                            ];
+                        }
+                    }    
+                }
+                array_push($movieCasts, $newCastMovie);
+                $metaPostMovie = PostMeta::find($dataMovieCast->meta_id);
+                $metaPostMovie->meta_value = serialize($movieCasts);
+                $metaPostMovie->save();
+            }
+            array_push($personListRollback, $idNewPerson);
+        }
+        Storage::disk('local')->put('100_rollback.json', json_encode($personListRollback));
+        Storage::disk('local')->put('100_meta_rollback.json', json_encode($personMetaListRollback));
+        return "Ok!";
+    }
+
+    public function deletePerson() {
+        $personList = json_decode(Storage::disk('local')->get('100_rollback.json'), true);
+        foreach( $personList as $person) {
+            $new = Post::find($person);
+            if( $new != '' ) {
+                $new->delete();
+            }
+        }
+        $personMetaList = json_decode(Storage::disk('local')->get('100_meta_rollback.json'), true);
+        foreach( $personMetaList as $personMeta) {
+            $newMeta = Post::find($personMeta);
+            if( $newMeta != '' ) {
+                $newMeta->delete();
             }
         }
         return "Ok!";
     }
-
 }
