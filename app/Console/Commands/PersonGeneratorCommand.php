@@ -53,33 +53,29 @@ class PersonGeneratorCommand extends Command
                 if (Post::where([ 'post_title' => $title, 'post_status' => 'publish'])->exists()) {
                     $person = Post::select('ID')->where(['post_title'=> $title, 'post_status' => 'publish'])->first();
                     $idNewPerson = $person->ID;
-                    $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idNewPerson, 'meta_key' => '_movie_cast'])->first();
-                    //update if type: tv-show
+
+                    $metaKey = '_movie_cast';
                     if($type != 'movie') {
-                        $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idNewPerson, 'meta_key' => '_tv_show_cast'])->first();
+                        $metaKey = '_tv_show_cast';
                     }
-                    if($dataMovie != '') {
+                    $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idNewPerson, 'meta_key' => $metaKey])->first();
+                    if($dataMovie != '' && $dataMovie->meta_value != '' ) {
                         $movies = unserialize($dataMovie->meta_value);
-                    }
-                    
-                    //check exist and update movie of cast
-                    if( !in_array($movieId, $movies) ) {
-                        array_push($movies, $movieId);
-                        if($dataMovie != '') {
+                        //check exist and update movie of cast
+                        if( !in_array($movieId, $movies) ) {
+                            array_push($movies, $movieId);
                             $metaPost = PostMeta::find($dataMovie->meta_id);
                             $metaPost->meta_value = serialize($movies);
                             $metaPost->save();
-                        } else {
-                            $metaPost = new PostMeta;
-                            if($type != 'movie') {
-                                $metaPost->meta_key = '_tv_show_cast';
-                            } else {
-                                $metaPost->meta_key = '_movie_cast';
-                            }
-                            $metaPost->post_id = $idNewPerson;
-                            $metaPost->meta_value = serialize($movies);
-                            $metaPost->save();
                         }
+                    } else if( $dataMovie != '' && $dataMovie->meta_value == '' ) {
+                        $movies = [];
+                        array_push($movies, $movieId);
+                        $metaPost = new PostMeta;
+                        $metaPost->post_id = $idNewPerson;
+                        $metaPost->meta_key = $metaKey;
+                        $metaPost->meta_value = serialize($movies);
+                        $metaPost->save();
                     }
                 } else {
                     $newPerson = Post::create(

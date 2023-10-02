@@ -32,14 +32,14 @@ class RollBackImportPerson extends Command
         try {
             DB::beginTransaction();
           
-            $personList = json_decode(Storage::disk('local')->get('rollback_person.json'), true);
+            $personList = json_decode(Storage::disk('local')->get('rollback_movie_person.json'), true);
             foreach( $personList as $person) {
                 $new = Post::find($person);
                 if( $new != '' ) {
                     $new->delete();
                 }
             }
-            $personMetaList = json_decode(Storage::disk('local')->get('rollback_person_meta.json'), true);
+            $personMetaList = json_decode(Storage::disk('local')->get('rollback_movie_person_meta.json'), true);
             foreach( $personMetaList as $personMeta) {
                 $newMeta = PostMeta::find($personMeta);
                 if( $newMeta != '' ) {
