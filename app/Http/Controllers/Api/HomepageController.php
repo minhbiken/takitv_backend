@@ -393,9 +393,9 @@ class HomepageController extends Controller
             $tmdbId = $person['tmdb_id'];
             $guid = $person['link'];
             $image = $person['image'];
-            $title = $person['name'];
+            $title = str_replace('"', '',$person['name']);
             $name = str_replace(' ', '-',(strtolower($person['name'])));
-
+            $name = str_replace('"', '',$name);
             if (Post::where([ 'post_title' => $title, 'post_status' => 'publish'])->exists()) {
                 $person = Post::select('ID')->where(['post_title'=> $title, 'post_status' => 'publish'])->first();
                 $idNewPerson = $person->ID;
