@@ -479,6 +479,7 @@ class HomepageController extends Controller
             }
             //update movie cast
             $dataMovieCast =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $movieId, 'meta_key' => '_cast'])->first();
+            $newCastMovie = [];
             if( $dataMovieCast == '') {
                 $movieCasts = [];
                 $newCastMovie = [
@@ -498,11 +499,17 @@ class HomepageController extends Controller
                     $movieCasts = unserialize($dataMovieCast->meta_value);
                     //check exist and update movie of cast
                     foreach($movieCasts as $movieCast ) {
-                        if( $movieCast['id'] != $idNewPerson ) {
+                        if( isset($movieCast['id']) && $movieCast['id'] != $idNewPerson ) {
                             $newCastMovie = [
                                 'id' => $idNewPerson,
                                 'character' => '',
                                 'position' => end($movieCasts)['position']++,
+                            ];
+                        } else {
+                            $newCastMovie = [
+                                'id' => $idNewPerson,
+                                'character' => '',
+                                'position' => 0,
                             ];
                         }
                     }    

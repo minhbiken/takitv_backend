@@ -34,7 +34,6 @@ class PersonGeneratorCommand extends Command
             $argument = $this->argument('argument', '');            
             $file = $argument[0];
             $type = isset($argument[1]) ? $argument[1] : 'movie';
-
             DB::beginTransaction();
             $personList = json_decode(Storage::disk('local')->get($file), true);
             $personListRollback = [];
@@ -47,7 +46,7 @@ class PersonGeneratorCommand extends Command
                 $tmdbId = $person['tmdb_id'];
                 $guid = $person['link'];
                 $image = $person['image'];
-                $title = str_replace(' ', '-',$person['name']);
+                $title = str_replace('"', '',$person['name']);
                 $name = str_replace(' ', '-',(strtolower($person['name'])));
                 $name = str_replace('"', '',$name);
                 if (Post::where([ 'post_title' => $title, 'post_status' => 'publish'])->exists()) {
@@ -133,6 +132,7 @@ class PersonGeneratorCommand extends Command
                 }
                 //update movie cast
                 $dataMovieCast =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $movieId, 'meta_key' => '_cast'])->first();
+                $newCastMovie = [];
                 if( $dataMovieCast == '') {
                     $movieCasts = [];
                     $newCastMovie = [
@@ -152,14 +152,20 @@ class PersonGeneratorCommand extends Command
                         $movieCasts = unserialize($dataMovieCast->meta_value);
                         //check exist and update movie of cast
                         foreach($movieCasts as $movieCast ) {
-                            if( $movieCast['id'] != $idNewPerson ) {
+                            if( isset($movieCast['id']) && $movieCast['id'] != $idNewPerson ) {
                                 $newCastMovie = [
                                     'id' => $idNewPerson,
                                     'character' => '',
                                     'position' => end($movieCasts)['position']++,
                                 ];
+                            } else {
+                                $newCastMovie = [
+                                    'id' => $idNewPerson,
+                                    'character' => '',
+                                    'position' => 0,
+                                ];
                             }
-                        }    
+                        }     
                         array_push($movieCasts, $newCastMovie);
                     } else {
                         $movieCasts = [];
