@@ -12,4 +12,4 @@ else
   cd /home/vuejs/backend && node ./../crawler_person/tv_show.js $1 $2
 fi
 
- cd /home/vuejs/backend && php artisan person:insert data.json $3
+cd /home/vuejs/backend && php artisan person:insert data.json $3
