@@ -505,12 +505,6 @@ class HomepageController extends Controller
                                 'character' => '',
                                 'position' => end($movieCasts)['position']++,
                             ];
-                        } else {
-                            $newCastMovie = [
-                                'id' => $idNewPerson,
-                                'character' => '',
-                                'position' => 0,
-                            ];
                         }
                     }    
                     array_push($movieCasts, $newCastMovie);
