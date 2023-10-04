@@ -151,15 +151,23 @@ class PersonGeneratorCommand extends Command
                     if( $dataMovieCast->meta_value != '') {
                         $movieCasts = unserialize($dataMovieCast->meta_value);
                         //check exist and update movie of cast
-                        foreach($movieCasts as $movieCast ) {
-                            if( isset($movieCast['id']) && $movieCast['id'] != $idNewPerson ) {
-                                $newCastMovie = [
-                                    'id' => $idNewPerson,
-                                    'character' => '',
-                                    'position' => end($movieCasts)['position']++,
-                                ];
-                            }
-                        }     
+                        if( count($movieCasts) > 0 ) {
+                            foreach($movieCasts as $movieCast ) {
+                                if( isset($movieCast['id']) && $movieCast['id'] != $idNewPerson ) {
+                                    $newCastMovie = [
+                                        'id' => $idNewPerson,
+                                        'character' => '',
+                                        'position' => end($movieCasts)['position']++,
+                                    ];
+                                }
+                            }   
+                        } else {
+                            $newCastMovie = [
+                                'id' => $idNewPerson,
+                                'character' => '',
+                                'position' => 0,
+                            ];
+                        }
                         array_push($movieCasts, $newCastMovie);
                     } else {
                         $movieCasts = [];
