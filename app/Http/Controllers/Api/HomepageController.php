@@ -102,6 +102,7 @@ class HomepageController extends Controller
             $movieNewests = [];
             $srcSet = [];
             $originalTitleMovie = '';
+            $movieRunTime = '';
             foreach ( $dataMovies as $key => $dataMovie ) {
                 $queryMetaMovie = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
 

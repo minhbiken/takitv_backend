@@ -118,6 +118,7 @@ class MovieController extends Controller
             $srcSet = [];
             $originalTitle = '';
             $link = '';
+            $releaseDate = '';
             foreach( $datas as $key => $data ) {
                 if (Cache::has($data->ID)) {
                     $movie = Cache::get($data->ID);
