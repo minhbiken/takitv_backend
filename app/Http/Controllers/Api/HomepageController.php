@@ -548,5 +548,14 @@ class HomepageController extends Controller
         return "Ok!";
     }
 
-
+    public function autoImportPerson(Request $request) {
+        $movieId = $request->get('movieId', '0');
+        $tmdbId = $request->get('tmdbId', '0');
+        $postType = $request->get('postType', 'movie');
+        if($tmdbId == 0) {
+            return true;
+        }
+        Artisan::call('person:auto '. $movieId . ' ' . $tmdbId . ' ' . $postType);
+        return "Ok!";
+    }
 }

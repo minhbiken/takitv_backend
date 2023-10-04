@@ -11,7 +11,7 @@ class AutoImportPerson extends Command
      *
      * @var string
      */
-    protected $signature = 'person:auto';
+    protected $signature = 'person:auto {argument*}';
 
     /**
      * The console command description.
@@ -28,9 +28,13 @@ class AutoImportPerson extends Command
     public function handle()
     {
 
+        $argument = $this->argument('argument', '');            
+        $movieId = $argument[0];
+        $tmdbId = $argument[1];
+        $postType = $argument[2];
         // Replace this with the actual command you want to run
-        $command = '/home/vuejs/backend/import_person.sh 2198774 1017507 movie';
-
+        $command = '/home/vuejs/backend/import_person.sh ' . $movieId . ' ' . $tmdbId . ' ' . $postType . '';
+ 
         // Execute the Bash script
         $output = shell_exec($command);
 

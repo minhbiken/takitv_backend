@@ -37,4 +37,4 @@ Route::get('getMovieLimit', 'App\Http\Controllers\Api\HomepageController@getMovi
 Route::get('getTvshowTMDBId', 'App\Http\Controllers\Api\HomepageController@getTvshowTMDBId')->name('tvshow.tmdb');
 Route::get('getTvshowLimit', 'App\Http\Controllers\Api\HomepageController@getTvshowLimit');
 Route::get('insertPerson', 'App\Http\Controllers\Api\HomepageController@insertPerson');
-// Route::get('deletePerson', 'App\Http\Controllers\Api\HomepageController@deletePerson');
+Route::get('autoImportPerson', 'App\Http\Controllers\Api\HomepageController@autoImportPerson');
