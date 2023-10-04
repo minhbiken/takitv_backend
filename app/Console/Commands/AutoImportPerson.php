@@ -27,7 +27,6 @@ class AutoImportPerson extends Command
      */
     public function handle()
     {
-
         $argument = $this->argument('argument', '');            
         $movieId = $argument[0];
         $tmdbId = $argument[1];

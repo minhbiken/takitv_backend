@@ -188,7 +188,7 @@ class PersonGeneratorCommand extends Command
             }
             Storage::disk('local')->put('rollback_person.json', json_encode($personListRollback));
             Storage::disk('local')->put('rollback_person_meta.json', json_encode($personMetaListRollback));         
-            
+            Storage::delete($file);
             DB::commit();
             
             //send output to the console
