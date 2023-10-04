@@ -323,7 +323,7 @@ class MovieController extends Controller
                     //get data of person
                     $idCasts = array_column($casts, 'id');
                     $idCasts = join(",", $idCasts);
-                    $queryCasts = "SELECT DISTINCT p.ID, p.post_name as slug, p.post_title, wp.meta_value as image FROM wp_posts p
+                    $queryCasts = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p
                     LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
                     WHERE p.ID in ( " . $idCasts .  " ) and p.post_status = 'publish';";
                     $casts = DB::select($queryCasts);
