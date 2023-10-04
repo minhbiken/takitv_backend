@@ -9,7 +9,8 @@ class Kernel extends ConsoleKernel
 {
     protected $commands = [
         Commands\PersonGeneratorCommand::class,
-        Commands\RollBackImportPerson::class
+        Commands\RollBackImportPerson::class,
+        Commands\AutoImportPerson::class
     ];
     /**
      * Define the application's command schedule.
