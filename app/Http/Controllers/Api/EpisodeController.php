@@ -69,7 +69,7 @@ class EpisodeController extends Controller
 
         //get all seasons and episode
         $src = '';
-
+        $casts = [];
         if( Cache::has($dataPost[0]->ID) ) {
             $movies = Cache::get($dataPost[0]->ID);
         } else {
@@ -77,6 +77,23 @@ class EpisodeController extends Controller
             $dataGetIdTvShow = DB::select($queryGetIdTvShow);
             if( count($dataGetIdTvShow) > 0 ) {
                 $tvShowId = $dataGetIdTvShow[0]->meta_value;
+
+                //get casts of tv-show
+                $queryCast = "SELECT meta_value FROM wp_postmeta WHERE post_id=" . $tvShowId . " AND meta_key='_cast' LIMIT 1;";
+                $dataCast = DB::select($queryCast);
+                $unserializeCasts = unserialize($dataCast[0]->meta_value);
+                if($unserializeCasts != '' && count($unserializeCasts) > 0) {
+                    $casts = $unserializeCasts;
+                    $casts = array_values(array_unique($casts, SORT_REGULAR));
+                    //get data of person
+                    $idCasts = array_column($casts, 'id');
+                    $idCasts = join(",", $idCasts);
+                    $queryCasts = "SELECT DISTINCT p.ID, p.post_name as slug, p.post_title, wp.meta_value as image FROM wp_posts p
+                    LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
+                    WHERE p.ID in ( " . $idCasts .  " ) and p.post_status = 'publish';";
+                    $casts = DB::select($queryCasts);
+                }
+
                 $querySeasonEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, pm.meta_value, pm.meta_key, pm.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID WHERE p.ID=" . $tvShowId . " AND pm.meta_key='_seasons' ORDER BY p.ID ASC LIMIT 1;";
                 $tvshowTitleData = DB::select($querySeasonEpisode);
                 $tvshowTitle = $tvshowTitleData[0]->post_title;
@@ -135,7 +152,8 @@ class EpisodeController extends Controller
                     'postDate' => $dataSeason->post_date,
                     'seasonName' => $seasonName,
                     'tvshowTitle' => $tvshowTitle,
-                    'seasons' => $seasons
+                    'seasons' => $seasons,
+                    'casts' => $casts
                 ];
                 Cache::forever($dataPost[0]->ID, $movies);
             }

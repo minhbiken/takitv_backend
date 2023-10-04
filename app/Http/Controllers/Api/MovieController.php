@@ -289,6 +289,9 @@ class MovieController extends Controller
         $dataMetas = DB::select($queryMeta);
         $movieRunTime = '';
         $originalTitle = '';
+
+        $casts = [];
+
         foreach($dataMetas as $dataMeta) {
             if( $releaseYear == '' ) {
                 if( $dataMeta->meta_key == '_movie_release_date' ) {
@@ -310,6 +313,22 @@ class MovieController extends Controller
             if( $dataMeta->meta_key == '_movie_original_title' ) {
                 $originalTitle = $dataMeta->meta_value;
             }
+            //show casts of movie
+            if( $dataMeta->meta_key == '_cast' ) {
+                $serializeCasts = $dataMeta->meta_value;
+                $unserializeCasts = unserialize($serializeCasts);
+                if($unserializeCasts != '' && count($unserializeCasts) > 0) {
+                    $casts = $unserializeCasts;
+                    $casts = array_values(array_unique($casts, SORT_REGULAR));
+                    //get data of person
+                    $idCasts = array_column($casts, 'id');
+                    $idCasts = join(",", $idCasts);
+                    $queryCasts = "SELECT DISTINCT p.ID, p.post_name as slug, p.post_title, wp.meta_value as image FROM wp_posts p
+                    LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
+                    WHERE p.ID in ( " . $idCasts .  " ) and p.post_status = 'publish';";
+                    $casts = DB::select($queryCasts);
+                }
+            }
         }
         $srcSet = $this->helperService->getAttachmentsByPostId($dataMovie->ID);
 
@@ -324,7 +343,8 @@ class MovieController extends Controller
             'srcSet' => $srcSet,
             'duration' => $movieRunTime,
             'outlink' => $outlink,
-            'relateds' => $dataRelateds
+            'relateds' => $dataRelateds,
+            'casts' => $casts
         ];
         return response()->json($movies, Response::HTTP_OK);
     }
