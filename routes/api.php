@@ -38,4 +38,5 @@ Route::get('getTvshowLimit', 'App\Http\Controllers\Api\HomepageController@getTvs
 Route::get('insertPerson', 'App\Http\Controllers\Api\HomepageController@insertPerson');
 Route::get('autoImportPerson', 'App\Http\Controllers\Api\HomepageController@autoImportPerson');
 
-Route::get('person', 'App\Http\Controllers\Api\PersonController@show');
+Route::get('cast/detail', 'App\Http\Controllers\Api\CastController@show');
+Route::get('casts', 'App\Http\Controllers\Api\CastController@index');

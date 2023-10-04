@@ -242,7 +242,7 @@ class HomepageController extends Controller
             $order = "ORDER BY p.post_date DESC ";
         } else if( $orderBy == 'titleAsc' ) {
             $order = "ORDER BY p.post_title ASC ";
-         }else if( $orderBy == 'titleDesc' ) {
+        } else if( $orderBy == 'titleDesc' ) {
             $order = "ORDER BY p.post_title DESC ";
         } else if($orderBy == 'date' ) {
             $order = "ORDER BY p.post_date DESC ";
