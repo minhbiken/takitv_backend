@@ -227,18 +227,6 @@ class TvshowController extends Controller
         }
 
         $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
-
-        //get Persons
-        $casts = [];
-        // $queryCast = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_cast' AND post_id =". $dataSeason->ID . " LIMIT 1;";
-        // $dataCast = DB::select($queryCast);
-        
-        // $dataCast = $dataCast[0]->meta_value;
-        // $dataCast = unserialize($dataCast);
-        // if( count($dataCast) > 0 ) {
-        //     $casts = $dataCast;
-        // }
-
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
@@ -254,8 +242,7 @@ class TvshowController extends Controller
             'seasons' => $seasons,
             'topWeeks' => $topWeeks,
             'topMonths' => $topMonths,
-            'relateds' => $dataRelateds,
-            'casts' => $casts
+            'relateds' => $dataRelateds
         ];
 
         return response()->json($movies, Response::HTTP_OK);
