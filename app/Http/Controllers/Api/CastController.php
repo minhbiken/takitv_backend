@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\HelperService;
+use Illuminate\Support\Facades\Cache;
 class CastController extends Controller
 {
     protected $imageUrlUpload;
@@ -24,39 +25,64 @@ class CastController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
 
-        $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
-        $where = " WHERE p.post_status = 'publish' AND p.post_type='person' ";
+        if ( $page == 1 &&  ( $orderBy == '' || $orderBy == 'titleDesc' ) && Cache::has('person_first') ) {
+            $data = Cache::get('person_first');
+        } else if ( $page == 1 && $orderBy == 'titleAsc' && Cache::has('person_asc') ) {
+            $data = Cache::get('person_asc');
+        } else if ( Cache::has('person_' . $orderBy . '_' . $page) ) {
+            $data = Cache::get('person_' . $orderBy . '_' . $page);
+        } else {
+            $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
+            $where = " WHERE p.post_status = 'publish' AND p.post_type='person' ";
+    
+            if( $orderBy == '' ) {
+                $order = "ORDER BY p.post_title DESC ";
+            } else if( $orderBy == 'titleAsc' ) {
+                $order = "ORDER BY p.post_title ASC ";
+            } else if( $orderBy == 'titleDesc' ) {
+                $order = "ORDER BY p.post_title DESC ";
+            } else {
+                $order = "ORDER BY p.post_title DESC ";
+            }
+    
+            //query all
+            $query = $select . $where . $order;
+    
+            $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+            $queryTotal = $selectTotal . $where;
+    
+            if( Cache::has('person_query_total') && Cache::get('person_query_total') === $queryTotal && Cache::has('person_data_total')) {
+                $total = Cache::get('person_data_total');
+            } else {
+                $dataTotal = DB::select($queryTotal);
+                $total = $dataTotal[0]->total;
+                Cache::forever('person_query_total', $queryTotal);
+                Cache::forever('person_data_total', $total);
+            }
+    
+            //query limit
+            $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+            $query = $query . $limit;
+    
+            $items = DB::select($query);
+            $topWeeks = [];
+            $data = [
+                "total" => $total,
+                "perPage" => $perPage,
+                "data" => [
+                    'topWeeks' => $topWeeks,
+                    'items' => $items
+                ]
+            ];
 
-        if( $orderBy == '' ) {
-            $order = "ORDER BY p.post_title DESC ";
-        } else if( $orderBy == 'titleAsc' ) {
-            $order = "ORDER BY p.post_title ASC ";
-        } else if( $orderBy == 'titleDesc' ) {
-            $order = "ORDER BY p.post_title DESC ";
+            if( $page == 1 &&  ( $orderBy == '' || $orderBy == 'titleDesc' ) ) {
+                Cache::forever('person_first', $data);
+            } else if( $page == 1 && $orderBy == 'titleAsc' ) {
+                Cache::forever('person_asc', $data);
+            } else {
+                Cache::forever('person_' . $orderBy . '_' . $page , $data);
+            }
         }
-
-        //query all
-        $query = $select . $where . $order;
-
-        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
-        $queryTotal = $selectTotal . $where;
-        $dataTotal = DB::select($queryTotal);
-        $total = $dataTotal[0]->total;
-
-        //query limit
-        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
-        $query = $query . $limit;
-
-        $items = DB::select($query);
-        $topWeeks = [];
-        $data = [
-            "total" => $total,
-            "perPage" => $perPage,
-            "data" => [
-                'topWeeks' => $topWeeks,
-                'items' => $items
-            ]
-        ];
         
         return response()->json($data, Response::HTTP_OK);
     }
