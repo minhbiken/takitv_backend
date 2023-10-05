@@ -8,16 +8,20 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
+use App\Services\MovieService;
+use App\Services\TvshowService;
 class CastController extends Controller
 {
     protected $imageUrlUpload;
     protected $tvshowService;
     protected $helperService;
-    
-    public function __construct(HelperService $helperService)
+    protected $movieService;
+    public function __construct(HelperService $helperService, MovieService $movieService, TvshowService $tvshowService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->helperService = $helperService;
+        $this->movieService = $movieService;
+        $this->tvshowService = $tvshowService;
     }
 
     public function index(Request $request) {
@@ -98,17 +102,34 @@ class CastController extends Controller
         LEFT JOIN wp_postmeta wp_movie ON wp_movie.post_id = p.ID AND wp_movie.meta_key = '_movie_cast'
         WHERE p.post_name= '" . $slug .  "'  ";
         $dataCast = DB::select($queryCast);
-        $data = $dataCast[0];
-        $data->tv_show = unserialize($data->tv_show);
-
-        if( count($data->tv_show) > 0 ) {
-            foreach( $data->tv_show as  $tvShow) {
-                
+        if( count($dataCast) > 0 ) {
+            $data = $dataCast[0];
+            $data->tv_show = unserialize($data->tv_show);
+            $tvShowData = [];
+            if( $data->tv_show != '' && count($data->tv_show) > 0 ) {
+                foreach( $data->tv_show as  $tvShowId) {
+                    $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
+                    FROM wp_posts p 
+                    WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
+                    $tvShowData = $this->tvshowService->getItems($select);
+                }
             }
+            $data->tv_show = $tvShowData;
+            
+            $data->movie = unserialize($data->movie);
+            $movie = [];
+            if( $data->movie != '' && count($data->movie) > 0 ) {
+                foreach( $data->movie as  $movieId) {
+                    $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
+                    FROM wp_posts p 
+                    WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) AND p.ID=". $movieId;
+                    $movie = $this->movieService->getItems($select);
+                }
+            }
+            $data->movie = $movie;
+        } else {
+            $data = [];
         }
-
-        $data->movie = unserialize($data->movie);
-        print_r($data); die;
         return response()->json($data, Response::HTTP_OK);
     }
 
