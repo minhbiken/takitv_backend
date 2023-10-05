@@ -123,24 +123,11 @@ class CastController extends Controller
 
     public function getItems($query) {
         $sliders = [];
-        $srcSet = [];
-        $src = '';
         $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
-            $dataQuery = "SELECT * FROM `wp_postmeta` pm 
-            LEFT JOIN wp_posts p ON p.ID = pm.post_id 
-            WHERE pm.meta_key = '_wp_attached_file' AND p.post_type = 'attachment' AND p.post_parent = " . $sliderData->ID . " ORDER BY p.post_date DESC LIMIT 1;";
-            
-            $dataResult = DB::select($dataQuery);
-            if( count($dataResult) > 0 ) {
-                $src = $dataResult[0]->meta_value;
-            }
             $titleSlider = $sliderData->post_title; 
             $linkSlider = 'movie/' . $sliderData->post_title;
-            $seasonNumber = '';
-            $episodeNumber = '';
             $year = '';
-
             $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
             $dataMetas = DB::select($queryMeta);
             if( count($dataMetas) > 0 ) {
@@ -155,18 +142,12 @@ class CastController extends Controller
                     }
                 }
             }
-
             if( $sliderData->post_type == 'tv_show' ) {
-                
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
-                
                 $episodeData = $dataEpisode[0]->meta_value;
                 $episodeData = unserialize($episodeData);
-    
                 $lastSeason = end($episodeData);
-                $seasonNumber = $lastSeason['name'];
-
                 $episodeId = end($lastSeason['episodes']);
                 
                 $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
@@ -180,22 +161,30 @@ class CastController extends Controller
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
                 }
-
-                $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
-                $dataEpisodeNumber = DB::select($queryEpisodeNumber);
-                $episodeNumber = $dataEpisodeNumber[0]->meta_value;
+                $titleSlider = $dataEpisoSlider[0]->post_title;
             }
-            $srcSet = $this->helperService->getAttachmentsByPostId($sliderData->ID);
+            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
+                                    left join wp_term_relationships t_r on t_r.object_id = p.ID
+                                    left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                                    left join wp_terms t on tx.term_id = t.term_id
+                where t.name != 'featured' AND t.name != '' AND p.ID = ". $sliderData->ID .";";
+            $dataTaxonomys = DB::select($queryTaxonomy);
+            $genres = [];
+            if ( count($dataTaxonomys) > 0 ) {
+                foreach( $dataTaxonomys as $dataTaxonomy ) {
+                    $genres[] = [
+                        'name' => $dataTaxonomy->name,
+                        'link' =>  $dataTaxonomy->slug
+                    ];
+                }
+            }
             $sliders[] = [
                 'id' => $sliderData->ID,
                 'year' => $year,
+                'genres' => $genres,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
-                'src' => $this->imageUrlUpload.$src,
-                'srcSet' => $srcSet,
-                'seasonNumber' => $seasonNumber,
-                'episodeNumber' => $episodeNumber,
-                'postType' => $sliderData->post_type
+                'postType' => $sliderData->post_type,
             ];
         }
         return $sliders;
