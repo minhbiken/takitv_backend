@@ -134,7 +134,7 @@ class CastController extends Controller
     }
 
     public function topWeek() {
-        $queryTopWeek = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_type, p.post_date_gmt FROM `wp_most_popular` mp
+        $queryTopWeek = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_type, p.post_date_gmt, p.post_date FROM `wp_most_popular` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
                             WHERE p.post_title != '' AND mp.post_id != '' AND p.ID != '' AND p.post_status = 'publish'
                             ORDER BY mp.7_day_stats DESC
@@ -213,6 +213,7 @@ class CastController extends Controller
                 'title' => $titleSlider,
                 'link' => $linkSlider,
                 'postType' => $sliderData->post_type,
+                'postDate' => $sliderData->post_date
             ];
         }
         return $sliders;
