@@ -132,7 +132,11 @@ class PersonGeneratorCommand extends Command
                 }
                 //update movie cast
                 $dataMovieCast =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $movieId, 'meta_key' => '_cast'])->first();
-                $newCastMovie = [];
+                $newCastMovie = [
+                    'id' => 0,
+                    'character' => '',
+                    'position' => 0,
+                ];
                 if( $dataMovieCast == '') {
                     $movieCasts = [];
                     $newCastMovie = [
