@@ -113,4 +113,90 @@ class MovieService {
         }
         return $items;
     }
+
+    /**
+     * Return array with format postId => ['year', 'duration', 'originalTitle']
+     * @param array $metaData
+     * @return array
+     */
+    public function getMoviesMetadata(array $metaData) {
+        $data = [];
+
+        foreach ($metaData as $value) {
+            $postId = (int) $value->post_id;
+            if ($value->meta_key == '_movie_release_date') {
+                if (\ctype_digit($value->meta_value)) {
+                    $data[$postId]['year'] = \date('Y', (int) $value->meta_value);
+                } else {
+                    $year = \substr($value->meta_value, 0, 4);
+                    $data[$postId]['year'] = \ctype_digit($year) ? $year : '';
+                }
+            } 
+            elseif ($value->meta_key == '_movie_run_time') {
+                $data[$postId]['duration'] = $value->meta_value;
+            }
+            elseif ($value->meta_key == '_movie_original_title') {
+                $data[$postId]['originalTitle'] = $value->meta_value;
+            }
+            elseif ($value->meta_key == '_thumbnail_id') {
+                $thumbnails = $this->getMovieThumbnail((int) $value->meta_value);
+                $data[$postId] += $thumbnails;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param int $postmetaId
+     * @return array
+     */
+    private function getMovieThumbnail(int $postmetaId) {
+        $data = [
+            'src' => '',
+            'srcSet' => ''
+        ];
+        $sql = 'SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ' . $postmetaId . ' AND meta_key IN (\'_wp_attached_file\', \'_wp_attachment_metadata\') ORDER BY meta_id DESC LIMIT 2';
+        $metaData = DB::select($sql);
+        foreach ($metaData as $value) {
+            if ($value->meta_key == '_wp_attached_file') {
+                $data['src'] = $this->imageUrlUpload . $value->meta_value;
+            }
+            elseif ($value->meta_key == '_wp_attachment_metadata') {
+                $srcSetVal = \unserialize($value->meta_value);
+                $srcSet = $this->imageUrlUpload . $srcSetVal['file'] . ' ' . $srcSetVal['width'] . 'w';
+                if (isset($srcSetVal['sizes'])) {
+                    foreach ($srcSetVal['sizes'] as $size) {
+                        $srcSet .= ', ' . $this->imageUrlUpload . $size['file'] . ' ' . $size['width'] . 'w';
+                    }
+                }
+                $data['srcSet'] = $srcSet;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return array with format postId => [['name', 'slug'], ['name', 'slug']]
+     * @param array $postIds
+     * @return array
+     */
+    public function getMoviesGenres(array $postIds) {
+        $data = [];
+
+        $sql = 'SELECT a.object_id, c.name, c.slug FROM wp_term_relationships a LEFT JOIN wp_term_taxonomy b ON a.term_taxonomy_id = b.term_taxonomy_id LEFT JOIN wp_terms c ON b.term_id = c.term_id WHERE a.object_id IN (' . \implode(',', $postIds) . ') AND b.taxonomy = \'movie_genre\' AND c.name != \'featured\' AND c.name != \'\'';
+        $queryData = DB::select($sql);
+        foreach ($queryData as $value) {
+            if (!isset($data[$value->object_id])) {
+                $data[$value->object_id] = [];
+            }
+            $data[$value->object_id][] = [
+                'name' => $value->name,
+                'slug' => $value->slug
+            ];
+        }
+
+        return $data;
+    }
 }
