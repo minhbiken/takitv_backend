@@ -142,6 +142,12 @@ class CastController extends Controller
                     }
                 }
             }
+            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
+                                    left join wp_term_relationships t_r on t_r.object_id = p.ID
+                                    left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                                    left join wp_terms t on tx.term_id = t.term_id
+                where t.name != 'featured' AND t.name != '' AND p.ID = ". $sliderData->ID .";";
+            
             if( $sliderData->post_type == 'tv_show' ) {
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
@@ -162,12 +168,13 @@ class CastController extends Controller
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
                 }
                 $titleSlider = $dataEpisoSlider[0]->post_title;
-            }
-            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
-                                    left join wp_term_relationships t_r on t_r.object_id = p.ID
-                                    left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                                    left join wp_terms t on tx.term_id = t.term_id
+
+                $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
+                left join wp_term_relationships t_r on t_r.object_id = p.ID
+                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
+                left join wp_terms t on tx.term_id = t.term_id
                 where t.name != 'featured' AND t.name != '' AND p.ID = ". $sliderData->ID .";";
+            }
             $dataTaxonomys = DB::select($queryTaxonomy);
             $genres = [];
             if ( count($dataTaxonomys) > 0 ) {
