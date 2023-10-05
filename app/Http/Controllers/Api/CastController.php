@@ -25,9 +25,9 @@ class CastController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
 
-        if ( $page == 1 &&  ( $orderBy == '' || $orderBy == 'titleDesc' ) && Cache::has('person_first') ) {
+        if ( $page == 1 &&  ( $orderBy == '' || $orderBy == 'nameDesc' ) && Cache::has('person_first') ) {
             $data = Cache::get('person_first');
-        } else if ( $page == 1 && $orderBy == 'titleAsc' && Cache::has('person_asc') ) {
+        } else if ( $page == 1 && $orderBy == 'nameAsc' && Cache::has('person_asc') ) {
             $data = Cache::get('person_asc');
         } else if ( Cache::has('person_' . $orderBy . '_' . $page) ) {
             $data = Cache::get('person_' . $orderBy . '_' . $page);
@@ -37,9 +37,9 @@ class CastController extends Controller
     
             if( $orderBy == '' ) {
                 $order = "ORDER BY p.post_title DESC ";
-            } else if( $orderBy == 'titleAsc' ) {
+            } else if( $orderBy == 'nameAsc' ) {
                 $order = "ORDER BY p.post_title ASC ";
-            } else if( $orderBy == 'titleDesc' ) {
+            } else if( $orderBy == 'nameDesc' ) {
                 $order = "ORDER BY p.post_title DESC ";
             } else {
                 $order = "ORDER BY p.post_title DESC ";
@@ -75,9 +75,9 @@ class CastController extends Controller
                 ]
             ];
 
-            if( $page == 1 &&  ( $orderBy == '' || $orderBy == 'titleDesc' ) ) {
+            if( $page == 1 &&  ( $orderBy == '' || $orderBy == 'nameDesc' ) ) {
                 Cache::forever('person_first', $data);
-            } else if( $page == 1 && $orderBy == 'titleAsc' ) {
+            } else if( $page == 1 && $orderBy == 'nameAsc' ) {
                 Cache::forever('person_asc', $data);
             } else {
                 Cache::forever('person_' . $orderBy . '_' . $page , $data);
