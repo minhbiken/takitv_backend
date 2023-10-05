@@ -90,56 +90,25 @@ class CastController extends Controller
     public function show(Request $request) 
     {
         $slug = $request->get('slug', '');
-        print_r($slug); die;
         $data = [];
-        
-        $page = $request->get('page', 1);
-        $perPage = $request->get('limit', env('PAGE_LIMIT'));
-        $orderBy = $request->get('orderBy', '');
+        $queryCast = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src, wp_tv_show.meta_value as tv_show, wp_movie.meta_value as movie
+        FROM wp_posts p 
+        LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
+        LEFT JOIN wp_postmeta wp_tv_show ON wp_tv_show.post_id = p.ID AND wp_tv_show.meta_key = '_tv_show_cast'
+        LEFT JOIN wp_postmeta wp_movie ON wp_movie.post_id = p.ID AND wp_movie.meta_key = '_movie_cast'
+        WHERE p.post_name= '" . $slug .  "'  ";
+        $dataCast = DB::select($queryCast);
+        $data = $dataCast[0];
+        $data->tv_show = unserialize($data->tv_show);
 
-        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
-        $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
-
-        if( $orderBy == '' ) {
-            $order = "ORDER BY p.post_date DESC ";
-        } else if( $orderBy == 'titleAsc' ) {
-            $order = "ORDER BY p.post_title ASC ";
-         }else if( $orderBy == 'titleDesc' ) {
-            $order = "ORDER BY p.post_title DESC ";
-        } else if($orderBy == 'date' ) {
-            $order = "ORDER BY p.post_date DESC ";
-        } else if($orderBy == 'rating') {
-            $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
-            $select = $select . $selectRating;
-            $order = "ORDER BY mp.all_time_stats DESC ";
-        } else if($orderBy == 'menuOrder') {
-            $order = "ORDER BY p.menu_order DESC ";
-        } else {
-            $order = "ORDER BY p.post_date DESC ";
+        if( count($data->tv_show) > 0 ) {
+            foreach( $data->tv_show as  $tvShow) {
+                
+            }
         }
 
-        //query all
-        $query = $select . $where . $order;
-
-        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
-        $queryTotal = $selectTotal . $where;
-        $dataTotal = DB::select($queryTotal);
-        $total = $dataTotal[0]->total;
-
-        //query limit
-        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
-        $query = $query . $limit;
-        $items = [];
-        $topWeeks = $this->tvshowService->getTopWeeks();
-        $data = [
-            "total" => $total,
-            "perPage" => $perPage,
-            "data" => [
-                'topWeeks' => $topWeeks,
-                'items' => $items
-            ]
-        ];
-        
+        $data->movie = unserialize($data->movie);
+        print_r($data); die;
         return response()->json($data, Response::HTTP_OK);
     }
 
@@ -226,6 +195,7 @@ class CastController extends Controller
                 'srcSet' => $srcSet,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
+                'postType' => $sliderData->post_type
             ];
         }
         return $sliders;
