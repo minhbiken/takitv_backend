@@ -115,12 +115,25 @@ class MovieService {
     }
 
     /**
-     * Return array with format postId => ['year', 'duration', 'originalTitle']
-     * @param array $metaData
+     * Return array with format postId => ['year', 'duration', 'originalTitle', 'src', 'srcSet']
+     * @param array $postIds
+     * @param array $fields
      * @return array
      */
-    public function getMoviesMetadata(array $metaData) {
+    public function getMoviesMetadata(array $postIds, array $fields = []) {
         $data = [];
+
+        if (empty($fields)) {
+            $fields = [
+                '_movie_release_date', 
+                '_movie_run_time', 
+                '_movie_original_title', 
+                '_thumbnail_id'
+            ];
+        }
+
+        $queryMeta = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $postIds) . ') AND meta_key IN (\'' . \implode('\',\'', $fields) . '\') GROUP BY post_id, meta_key LIMIT ' . (\count($postIds) * \count($fields));
+        $metaData = DB::select($queryMeta);
 
         foreach ($metaData as $value) {
             $postId = (int) $value->post_id;
@@ -178,6 +191,26 @@ class MovieService {
     }
 
     /**
+     * @param int $postId
+     * @return array
+     */
+    public function getCastsOfPost(int $postId)
+    {
+        $data = [];
+        $sql = "SELECT meta_value FROM wp_postmeta WHERE post_id = {$postId} AND meta_key = '_cast' LIMIT 1";
+        $castsMeta = DB::selectOne($sql);
+        $casts = empty($castsMeta) ? [] : \unserialize($castsMeta->meta_value);
+        if (empty($casts)) {
+            return $data;
+        }
+
+        $castIds = \array_map(fn($cast) => $cast['id'], $casts);
+        $sql = "SELECT DISTINCT ID as id, post_name as slug, post_title as name FROM wp_posts WHERE ID IN (" . \implode(',', $castIds) . ") AND post_status = 'publish' LIMIT 5";
+
+        return DB::select($sql);
+    }
+
+    /**
      * Return array with format postId => [['name', 'slug'], ['name', 'slug']]
      * @param array $postIds
      * @return array
@@ -191,12 +224,38 @@ class MovieService {
             if (!isset($data[$value->object_id])) {
                 $data[$value->object_id] = [];
             }
-            $data[$value->object_id][] = [
+            $data[(int) $value->object_id][] = [
                 'name' => $value->name,
                 'slug' => $value->slug
             ];
         }
 
+        return $data;
+    }
+
+    /**
+     * @param int $postId
+     * @param array $genres
+     * @return array
+     */
+    public function getRelatedMovies(int $postId, array $genres)
+    {
+        if(!empty($genres)) {
+            $genres = \implode("','", $genres);
+            $sql = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_posts` p
+                left join wp_term_relationships t_r on t_r.object_id = p.ID
+                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                left join wp_terms t on tx.term_id = t.term_id
+                where t.name != 'featured' AND t.name != '' AND t.slug IN ('" . $genres . "') AND p.ID != " . $postId . " ORDER BY p.post_date DESC LIMIT 8";
+        } else {
+            $sql = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_posts` p
+                left join wp_term_relationships t_r on t_r.object_id = p.ID
+                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
+                left join wp_terms t on tx.term_id = t.term_id
+                where t.name != 'featured' AND t.name != '' AND p.ID != ". $postId ." ORDER BY p.post_date DESC LIMIT 8";
+        }
+
+        $data = DB::select($sql);
         return $data;
     }
 }
