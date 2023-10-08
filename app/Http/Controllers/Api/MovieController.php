@@ -119,16 +119,16 @@ class MovieController extends Controller
             $topWeeks = DB::select($queryTopWeek);
 
             //Process metadata and genres
-            $allPostIds = \array_merge(
+            $allPostIds = \array_unique(\array_merge(
                 \array_map(fn($item) => $item->id, $items),
                 \array_map(fn($item) => $item->id, $populars),
                 \array_map(fn($item) => $item->id, $topWeeks),
-            );
-            $thumbnailPostIds = \array_merge(
+            ));
+            $thumbnailPostIds = \array_unique(\array_merge(
                 \array_map(fn($item) => $item->id, $items),
                 \array_map(fn($item) => $item->id, $populars),
 
-            );
+            ));
             $noThmunbnailPostIds = \array_map(fn($item) => $item->id, $topWeeks);
 
             $genres = $this->movieService->getMoviesGenres($allPostIds);
