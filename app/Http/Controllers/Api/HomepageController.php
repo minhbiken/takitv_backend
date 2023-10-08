@@ -176,7 +176,7 @@ class HomepageController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
 
-        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p ";
         $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
 
         if( $title != '' ) {

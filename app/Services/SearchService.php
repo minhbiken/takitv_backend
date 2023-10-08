@@ -1,55 +1,31 @@
 <?php
 
 namespace App\Services;
+
 use Illuminate\Support\Facades\DB;
+
 class SearchService {
+
+    /** @param MovieService $movieService */
+    protected $movieService;
+
+    /**
+     * @param MovieService $movieService
+     */
+    public function __construct(MovieService $movieService) {
+        $this->movieService = $movieService;
+    }
+
     public function getItems($query) {
         $items = [];
-        $releaseDate = date('Y-M-D');
-        $imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $datas = DB::select($query);
-        $movieRunTime = '';
         $chanel = '';
         $seasonNumber = '';
         $episodeNumber = '';
-        foreach( $datas as $key => $data ) {
-            $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $data->ID .";";
-            $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $data->ID .";";
-            $dataSrcMeta = DB::select($querySrcMeta);
-            $src = $imageUrlUpload.$dataSrcMeta[0]->meta_value;
-            $dataMetas = DB::select($queryMeta);
-        
-            foreach($dataMetas as $dataMeta) {
-                if( $dataMeta->meta_key == '_movie_release_date' ) {
-                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta->meta_value)) {
-                        $newDataReleaseDate = explode('-', $dataMeta->meta_value);
-                        $releaseDate = $newDataReleaseDate[0];
-                    } else {
-                        $releaseDate = $dataMeta->meta_value > 0 ? date('Y', $dataMeta->meta_value) : '';
-                    }
-                }
-                if( $dataMeta->meta_key == '_movie_run_time' ) {
-                    $movieRunTime = $dataMeta->meta_value;
-                }
-            }
 
-            $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
-                                left join wp_term_relationships t_r on t_r.object_id = p.ID
-                                left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                                left join wp_terms t on tx.term_id = t.term_id
-                                where t.name != 'featured' AND t.name != '' AND p.ID = ". $data->ID ."
-                                ORDER BY t.name DESC;";
-
-            $dataTaxonomys = DB::select($queryTaxonomy);
-
-            $genres = [];
-            foreach( $dataTaxonomys as $dataTaxonomy ) {
-                $genres[] = [
-                    'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->slug
-                ];
-            }
+        $postIds = \array_map(fn($item) => $item->ID, $datas);
+        $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
+        foreach( $datas as $data ) {     
             $postName = urldecode($data->post_name);
             $link = 'movie/' . $postName;
 
@@ -84,21 +60,13 @@ class SearchService {
                         $queryMetaTv = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $episodeId .";";
                         $dataMetaTvs = DB::select($queryMetaTv);
                         foreach($dataMetaTvs as $dataMetaTv) {
-                            if( $dataMetaTv->meta_key == '_episode_release_date' ) {
-                                if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaTv->meta_value)) {
-                                    $newDataReleaseDateTv = explode('-', $dataMetaTv->meta_value);
-                                    $releaseDate = $newDataReleaseDateTv[0];
-                                } else {
-                                    $releaseDate = $dataMetaTv->meta_value > 0 ? date('Y-m-d', $dataMetaTv->meta_value) : date('Y-m-d');
-                                }
-                            }
             
                             if( $dataMetaTv->meta_key == '_episode_number' ) {
                                 $episodeNumber = $dataMetaTv->meta_value;
                             }
                         }
 
-                        $selectTitleEpisode = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                        $selectTitleEpisode = "SELECT p.ID, p.post_name, p.post_title FROM wp_posts p ";
                         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                         $whereTitleSub = " AND p.ID='". $episodeId ."' ";
             
@@ -115,23 +83,17 @@ class SearchService {
                     $seasonNumber = '';
                 }
             }
-            $items[$key] = [
+            $items[] = [
                 'postType'  => $data->post_type,
                 'id' => $data->ID,
-                'year' => $releaseDate,
-                'genres' => $genres,
                 'title' => $data->post_title,
+                'slug' => $data->post_name,
                 'originalTitle' => $data->original_title,
-                'description' => $data->post_content,
-                'src' => $src,
                 'link' => $link,
-                'duration' => $movieRunTime,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
-                'episodeNumber' => $episodeNumber,
-                'postDateGmt' => $data->post_date_gmt,
-                'postDate' => $data->post_date
-            ];
+                'episodeNumber' => $episodeNumber
+            ] + ($metadata[$data->ID] ?? []);
         }
         return $items;
     }
