@@ -360,6 +360,7 @@ class TvshowService {
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
+                'slug' => $sliderData->post_name,
                 'src' => $this->imageUrlUpload.$src,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
