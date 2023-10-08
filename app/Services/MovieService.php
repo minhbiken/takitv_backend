@@ -137,7 +137,10 @@ class MovieService {
 
         foreach ($metaData as $value) {
             $postId = (int) $value->post_id;
-            $data[$postId] = [];
+            if (!\array_key_exists($postId, $data)) {
+                $data[$postId] = [];
+            }
+            
             if ($value->meta_key == '_movie_release_date') {
                 if (\ctype_digit($value->meta_value)) {
                     $data[$postId]['year'] = \date('Y', (int) $value->meta_value);
