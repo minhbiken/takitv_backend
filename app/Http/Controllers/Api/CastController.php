@@ -68,14 +68,24 @@ class CastController extends Controller
             $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
     
+            $casts = [];
             $items = DB::select($query);
+            foreach ($items as $item) {
+                $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
+                $casts[] = [
+                    'id' => $item->id,
+                    'slug' => $newSlug,
+                    'name' => $item->name,
+                    'src' => $item->src
+                ];
+            }
             $topWeeks = $this->topWeek();
             $data = [
                 "total" => $total,
                 "perPage" => $perPage,
                 "data" => [
                     'topWeeks' => $topWeeks,
-                    'items' => $items
+                    'items' => $casts
                 ]
             ];
 
@@ -94,44 +104,53 @@ class CastController extends Controller
     public function show(Request $request) 
     {
         $slug = $request->get('slug', '');
-        $data = [];
+        $newSlug = urlencode($slug);
         $queryCast = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src, wp_tv_show.meta_value as tv_show, wp_movie.meta_value as movie
         FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
         LEFT JOIN wp_postmeta wp_tv_show ON wp_tv_show.post_id = p.ID AND wp_tv_show.meta_key = '_tv_show_cast'
         LEFT JOIN wp_postmeta wp_movie ON wp_movie.post_id = p.ID AND wp_movie.meta_key = '_movie_cast'
-        WHERE p.post_name= '" . $slug .  "'  ";
+        WHERE ( p.post_name= '" . $slug .  "' OR p.post_name= '". $newSlug ."' )";
         $dataCast = DB::select($queryCast);
+        $cast = [];
         if( count($dataCast) > 0 ) {
             $data = $dataCast[0];
+            $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
+            $cast = [
+                'id' => $data->id,
+                'slug' => $newSlug,
+                'name' => $data->name,
+                'src' => $data->src,
+                'tv_show' => $data->tv_show,
+                'movie' => $data->movie,
+            ];
             //get tv-show
-            $data->tv_show = unserialize($data->tv_show);
+            $tvShow = unserialize($cast['tv_show']);
             $tvShowData = [];
-            if( $data->tv_show != '' && count($data->tv_show) > 0 ) {
-                foreach( $data->tv_show as  $tvShowId) {
+            if( $tvShow != '' && count($tvShow) > 0 ) {
+                foreach( $tvShow as  $tvShowId) {
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
                     $tvShowData = $this->tvshowService->getItems($select);
                 }
             }
-            $data->tv_show = $tvShowData;
+            $cast['tv_show'] = $tvShowData;
+            
             //get movie
-            $data->movie = unserialize($data->movie);
+            $movies = unserialize($cast['movie']);
             $movie = [];
-            if( $data->movie != '' && count($data->movie) > 0 ) {
-                foreach( $data->movie as  $movieId) {
+            if( $movies != '' && count($movies) > 0 ) {
+                foreach( $movies as  $movieId) {
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) AND p.ID=". $movieId;
                     $movie = $this->movieService->getItems($select);
                 }
             }
-            $data->movie = $movie;
-        } else {
-            $data = [];
+            $cast['movie'] = $movie;
         }
-        return response()->json($data, Response::HTTP_OK);
+        return response()->json($cast, Response::HTTP_OK);
     }
 
     public function topWeek() {
