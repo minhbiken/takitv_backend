@@ -104,6 +104,7 @@ class CastController extends Controller
         $dataCast = DB::select($queryCast);
         if( count($dataCast) > 0 ) {
             $data = $dataCast[0];
+            //get tv-show
             $data->tv_show = unserialize($data->tv_show);
             $tvShowData = [];
             if( $data->tv_show != '' && count($data->tv_show) > 0 ) {
@@ -115,7 +116,7 @@ class CastController extends Controller
                 }
             }
             $data->tv_show = $tvShowData;
-            
+            //get movie
             $data->movie = unserialize($data->movie);
             $movie = [];
             if( $data->movie != '' && count($data->movie) > 0 ) {
