@@ -164,4 +164,15 @@ class HelperService {
 
         return true;
     }
+
+    public function getOutLink() {
+        $outlink = env('OUTLINK', '');
+        $data = @file_get_contents($outlink);
+        if( $http_response_header[0] == 'HTTP/1.1 200 OK' ) {
+            return $data;
+        } else {
+            //push notification
+            return '';
+        }
+    }
 }

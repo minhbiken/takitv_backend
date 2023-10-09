@@ -257,10 +257,12 @@ class MovieController extends Controller
             $slug[] = "'" . $dataTaxonomy->name . "'";
         }
 
-        $outlink = env('OUTLINK');
-        $outlink = @file_get_contents($outlink);
-        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-        $outlink =  $outlink . '?pid=' . $dataMovie->ID;
+        $outLink = $this->helperService->getOutLink();
+        if ( $outLink != '' ) {
+            $outlink =  $outLink . '?pid=' . $dataMovie->ID;
+        } else {
+            $outlink = '';
+        }
 
         //get 8 movies related
         $slug = join(",", $slug);
