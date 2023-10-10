@@ -54,9 +54,10 @@ class CastController extends Controller
     
             //query all
             $query = $select . $where . $order;
-            $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
-            $queryTotal = $selectTotal . " WHERE p.post_status = 'publish' AND p.post_type='person' ";
-    
+            $queryTotal = "SELECT count(p.ID) as total 
+            FROM wp_posts p 
+            LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
+            WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != ''; ";
             if( Cache::has('person_query_total') && Cache::get('person_query_total') === $queryTotal && Cache::has('person_data_total')) {
                 $total = Cache::get('person_data_total');
             } else {
@@ -69,7 +70,6 @@ class CastController extends Controller
             //query limit
             $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
-
             $casts = [];
             $items = DB::select($query);
             foreach ($items as $item) {
