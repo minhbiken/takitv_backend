@@ -38,24 +38,24 @@ class CastController extends Controller
         } else if ( Cache::has('person_' . $orderBy . '_' . $page) ) {
             $data = Cache::get('person_' . $orderBy . '_' . $page);
         } else {
-            $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
-            $where = " WHERE p.post_status = 'publish' AND p.post_type='person' ";
+            $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p 
+            LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
+            $where = " WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != '' ";
     
             if( $orderBy == '' ) {
-                $order = "ORDER BY wp.meta_value DESC ";
+                $order = "ORDER BY p.post_title DESC ";
             } else if( $orderBy == 'nameAsc' ) {
-                $order = "ORDER BY wp.meta_value DESC, p.post_title ASC ";
+                $order = "ORDER BY p.post_title ASC ";
             } else if( $orderBy == 'nameDesc' ) {
-                $order = "ORDER BY wp.meta_value DESC, p.post_title DESC ";
+                $order = "ORDER BY p.post_title DESC ";
             } else {
-                $order = "ORDER BY wp.meta_value DESC, p.post_title DESC ";
+                $order = "ORDER BY p.post_title DESC ";
             }
     
             //query all
             $query = $select . $where . $order;
-    
             $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
-            $queryTotal = $selectTotal . $where;
+            $queryTotal = $selectTotal . " WHERE p.post_status = 'publish' AND p.post_type='person' ";
     
             if( Cache::has('person_query_total') && Cache::get('person_query_total') === $queryTotal && Cache::has('person_data_total')) {
                 $total = Cache::get('person_data_total');
@@ -69,7 +69,7 @@ class CastController extends Controller
             //query limit
             $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
-    
+
             $casts = [];
             $items = DB::select($query);
             foreach ($items as $item) {
@@ -122,11 +122,13 @@ class CastController extends Controller
         if( count($dataCast) > 0 ) {
             $data = $dataCast[0];
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
+            $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
+            $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
             $cast = [
                 'id' => $data->id,
                 'slug' => $newSlug,
                 'name' => $data->name,
-                'src' => str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src),
+                'src' => $newSrc,
                 'tv_show' => $data->tv_show,
                 'movie' => $data->movie,
             ];
