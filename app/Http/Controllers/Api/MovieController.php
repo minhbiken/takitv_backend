@@ -38,8 +38,8 @@ class MovieController extends Controller
         $genre = $request->get('genre', '');
         $orderBy = $request->get('orderBy', '');
         
-        if( $page == 1 &&  $orderBy == 'date' && $releaseYear == '' && $genre == '' && Cache::has('movie_first') ) {
-            $data = Cache::get('movie_first');
+        if( $page == 1 &&  $orderBy == 'date' && $releaseYear == '' && $genre == '' && Cache::has('movie_first_page') ) {
+            $data = Cache::get('movie_first_page');
         } else {
 
             $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM wp_posts p ";
@@ -163,7 +163,7 @@ class MovieController extends Controller
             ];
 
             if( $page == 1 &&  $orderBy == 'date' && $releaseYear == '' && $genre == '' ) {
-                Cache::forever('movie_first', $data);
+                Cache::forever('movie_first_page', $data);
             }
         }
         

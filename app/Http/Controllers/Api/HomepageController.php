@@ -40,8 +40,8 @@ class HomepageController extends Controller
      */
     public function index()
     {
-        if( Cache::has('homepage')) {
-            $homepage = Cache::get('homepage');
+        if( Cache::has('home_page')) {
+            $homepage = Cache::get('home_page');
             $sliderRandoms = $this->tvshowService->getTvShowRandom();
             $homepage['otts']['ottTitle'] = $sliderRandoms['title'];
             $homepage['otts']['ottSliders'] = $sliderRandoms['items'];
@@ -164,7 +164,7 @@ class HomepageController extends Controller
                     'movieNewests' => \array_slice($movies, 0 , 8)
                 ],
             ];
-            Cache::forever('homepage', $homepage);
+            Cache::forever('home_page', $homepage);
         }
         
         return response()->json($homepage, Response::HTTP_OK);
