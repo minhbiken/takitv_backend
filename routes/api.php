@@ -39,4 +39,4 @@ Route::get('insertPerson', 'App\Http\Controllers\Api\HomepageController@insertPe
 Route::get('autoImportPerson', 'App\Http\Controllers\Api\HomepageController@autoImportPerson');
 
 Route::get('cast/detail', 'App\Http\Controllers\Api\CastController@show');
-Route::get('casts', 'App\Http\Controllers\Api\CastController@index');
+Route::get('casts', 'App\Http\Controllers\Api\CastController@index')->name('casts');

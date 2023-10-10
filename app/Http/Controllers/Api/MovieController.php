@@ -193,10 +193,12 @@ class MovieController extends Controller
         $genreSlugs = empty($genres) ? [] : \array_map((fn($genre) => $genre['slug']), $genres[$postId]);
           
 
-        $outlink = env('OUTLINK');
-        $outlink = @file_get_contents($outlink);
-        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-        $outlink =  $outlink . '?pid=' . $postId;
+        $outLink = $this->helperService->getOutLink();
+        if ( $outLink != '' ) {
+            $outlink =  $outLink . '?pid=' . $data->id;
+        } else {
+            $outlink = '';
+        }
 
         //get 8 movies related
         $movieRelateds = $this->movieService->getRelatedMovies($postId, $genreSlugs);
