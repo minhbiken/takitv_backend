@@ -120,7 +120,6 @@ class CastController extends Controller
         $dataCast = DB::select($queryCast);
         $cast = [];
         if( count($dataCast) > 0 ) {
-            $cast['items'] = [];
             $data = $dataCast[0];
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
             $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
@@ -143,10 +142,8 @@ class CastController extends Controller
                     WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
                     $tvShowData[] = $this->tvshowService->getItems($select);
                 }
-                $cast['items'][] = $tvShowData;
-            } else {
-                $cast['items'] = [];
             }
+            $cast['tv_show'] = $tvShowData;
             
             //get movie
             $movies = unserialize($cast['movie']);
@@ -159,7 +156,7 @@ class CastController extends Controller
                     $movie[] = $this->movieService->getItems($select);
                 }
             }
-            $cast['items'] =  array_merge($cast['items'], $movie);
+            $cast['movie'] = $movie;
         }
         return response()->json($cast, Response::HTTP_OK);
     }
