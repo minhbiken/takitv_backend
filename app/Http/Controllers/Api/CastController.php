@@ -140,7 +140,9 @@ class CastController extends Controller
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
-                    $tvShowData[] = $this->tvshowService->getItems($select)[0];
+                    if( count($this->tvshowService->getItems($select)) > 0 ) {
+                        $tvShowData[] = $this->tvshowService->getItems($select)[0];
+                    }
                 }
             }
             $cast['tv_show'] = $tvShowData;
@@ -153,7 +155,9 @@ class CastController extends Controller
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) AND p.ID=". $movieId;
-                    $movie[] = $this->movieService->getItems($select)[0];
+                    if( count($this->movieService->getItems($select)) > 0 ) {
+                        $movie[] = $this->movieService->getItems($select)[0];
+                    }
                 }
             }
             $cast['movie'] = $movie;
