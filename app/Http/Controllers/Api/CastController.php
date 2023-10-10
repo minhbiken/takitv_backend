@@ -120,6 +120,7 @@ class CastController extends Controller
         $dataCast = DB::select($queryCast);
         $cast = [];
         if( count($dataCast) > 0 ) {
+            $cast['items'] = [];
             $data = $dataCast[0];
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
             $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
@@ -140,10 +141,12 @@ class CastController extends Controller
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
-                    $tvShowData = $this->tvshowService->getItems($select);
+                    $tvShowData[] = $this->tvshowService->getItems($select);
                 }
+                $cast['items'][] = $tvShowData;
+            } else {
+                $cast['items'] = [];
             }
-            $cast['tv_show'] = $tvShowData;
             
             //get movie
             $movies = unserialize($cast['movie']);
@@ -153,10 +156,10 @@ class CastController extends Controller
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) AND p.ID=". $movieId;
-                    $movie = $this->movieService->getItems($select);
+                    $movie[] = $this->movieService->getItems($select);
                 }
             }
-            $cast['movie'] = $movie;
+            $cast['items'] =  array_merge($cast['items'], $movie);
         }
         return response()->json($cast, Response::HTTP_OK);
     }
