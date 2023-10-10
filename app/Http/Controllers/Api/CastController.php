@@ -76,7 +76,7 @@ class CastController extends Controller
                     'id' => $item->id,
                     'slug' => $newSlug,
                     'name' => $item->name,
-                    'src' => $item->src
+                    'src' => str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src)
                 ];
             }
             $topWeeks = $this->topWeek();
@@ -120,7 +120,7 @@ class CastController extends Controller
                 'id' => $data->id,
                 'slug' => $newSlug,
                 'name' => $data->name,
-                'src' => $data->src,
+                'src' => str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src),
                 'tv_show' => $data->tv_show,
                 'movie' => $data->movie,
             ];
