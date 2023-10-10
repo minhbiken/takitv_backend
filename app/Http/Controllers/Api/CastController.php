@@ -29,8 +29,10 @@ class CastController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
 
-        if ( $page == 1 &&  ( $orderBy == '' || $orderBy == 'nameDesc' ) && Cache::has('person_first') ) {
+        if ( $page == 1 && $orderBy == '' && Cache::has('person_first') ) {
             $data = Cache::get('person_first');
+        } else if ( $page == 1 && $orderBy == 'nameDesc' && Cache::has('person_desc') ) {
+            $data = Cache::get('person_desc');
         } else if ( $page == 1 && $orderBy == 'nameAsc' && Cache::has('person_asc') ) {
             $data = Cache::get('person_asc');
         } else if ( Cache::has('person_' . $orderBy . '_' . $page) ) {
@@ -40,13 +42,13 @@ class CastController extends Controller
             $where = " WHERE p.post_status = 'publish' AND p.post_type='person' ";
     
             if( $orderBy == '' ) {
-                $order = "ORDER BY p.post_title DESC ";
+                $order = "ORDER BY wp.meta_value DESC ";
             } else if( $orderBy == 'nameAsc' ) {
-                $order = "ORDER BY p.post_title ASC ";
+                $order = "ORDER BY wp.meta_value DESC, p.post_title ASC ";
             } else if( $orderBy == 'nameDesc' ) {
-                $order = "ORDER BY p.post_title DESC ";
+                $order = "ORDER BY wp.meta_value DESC, p.post_title DESC ";
             } else {
-                $order = "ORDER BY p.post_title DESC ";
+                $order = "ORDER BY wp.meta_value DESC, p.post_title DESC ";
             }
     
             //query all
@@ -72,11 +74,13 @@ class CastController extends Controller
             $items = DB::select($query);
             foreach ($items as $item) {
                 $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
+                $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
+                $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
                 $casts[] = [
                     'id' => $item->id,
                     'slug' => $newSlug,
                     'name' => $item->name,
-                    'src' => str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src)
+                    'src' =>  $newSrc
                 ];
             }
             $topWeeks = $this->topWeek();
@@ -89,8 +93,10 @@ class CastController extends Controller
                 ]
             ];
 
-            if( $page == 1 &&  ( $orderBy == '' || $orderBy == 'nameDesc' ) ) {
+            if( $page == 1 &&  $orderBy == '' ) {
                 Cache::forever('person_first', $data);
+            } else if( $page == 1 && $orderBy == 'nameDesc' ) {
+                Cache::forever('person_desc', $data);
             } else if( $page == 1 && $orderBy == 'nameAsc' ) {
                 Cache::forever('person_asc', $data);
             } else {
