@@ -65,6 +65,7 @@ class EpisodeController extends Controller
         $dataPost = DB::select($query);
         
         $tvshowTitle = '';
+        $tvshowSlug = '';
         if (count($dataPost) == 0) {
             return response()->json($movies, Response::HTTP_NOT_FOUND);
         }
@@ -98,9 +99,10 @@ class EpisodeController extends Controller
                     }
                 }
 
-                $querySeasonEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, pm.meta_value, pm.meta_key, pm.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID WHERE p.ID=" . $tvShowId . " AND pm.meta_key='_seasons' ORDER BY p.ID ASC LIMIT 1;";
+                $querySeasonEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, pm.meta_value, pm.meta_key, pm.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID WHERE p.ID=" . $tvShowId . " AND pm.meta_key='_seasons' ORDER BY p.ID ASC LIMIT 1;";
                 $tvshowTitleData = DB::select($querySeasonEpisode);
                 $tvshowTitle = $tvshowTitleData[0]->post_title;
+                $tvshowSlug = $tvshowTitleData[0]->post_name;
                 $seasons = $this->tvshowService->getSeasons($tvshowTitleData);
 
                 $dataSeason = $dataPost[0];
@@ -157,6 +159,7 @@ class EpisodeController extends Controller
                     'postDate' => $dataSeason->post_date,
                     'seasonName' => $seasonName,
                     'tvshowTitle' => $tvshowTitle,
+                    'tvshowSlug' => $tvshowSlug,
                     'seasons' => $seasons,
                     'casts' => $casts
                 ];

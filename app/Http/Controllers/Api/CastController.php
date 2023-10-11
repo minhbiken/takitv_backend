@@ -29,6 +29,7 @@ class CastController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
+        $search = $request->get('search', '');
 
         if ( $page == 1 && $orderBy == '' && Cache::has('person_first') ) {
             $data = Cache::get('person_first');
@@ -36,8 +37,6 @@ class CastController extends Controller
             $data = Cache::get('person_desc');
         } else if ( $page == 1 && $orderBy == 'nameAsc' && Cache::has('person_asc') ) {
             $data = Cache::get('person_asc');
-        } else if ( Cache::has('person_' . $orderBy . '_' . $page) ) {
-            $data = Cache::get('person_' . $orderBy . '_' . $page);
         } else {
             $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p 
             LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
@@ -51,6 +50,10 @@ class CastController extends Controller
                 $order = "ORDER BY p.post_title DESC ";
             } else {
                 $order = "ORDER BY p.post_title DESC ";
+            }
+
+            if( $search != '' ) {
+                $where = $where . " AND p.post_title LIKE '%". $search ."%' ";
             }
     
             //query all
@@ -105,8 +108,6 @@ class CastController extends Controller
                 Cache::forever('person_desc', $data);
             } else if( $page == 1 && $orderBy == 'nameAsc' ) {
                 Cache::forever('person_asc', $data);
-            } else {
-                Cache::forever('person_' . $orderBy . '_' . $page , $data);
             }
         }
         
