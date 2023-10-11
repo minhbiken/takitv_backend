@@ -53,7 +53,7 @@ class CastController extends Controller
 
         //query all
         $query = $select . $where . $order;
-        $queryTotal = "SELECT count(p.ID) as total 
+        $queryTotal = "SELECT count(p.ID) as total, p.post_title
         FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
         WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != ''; " . $whereSearch;
