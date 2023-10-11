@@ -4,7 +4,8 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-
+use App\Models\Post;
+use App\Models\PostMeta;
 class HelperService {
     protected $imageUrlUpload;
     public function __construct()
@@ -164,7 +165,7 @@ class HelperService {
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'tving']));
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'wavve']));
         Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'amazon-prime-video']));
-        Http::get(route('casts',  ['orderBy' => '', 'page' => 1]));
+        Http::get(route('casts',  ['page' => 1]));
         Http::get(route('casts',  ['orderBy' => 'nameDesc', 'page' => 1]));
         Http::get(route('casts',  ['orderBy' => 'nameAsc', 'page' => 1]));
         return true;
@@ -179,5 +180,191 @@ class HelperService {
             //push notification
             return '';
         }
+    }
+
+    public function clearCastDupplicate($items) {
+        foreach($items as $item) {
+            foreach($items as $newItem) {
+                $itemSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
+                $itemSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $itemSrc);
+
+                $newItemSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $newItem->src);
+                $newItemSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newItemSrc);
+                if ( $itemSrc == $newItemSrc && (strlen($item->name) > strlen($newItem->name)) ) {
+                    //die("item > new item");
+                    //change status duplicate for item
+                    $postItem = Post::find($item->id);
+                    $postItem->post_status = 'duplicate';
+                    $postItem->save();
+
+                    //transfer tv_show for new item
+                    $postMetaItem = PostMeta::select('meta_value')->where('post_id', $item->id)->where('meta_key', '_tv_show_cast')->first();
+                    if( $postMetaItem != '' ) {
+                        $tvShow = unserialize($postMetaItem->meta_value);
+                        if(count($tvShow) > 0 ) {
+                            foreach( $tvShow as $tv ) {
+                                $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $newItem->id])->where('meta_key', '_tv_show_cast')->first();
+                                if($dataMovie != '' && $dataMovie->meta_value != '' ) {
+                                    $movies = unserialize($dataMovie->meta_value);
+                                    //check exist and update movie of cast
+                                    if( !in_array($tv, $movies) ) {
+                                        array_push($movies, $tv);
+                                        $metaPost = PostMeta::find($dataMovie->meta_id);
+                                        $metaPost->meta_value = serialize($movies);
+                                        $metaPost->save();
+                                    }
+                                } else if( $dataMovie != '' && $dataMovie->meta_value == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $newItem->id;
+                                    $metaPost->meta_key = '_tv_show_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                } else if ( $dataMovie == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $newItem->id;
+                                    $metaPost->meta_key = '_tv_show_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                }
+                            }    
+                        }
+                    }
+                    //transfer movie for new item
+                    $postMetaItem = PostMeta::select('meta_value')->where('post_id', $item->id)->where('meta_key', '_movie_cast')->first();
+                    if( $postMetaItem != '' ) {
+                        $tvShow = unserialize($postMetaItem->meta_value);
+                        if(count($tvShow) > 0 ) {
+                            foreach( $tvShow as $tv ) {
+                                $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $newItem->id])->where('meta_key', '_movie_cast')->first();
+                                if($dataMovie != '' && $dataMovie->meta_value != '' ) {
+                                    $movies = unserialize($dataMovie->meta_value);
+                                    //check exist and update movie of cast
+                                    if( !in_array($tv, $movies) ) {
+                                        array_push($movies, $tv);
+                                        $metaPost = PostMeta::find($dataMovie->meta_id);
+                                        $metaPost->meta_value = serialize($movies);
+                                        $metaPost->save();
+                                    }
+                                } else if( $dataMovie != '' && $dataMovie->meta_value == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $newItem->id;
+                                    $metaPost->meta_key = '_movie_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                } else if ( $dataMovie == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $newItem->id;
+                                    $metaPost->meta_key = '_movie_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                }
+                            }    
+                        }
+                    } 
+                } else if ( $itemSrc == $newItemSrc && (strlen($item->name) < strlen($newItem->name)) ) {
+                    //die("item < new item");
+                    //remove duplicate for new item
+                    //change status duplicate for item
+                    $postItem = Post::find($newItem->id);
+                    $postItem->post_status = 'duplicate';
+                    $postItem->save();
+
+                    //transfer tv_show for new item
+                    $postMetaItem = PostMeta::select('meta_value')->where('post_id', $newItem->id)->where('meta_key', '_tv_show_cast')->first();
+                    if( $postMetaItem != '' ) {
+                        $tvShow = unserialize($postMetaItem->meta_value);
+                        if(count($tvShow) > 0 ) {
+                            foreach( $tvShow as $tv ) {
+                                $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $item->id])->where('meta_key', '_tv_show_cast')->first();
+                                if($dataMovie != '' && $dataMovie->meta_value != '' ) {
+                                    $movies = unserialize($dataMovie->meta_value);
+                                    //check exist and update movie of cast
+                                    if( !in_array($tv, $movies) ) {
+                                        array_push($movies, $tv);
+                                        $metaPost = PostMeta::find($dataMovie->meta_id);
+                                        $metaPost->meta_value = serialize($movies);
+                                        $metaPost->save();
+                                    }
+                                } else if( $dataMovie != '' && $dataMovie->meta_value == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $item->id;
+                                    $metaPost->meta_key = '_tv_show_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                } else if ( $dataMovie == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $item->id;
+                                    $metaPost->meta_key = '_tv_show_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                }
+                            }    
+                        }
+                    }
+                    //transfer movie for new item
+                    $postMetaItem = PostMeta::select('meta_value')->where('post_id', $newItem->id)->where('meta_key', '_movie_cast')->first();
+                    if( $postMetaItem != '' ) {
+                        $tvShow = unserialize($postMetaItem->meta_value);
+                        if(count($tvShow) > 0 ) {
+                            foreach( $tvShow as $tv ) {
+                                $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $item->id])->where('meta_key', '_movie_cast')->first();
+                                if($dataMovie != '' && $dataMovie->meta_value != '' ) {
+                                    $movies = unserialize($dataMovie->meta_value);
+                                    //check exist and update movie of cast
+                                    if( !in_array($tv, $movies) ) {
+                                        array_push($movies, $tv);
+                                        $metaPost = PostMeta::find($dataMovie->meta_id);
+                                        $metaPost->meta_value = serialize($movies);
+                                        $metaPost->save();
+                                    }
+                                } else if( $dataMovie != '' && $dataMovie->meta_value == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $item->id;
+                                    $metaPost->meta_key = '_movie_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                } else if ( $dataMovie == '' ) {
+                                    $movies = [];
+                                    array_push($movies, $tv);
+                                    $metaPost = new PostMeta;
+                                    $metaPost->post_id = $item->id;
+                                    $metaPost->meta_key = '_movie_cast';
+                                    $metaPost->meta_value = serialize($movies);
+                                    $metaPost->save();
+                                }
+                            }    
+                        }
+                    } 
+                } else {
+                    // print_r($item->name);
+                    // print_r("<br>");
+                    // print_r($newItem->name);
+                    // print_r("<br>");
+                    // print_r($itemSrc);
+                    // print_r("<br>");
+                    // print_r($newItemSrc);
+                    // print_r("<br>");
+                    // print_r(strlen($item->name));
+                    // print_r("<br>");
+                    // print_r(strlen($newItem->name));
+                    // print_r("<br>");
+                }
+            }
+        }
+        //die;
     }
 }
