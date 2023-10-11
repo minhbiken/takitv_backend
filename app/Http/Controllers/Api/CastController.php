@@ -31,86 +31,70 @@ class CastController extends Controller
         $orderBy = $request->get('orderBy', '');
         $search = $request->get('search', '');
 
-        if ( $page == 1 && $orderBy == '' && Cache::has('person_first') ) {
-            $data = Cache::get('person_first');
-        } else if ( $page == 1 && $orderBy == 'nameDesc' && Cache::has('person_desc') ) {
-            $data = Cache::get('person_desc');
-        } else if ( $page == 1 && $orderBy == 'nameAsc' && Cache::has('person_asc') ) {
-            $data = Cache::get('person_asc');
+        $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p 
+        LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
+        $where = " WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != '' ";
+
+        if( $orderBy == '' ) {
+            $order = "ORDER BY p.post_title DESC ";
+        } else if( $orderBy == 'nameAsc' ) {
+            $order = "ORDER BY p.post_title ASC ";
+        } else if( $orderBy == 'nameDesc' ) {
+            $order = "ORDER BY p.post_title DESC ";
         } else {
-            $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p 
-            LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
-            $where = " WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != '' ";
-    
-            if( $orderBy == '' ) {
-                $order = "ORDER BY p.post_title DESC ";
-            } else if( $orderBy == 'nameAsc' ) {
-                $order = "ORDER BY p.post_title ASC ";
-            } else if( $orderBy == 'nameDesc' ) {
-                $order = "ORDER BY p.post_title DESC ";
-            } else {
-                $order = "ORDER BY p.post_title DESC ";
-            }
-
-            if( $search != '' ) {
-                $where = $where . " AND p.post_title LIKE '%". $search ."%' ";
-            }
-    
-            //query all
-            $query = $select . $where . $order;
-            $queryTotal = "SELECT count(p.ID) as total 
-            FROM wp_posts p 
-            LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
-            WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != ''; ";
-            if( Cache::has('person_query_total') && Cache::get('person_query_total') === $queryTotal && Cache::has('person_data_total')) {
-                $total = Cache::get('person_data_total');
-            } else {
-                $dataTotal = DB::select($queryTotal);
-                $total = $dataTotal[0]->total;
-                Cache::forever('person_query_total', $queryTotal);
-                Cache::forever('person_data_total', $total);
-            }
-    
-            //query limit
-            $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
-            $query = $query . $limit;
-            $casts = [];
-
-            $items = DB::select($query);
-
-            //clear cast dupplicate
-            $this->helperService->clearCastDupplicate($items);
-            $items = DB::select($query);
-            foreach ($items as $item) {
-                $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
-                $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
-                $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
-                $casts[] = [
-                    'id' => $item->id,
-                    'slug' => $newSlug,
-                    'name' => $item->name,
-                    'src' =>  $newSrc
-                ];
-            }
-            $topWeeks = $this->topWeek();
-            $data = [
-                "total" => $total,
-                "perPage" => $perPage,
-                "data" => [
-                    'topWeeks' => $topWeeks,
-                    'items' => $casts
-                ]
-            ];
-
-            if( $page == 1 &&  $orderBy == '' ) {
-                Cache::forever('person_first', $data);
-            } else if( $page == 1 && $orderBy == 'nameDesc' ) {
-                Cache::forever('person_desc', $data);
-            } else if( $page == 1 && $orderBy == 'nameAsc' ) {
-                Cache::forever('person_asc', $data);
-            }
+            $order = "ORDER BY p.post_title DESC ";
         }
-        
+
+        if( $search != '' ) {
+            $where = $where . " AND p.post_title LIKE '%". $search ."%' ";
+        }
+
+        //query all
+        $query = $select . $where . $order;
+        $queryTotal = "SELECT count(p.ID) as total 
+        FROM wp_posts p 
+        LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
+        WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != ''; ";
+        if( Cache::has('person_query_total') && Cache::get('person_query_total') === $queryTotal && Cache::has('person_data_total')) {
+            $total = Cache::get('person_data_total');
+        } else {
+            $dataTotal = DB::select($queryTotal);
+            $total = $dataTotal[0]->total;
+            Cache::forever('person_query_total', $queryTotal);
+            Cache::forever('person_data_total', $total);
+        }
+
+        //query limit
+        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+        $query = $query . $limit;
+        $casts = [];
+
+        $items = DB::select($query);
+
+        //clear cast dupplicate
+        $this->helperService->clearCastDupplicate($items);
+        $items = DB::select($query);
+        foreach ($items as $item) {
+            $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
+            $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
+            $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+            $casts[] = [
+                'id' => $item->id,
+                'slug' => $newSlug,
+                'name' => $item->name,
+                'src' =>  $newSrc
+            ];
+        }
+        $topWeeks = $this->topWeek();
+        $data = [
+            "total" => $total,
+            "perPage" => $perPage,
+            "data" => [
+                'topWeeks' => $topWeeks,
+                'items' => $casts
+            ]
+        ];
+
         return response()->json($data, Response::HTTP_OK);
     }
 
