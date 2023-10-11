@@ -114,7 +114,8 @@ class EpisodeController extends Controller
                 foreach( $dataTaxonomys as $dataTaxonomy ) {
                     $genres[] = [
                         'name' => $dataTaxonomy->name,
-                        'link' =>  $dataTaxonomy->slug
+                        'link' => $dataTaxonomy->slug,
+                        'slug' => $dataTaxonomy->slug
                     ];
                 }
             
