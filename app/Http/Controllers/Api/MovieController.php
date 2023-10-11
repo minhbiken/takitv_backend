@@ -224,10 +224,9 @@ class MovieController extends Controller
     public function show($title, Request $request)
     {
         $titleMovie = $request->get('title', '');
-        $nameMovie = urlencode($titleMovie);
         $select = "SELECT p.ID, p.post_name, p.post_title, p.post_content, p.original_title FROM wp_posts p ";
         $where = " WHERE ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND (p.post_title='". $titleMovie ."' OR p.post_name='". $nameMovie ."' ) LIMIT 1; ";
+        $whereTitle = " AND p.post_title='". $titleMovie ."'  LIMIT 1; ";
 
         $where = $where . $whereTitle;
         $movies = [];
@@ -327,12 +326,17 @@ class MovieController extends Controller
                     $casts = array_slice($casts, 0, 5, true);
                     //get data of person
                     $idCasts = array_column($casts, 'id');
-                    $idCasts = join(",", $idCasts);
+                    $newCasts = [];
+                    foreach ($idCasts as $id) {
+                        $queryCasts = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p
+                        LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
+                        WHERE p.ID= ". $id ." and p.post_status = 'publish' LIMIT 5;";
+                        $cast = DB::select($queryCasts);
+                        if( count($cast) > 0 ) {
+                            array_push($newCasts, $cast);
+                        }
+                    }            
                     
-                    $queryCasts = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p
-                    LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
-                    WHERE p.ID in ( " . $idCasts .  " ) and p.post_status = 'publish' LIMIT 5;";
-                    $casts = DB::select($queryCasts);
                 }
             }
         }
