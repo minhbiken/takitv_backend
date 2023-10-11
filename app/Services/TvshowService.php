@@ -303,6 +303,7 @@ class TvshowService {
         $sliders = [];
         $sliderDatas = DB::select($query);
         $src = '';
+        $slug = '';
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT * FROM `wp_postmeta` pm 
             LEFT JOIN wp_posts p ON p.ID = pm.post_id 
@@ -313,7 +314,8 @@ class TvshowService {
                 $src = $dataResult[0]->meta_value;
             }
 
-            $titleSlider = $sliderData->post_title; 
+            $titleSlider = $sliderData->post_title;
+            $slug = $sliderData->post_name;
             $linkSlider = 'movie/' . $sliderData->post_title;
             $seasonNumber = '';
             $episodeNumber = '';
@@ -356,7 +358,7 @@ class TvshowService {
                 
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
-                    $episodeName = $dataEpisoSlider[0]->post_name;
+                    $slug = $dataEpisoSlider[0]->post_name;
                 }
 
                 $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
@@ -371,9 +373,10 @@ class TvshowService {
                 'link' => $linkSlider,
                 'slug' => $sliderData->post_name,
                 'src' => $this->imageUrlUpload.$src,
-                'slug' => $episodeName,
+                'slug' => $slug,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
+                'post_type' => $sliderData->post_type
             ];
             $sliders['title'] = $queryRandom['title'];
         }
