@@ -163,7 +163,7 @@ class TvshowService {
                 $chanel = env('IMAGE_PLACEHOLDER');
             }
 
-            $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+            $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
             $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
             $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -171,7 +171,7 @@ class TvshowService {
             $dataEpisoTitle = DB::select($queryTitle);
             
             if( count($dataEpisoTitle) > 0 ) {
-                $episodeTitle = $dataEpisoTitle[0]->post_title;
+                $episodeTitle = $dataEpisoTitle[0]->post_name;
                 $link = 'episode/' . $episodeTitle;                
             }
             
@@ -188,6 +188,7 @@ class TvshowService {
                 'src' => $src,
                 'srcSet' => $srcSet,
                 'link' => $link,
+                'slug' => $link,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
