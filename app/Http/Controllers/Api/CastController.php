@@ -56,7 +56,7 @@ class CastController extends Controller
         $queryTotal = "SELECT count(p.ID) as total, p.post_title
         FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
-        WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != ''; ";
+        WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != '' " . $whereSearch;
         if( Cache::has('person_query_total') && Cache::get('person_query_total') === $queryTotal && Cache::has('person_data_total')) {
             $total = Cache::get('person_data_total');
         } else {
