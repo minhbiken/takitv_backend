@@ -18,6 +18,7 @@ class HelperService {
         $sliders = [];
         $srcSet = [];
         $src = '';
+        $dataEpisodeName = '';
         $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
             // $dataQuery = "SELECT * FROM `wp_postmeta` pm 
@@ -32,6 +33,7 @@ class HelperService {
                 $src = $dataResult[0]->meta_value;
             }
             $titleSlider = $sliderData->post_title; 
+            $dataEpisodeName = $sliderData->post_name;
             $linkSlider = 'movie/' . $sliderData->post_title;
             $seasonNumber = '';
             $episodeNumber = '';
