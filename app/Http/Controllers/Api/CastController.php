@@ -10,6 +10,7 @@ use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
 use App\Services\MovieService;
 use App\Services\TvshowService;
+use Illuminate\Support\Facades\Http;
 class CastController extends Controller
 {
     protected $imageUrlUpload;
@@ -71,6 +72,11 @@ class CastController extends Controller
             $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
             $casts = [];
+
+            $items = DB::select($query);
+
+            //clear cast dupplicate
+            $this->helperService->clearCastDupplicate($items);
             $items = DB::select($query);
             foreach ($items as $item) {
                 $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
@@ -249,5 +255,13 @@ class CastController extends Controller
             ];
         }
         return $sliders;
+    }
+
+    public function makeCacheCast(Request $request) {
+        $from = $request->get('from', 0);
+        $to = $request->get('to', 0);
+        for($from; $from < $to; $from++) {
+            Http::get(route('casts',  ['page' => $from]));
+        }
     }
 }
