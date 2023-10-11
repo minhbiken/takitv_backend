@@ -103,7 +103,7 @@ class MovieService {
                     'originalTitle' => $originalTitle,
                     'description' => $dataItem->post_content,
                     'link' => $link,
-                    'slug' => $link,
+                    'slug' => $dataItem->post_name,
                     'src' => $src,
                     'srcSet' => $srcSet,
                     'duration' => $movieRunTime,

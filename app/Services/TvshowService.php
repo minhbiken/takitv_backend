@@ -188,7 +188,7 @@ class TvshowService {
                 'src' => $src,
                 'srcSet' => $srcSet,
                 'link' => $link,
-                'slug' => $link,
+                'slug' => $episodeTitle,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
