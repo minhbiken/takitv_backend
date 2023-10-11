@@ -22,7 +22,7 @@ class TvshowService {
         } else {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
-        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
+        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
@@ -42,7 +42,7 @@ class TvshowService {
         } else {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
-        $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats, p.post_status FROM wp_posts p
+        $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats, p.post_status FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
@@ -82,6 +82,7 @@ class TvshowService {
         $src= '';
         $originalTitle = '';
         $episodeTitle = '';
+        $episodeName = '';
         foreach ( $dataItems as $dataItem ) {
             $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataOriginalTitle = DB::select($queryOriginalTitle);
@@ -135,7 +136,8 @@ class TvshowService {
             foreach( $dataTaxonomys as $key => $dataTaxonomy ) {
                 $genres[$key] = [
                     'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->slug
+                    'link' =>  $dataTaxonomy->slug,
+                    'slug' =>  $dataTaxonomy->slug
                 ];
             }
 
@@ -213,12 +215,13 @@ class TvshowService {
                 arsort($episodeDatas);
                 $episodes = [];
                 foreach ( $episodeDatas as $episodeSubData ) {
-                    $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
+                    $queryEpiso = "SELECT p.ID, p.post_title, p.post_name, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
                     $dataEpiso = DB::select($queryEpiso);
                     if( count($dataEpiso) > 0 ) {
                         $episodes[] = [
                             'id' => $episodeSubData,
                             'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
+                            'slug' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_name : '',
                             'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
                             'postDate' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date : '',
                         ];

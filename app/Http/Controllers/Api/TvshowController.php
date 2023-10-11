@@ -145,7 +145,7 @@ class TvshowController extends Controller
 
         $where = $where . $whereTitle;
         $movies = [];
-        
+        $tvShowSlug = '';
         $dataPost = DB::select($select . $where);
         $link = '';
         if (count($dataPost) == 0) {
@@ -215,7 +215,7 @@ class TvshowController extends Controller
             $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
         }
 
-        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
         $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -223,13 +223,15 @@ class TvshowController extends Controller
         $dataEpisoTitle = DB::select($queryTitle);
         
         if( count($dataEpisoTitle) > 0 ) {
-            $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
+            $link = 'episode/' . $dataEpisoTitle[0]->post_title ."/";
+            $tvShowSlug = $dataEpisoTitle[0]->post_name;
         }
 
         $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
+            'slug' => $tvShowSlug,
             'originalTitle' => $dataSeason->original_title,
             'description' => $dataSeason->post_content,
             'genres' => $genres,

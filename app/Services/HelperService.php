@@ -195,7 +195,6 @@ class HelperService {
                 $newItemSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $newItem->src);
                 $newItemSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newItemSrc);
                 if ( $itemSrc == $newItemSrc && (strlen($item->name) > strlen($newItem->name)) ) {
-                    //die("item > new item");
                     //change status duplicate for item
                     $postItem = Post::find($item->id);
                     $postItem->post_status = 'duplicate';
@@ -274,7 +273,6 @@ class HelperService {
                         }
                     } 
                 } else if ( $itemSrc == $newItemSrc && (strlen($item->name) < strlen($newItem->name)) ) {
-                    //die("item < new item");
                     //remove duplicate for new item
                     //change status duplicate for item
                     $postItem = Post::find($newItem->id);
@@ -353,22 +351,8 @@ class HelperService {
                             }    
                         }
                     } 
-                } else {
-                    // print_r($item->name);
-                    // print_r("<br>");
-                    // print_r($newItem->name);
-                    // print_r("<br>");
-                    // print_r($itemSrc);
-                    // print_r("<br>");
-                    // print_r($newItemSrc);
-                    // print_r("<br>");
-                    // print_r(strlen($item->name));
-                    // print_r("<br>");
-                    // print_r(strlen($newItem->name));
-                    // print_r("<br>");
                 }
             }
         }
-        //die;
     }
 }
