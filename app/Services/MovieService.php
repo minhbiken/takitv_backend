@@ -208,11 +208,17 @@ class MovieService {
         if (empty($casts)) {
             return $data;
         }
-
-        $castIds = \array_map(fn($cast) => $cast['id'], $casts);
-        $sql = "SELECT DISTINCT ID as id, post_name as slug, post_title as name FROM wp_posts WHERE ID IN (" . \implode(',', $castIds) . ") AND post_status = 'publish' LIMIT 5";
-
-        return DB::select($sql);
+        
+        $newCasts = [];
+        $casts = array_slice($casts, 0, 5, true);
+        foreach($casts as $cast) {
+            $sql = "SELECT DISTINCT ID as id, post_name as slug, post_title as name FROM wp_posts WHERE ID=".$cast['id']." AND post_status = 'publish' LIMIT 1";
+            $dataCast = DB::select($sql);
+            if( count($dataCast) > 0 ) {
+                array_push($newCasts, $dataCast[0]);
+            }
+        }
+        return $newCasts;
     }
 
     /**
