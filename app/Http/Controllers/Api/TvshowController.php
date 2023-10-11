@@ -351,7 +351,7 @@ class TvshowController extends Controller
                         $chanel = env('IMAGE_PLACEHOLDER');
                     }
 
-                    $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+                    $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
                     $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                     $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -360,6 +360,7 @@ class TvshowController extends Controller
                     
                     if( count($dataEpisoTitle) > 0 ) {
                         $link = 'episode/' . $dataEpisoTitle[0]->post_title;
+                        $episodeName = $dataEpisoTitle[0]->post_name;
                     }
                 }
 
@@ -374,7 +375,8 @@ class TvshowController extends Controller
                 foreach( $dataTaxonomys as $dataTaxonomy ) {
                     $genres[] = [
                         'name' => $dataTaxonomy->name,
-                        'link' =>  $dataTaxonomy->slug
+                        'link' => $dataTaxonomy->slug,
+                        'slug' => $dataTaxonomy->slug
                     ];
                 }
 
@@ -391,6 +393,7 @@ class TvshowController extends Controller
                     'src' => $src,
                     'srcSet' => $srcSet,
                     'link' => $link,
+                    'slug' => $episodeName,
                     'outlink' => $outlink,
                     'chanelImage' => $chanel,
                     'seasonNumber' => $seasonNumber,

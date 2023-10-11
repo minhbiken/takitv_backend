@@ -65,7 +65,7 @@ class HelperService {
 
                 $episodeId = end($lastSeason['episodes']);
                 
-                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                 $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                 $whereTitle = " AND p.ID='". $episodeId ."' ";
     
@@ -75,6 +75,7 @@ class HelperService {
                 
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
+                    $dataEpisodeName = $dataEpisoSlider[0]->post_name;
                 }
 
                 $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
@@ -87,6 +88,7 @@ class HelperService {
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
+                'slug' => $dataEpisodeName,
                 'src' => $this->imageUrlUpload.$src,
                 'srcSet' => $srcSet,
                 'seasonNumber' => $seasonNumber,

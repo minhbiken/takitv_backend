@@ -340,7 +340,7 @@ class TvshowService {
 
                 $episodeId = end($lastSeason['episodes']);
                 
-                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                 $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                 $whereTitle = " AND p.ID='". $episodeId ."' ";
     
@@ -350,6 +350,7 @@ class TvshowService {
                 
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
+                    $episodeName = $dataEpisoSlider[0]->post_name;
                 }
 
                 $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
@@ -364,6 +365,7 @@ class TvshowService {
                 'link' => $linkSlider,
                 'slug' => $sliderData->post_name,
                 'src' => $this->imageUrlUpload.$src,
+                'slug' => $episodeName,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
             ];
