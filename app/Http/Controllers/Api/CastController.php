@@ -169,6 +169,7 @@ class CastController extends Controller
 
     public function getItems($query) {
         $sliders = [];
+        $slug = '';
         $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
             $titleSlider = $sliderData->post_title; 
@@ -202,7 +203,7 @@ class CastController extends Controller
                 $lastSeason = end($episodeData);
                 $episodeId = end($lastSeason['episodes']);
                 
-                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                 $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                 $whereTitle = " AND p.ID='". $episodeId ."' ";
     
@@ -212,9 +213,10 @@ class CastController extends Controller
                 
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
+                    $slug = $dataEpisoSlider[0]->post_name;
+                    $titleSlider = $dataEpisoSlider[0]->post_title;
                 }
-                $titleSlider = $dataEpisoSlider[0]->post_title;
-
+                
                 $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                 left join wp_term_relationships t_r on t_r.object_id = p.ID
                 left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
@@ -227,7 +229,8 @@ class CastController extends Controller
                 foreach( $dataTaxonomys as $dataTaxonomy ) {
                     $genres[] = [
                         'name' => $dataTaxonomy->name,
-                        'link' =>  $dataTaxonomy->slug
+                        'link' =>  $dataTaxonomy->slug,
+                        'slug' =>  $dataTaxonomy->slug
                     ];
                 }
             }
@@ -237,6 +240,7 @@ class CastController extends Controller
                 'genres' => $genres,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
+                'slug' => $slug,
                 'postType' => $sliderData->post_type,
                 'postDate' => $sliderData->post_date
             ];
