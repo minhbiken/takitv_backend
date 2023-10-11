@@ -171,7 +171,8 @@ class TvshowService {
             $dataEpisoTitle = DB::select($queryTitle);
             
             if( count($dataEpisoTitle) > 0 ) {
-                $episodeTitle = $dataEpisoTitle[0]->post_name;
+                $episodeTitle = $dataEpisoTitle[0]->post_title;
+                $episodeName = $dataEpisoTitle[0]->post_name;
                 $link = 'episode/' . $episodeTitle;                
             }
             
@@ -188,7 +189,7 @@ class TvshowService {
                 'src' => $src,
                 'srcSet' => $srcSet,
                 'link' => $link,
-                'slug' => $episodeTitle,
+                'slug' => $episodeName,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
