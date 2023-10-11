@@ -83,6 +83,7 @@ class TvshowService {
         $originalTitle = '';
         $episodeTitle = '';
         $episodeName = '';
+        $tvShowSlug = '';
         foreach ( $dataItems as $dataItem ) {
             $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataOriginalTitle = DB::select($queryOriginalTitle);
@@ -174,6 +175,7 @@ class TvshowService {
             
             if( count($dataEpisoTitle) > 0 ) {
                 $episodeTitle = $dataEpisoTitle[0]->post_title;
+                $tvShowSlug = $dataEpisoTitle[0]->post_name;
                 $episodeName = $dataEpisoTitle[0]->post_name;
                 $link = 'episode/' . $episodeTitle;                
             }
@@ -184,6 +186,7 @@ class TvshowService {
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'tvshowTitle' => $dataItem->post_title,
+                'tvShowSlug' => $tvShowSlug,
                 'title' => $episodeTitle,
                 'episodeId' => $episodeId,
                 'originalTitle' => $originalTitle,
