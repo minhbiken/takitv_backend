@@ -268,7 +268,6 @@ class CastController extends Controller
         ORDER BY p.post_date DESC 
         LIMIT " . $limitFrom . ", " . $limitTo . " ;";
         $dataMovies =  DB::select($queryMovie);
-        
         //check cast right or wrong
         $dataWrong = [];
         foreach ( $dataMovies as $dataMovie ) {
@@ -284,16 +283,11 @@ class CastController extends Controller
                     //check tmdb movie
                     $urlTmdb = "https://www.themoviedb.org/movie/" . $dataMovie->tmdb_id . "/cast";
                     $contentTmdb = @file_get_contents($urlTmdb);
-                    preg_match_all("/alt=\"(.*)\">/", $contentTmdb, $result);
-                    $name = '';
-                    if( isset($result[0][2]) ) {
-                        $name = explode("alt=\"", $result[0][2]);
-                        if( isset($name[1]) ) {
-                            $data = explode("\">", $name[1]);
-                            $name = $data[0];
-                        }
-                    }
-                    if ( $dataCast[0]->post_title !== $name ) {
+                    preg_match("/\">(.*)<\/a><p>/", $contentTmdb, $result);
+                    $name = str_replace("<p>", "", $result[0]);
+                    $name = str_replace("\">", "", $name);
+                    
+                    if ( $dataCast[0]->post_title != strip_tags(html_entity_decode($name)) ) {
                         $wrong = [
                             'movie_id' => $dataMovie->ID,
                             'tmdb_id' => $dataMovie->tmdb_id
