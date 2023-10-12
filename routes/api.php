@@ -46,3 +46,5 @@ Route::get('cast/checkCastOfTvShow', 'App\Http\Controllers\Api\CastController@ch
 
 Route::get('updated-activity', 'App\Http\Controllers\Api\HomepageController@updatedActivity');
 Route::post('webhook', 'App\Http\Controllers\Api\HomepageController@handleWebhook');
+
+Route::get('cast/updatePersonMovie', 'App\Http\Controllers\Api\CastController@updatePersonMovie');
