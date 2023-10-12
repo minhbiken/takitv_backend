@@ -182,10 +182,14 @@ class MovieService {
             }
             elseif ($value->meta_key == '_wp_attachment_metadata') {
                 $srcSetVal = \unserialize($value->meta_value);
+                if (!isset($monthYear)) {
+                    $monthYear = \substr($srcSetVal['file'], 0, (\strpos($srcSetVal['file'], 'image_webp') !== false) ? 19 : 8);
+                }
+
                 $srcSet = $this->imageUrlUpload . $srcSetVal['file'] . ' ' . $srcSetVal['width'] . 'w';
                 if (isset($srcSetVal['sizes'])) {
                     foreach ($srcSetVal['sizes'] as $size) {
-                        $srcSet .= ', ' . $this->imageUrlUpload . $size['file'] . ' ' . $size['width'] . 'w';
+                        $srcSet .= ', ' . $this->imageUrlUpload . $monthYear . $size['file'] . ' ' . $size['width'] . 'w';
                     }
                 }
                 $data['srcSet'] = $srcSet;
