@@ -351,4 +351,13 @@ class CastController extends Controller
         Storage::disk('local')->put($limitFrom.'_'.$limitTo.'tv_show_wrong_person.json', json_encode($dataWrong));  
         return ("Ok!");
     }
+
+    public function updateCastOfMovie(Request $request) {
+        $file = $request->get('file', '');
+        $movieList = json_decode(Storage::disk('local')->get($file), true);
+        foreach( $movieList as $movie) {
+            Http::get(route('cast.import',  ['movieId' => $movie['movie_id'], 'tmdbId' => $movie['tmdb_id'], 'postType' => 'movie']));
+        }
+        return "Ok!";
+    }
 }

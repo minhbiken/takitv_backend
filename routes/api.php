@@ -36,7 +36,7 @@ Route::get('getMovieLimit', 'App\Http\Controllers\Api\HomepageController@getMovi
 Route::get('getTvshowTMDBId', 'App\Http\Controllers\Api\HomepageController@getTvshowTMDBId')->name('tvshow.tmdb');
 Route::get('getTvshowLimit', 'App\Http\Controllers\Api\HomepageController@getTvshowLimit');
 Route::get('insertPerson', 'App\Http\Controllers\Api\HomepageController@insertPerson');
-Route::get('autoImportPerson', 'App\Http\Controllers\Api\HomepageController@autoImportPerson');
+Route::get('autoImportPerson', 'App\Http\Controllers\Api\HomepageController@autoImportPerson')->name('cast.import');
 
 Route::get('cast/detail', 'App\Http\Controllers\Api\CastController@show');
 Route::get('casts', 'App\Http\Controllers\Api\CastController@index')->name('casts');
@@ -46,3 +46,5 @@ Route::get('cast/checkCastOfTvShow', 'App\Http\Controllers\Api\CastController@ch
 
 Route::get('updated-activity', 'App\Http\Controllers\Api\HomepageController@updatedActivity');
 Route::post('webhook', 'App\Http\Controllers\Api\HomepageController@handleWebhook');
+
+Route::get('cast/updateCastOfMovie', 'App\Http\Controllers\Api\CastController@updateCastOfMovie');
