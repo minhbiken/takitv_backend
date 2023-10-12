@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
+use Telegram\Bot\Laravel\Facades\Telegram;
 class HelperService {
     protected $imageUrlUpload;
     public function __construct()
@@ -178,10 +179,15 @@ class HelperService {
     public function getOutLink() {
         $outlink = env('OUTLINK', '');
         $response = Http::get($outlink);
-        if( $response->ok()) {
+        if( $response->ok() ) {
             return $response;
         } else {
-            //push notification
+            $text = $outlink . ' not working';
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
             return '';
         }
     }

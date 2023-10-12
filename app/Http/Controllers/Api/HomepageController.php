@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
-
+use Telegram\Bot\Laravel\Facades\Telegram;
 class HomepageController extends Controller
 {
 
@@ -509,5 +509,20 @@ class HomepageController extends Controller
         }
         Artisan::call('person:auto '. $movieId . ' ' . $tmdbId . ' ' . $postType);
         return "Ok!";
+    }
+
+    public function updatedActivity() {
+        $activity = Telegram::getUpdates();
+        dd($activity);
+    }
+
+    public function handleWebhook(Request $request) {
+        // Get the incoming update data from Telegram.
+        $request->all();
+
+        // Process the update as needed (e.g., reply to messages, handle callbacks).
+
+        // Return a response to acknowledge receipt of the update.
+        return response()->json(['status' => 'Update received']);
     }
 }

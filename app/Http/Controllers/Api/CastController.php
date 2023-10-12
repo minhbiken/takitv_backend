@@ -305,4 +305,51 @@ class CastController extends Controller
         Storage::disk('local')->put($limitFrom.'_'.$limitTo.'movie_wrong_person.json', json_encode($dataWrong));  
         return ("Ok!");
     }
+    public function checkCastOfTvShow(Request $request) {
+        $limitFrom = $request->get('limit_from', 0);
+        $limitTo = $request->get('limit_to', 30);
+        $queryMovie = "SELECT p.ID, p.post_title, pm.meta_value as tmdb_id, pm2.meta_value as casts
+        FROM wp_posts p
+        LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_tmdb_id' AND pm.meta_value != ''
+        LEFT JOIN wp_postmeta pm2 ON pm2.post_id = p.ID AND pm2.meta_key = '_cast' AND pm2.meta_value != ''
+        WHERE ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) 
+        ORDER BY p.post_date DESC 
+        LIMIT " . $limitFrom . ", " . $limitTo . " ;";
+        $dataMovies =  DB::select($queryMovie);
+        //check cast right or wrong
+        $dataWrong = [];
+        foreach ( $dataMovies as $dataMovie ) {
+            //get first cast 
+            if( $dataMovie->casts != '' || $dataMovie->tmdb_id != '' ) {
+                try {
+                    $castsOfMovie = unserialize($dataMovie->casts);
+                    $firstCast = $castsOfMovie[0]['id'];
+                    //get title of first cast
+                    $queryCast = "SELECT p.post_title FROM wp_posts p
+                    WHERE ((p.post_type = 'person' AND (p.post_status = 'publish'))) AND p.ID=".$firstCast;
+                    $dataCast =  DB::select($queryCast);
+                    if( count($dataCast) > 0 ) {
+                        //check tmdb movie
+                        $urlTmdb = "https://www.themoviedb.org/tv/" . $dataMovie->tmdb_id . "/cast";
+                        $contentTmdb = @file_get_contents($urlTmdb);
+                        preg_match("/\">(.*)<\/a><p>/", $contentTmdb, $result);
+                        $name = str_replace("<p>", "", $result[0]);
+                        $name = str_replace("\">", "", $name);
+                        
+                        if ( $dataCast[0]->post_title != strip_tags(html_entity_decode($name)) ) {
+                            $wrong = [
+                                'movie_id' => $dataMovie->ID,
+                                'tmdb_id' => $dataMovie->tmdb_id
+                            ];
+                            array_push($dataWrong, $wrong);
+                        }
+                    }
+                } catch (Throwable $e) {
+                    continue;
+                }
+            }
+        }
+        Storage::disk('local')->put($limitFrom.'_'.$limitTo.'tv_show_wrong_person.json', json_encode($dataWrong));  
+        return ("Ok!");
+    }
 }

@@ -42,3 +42,7 @@ Route::get('cast/detail', 'App\Http\Controllers\Api\CastController@show');
 Route::get('casts', 'App\Http\Controllers\Api\CastController@index')->name('casts');
 Route::get('cast/makeCacheCast', 'App\Http\Controllers\Api\CastController@makeCacheCast');
 Route::get('cast/checkCastOfMovie', 'App\Http\Controllers\Api\CastController@checkCastOfMovie');
+Route::get('cast/checkCastOfTvShow', 'App\Http\Controllers\Api\CastController@checkCastOfTvShow');
+
+Route::get('updated-activity', 'App\Http\Controllers\Api\HomepageController@updatedActivity');
+Route::post('webhook', 'App\Http\Controllers\Api\HomepageController@handleWebhook');

@@ -125,11 +125,12 @@ class EpisodeController extends Controller
                 }
             
                 //outlink only show in into
-                $outlink = env('OUTLINK');
-                $outlink = @file_get_contents($outlink);
-
-                if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-                $outlink =  $outlink . '?pid=' . $dataSeason->ID;
+                $outLink = $this->helperService->getOutLink();
+                if ( $outLink != '' ) {
+                    $outlink =  $outLink . '?pid=' . $dataSeason->ID;
+                } else {
+                    $outlink = '';
+                }
 
                 $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                                     LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowTitleData[0]->ID .";";
