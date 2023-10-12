@@ -41,3 +41,4 @@ Route::get('autoImportPerson', 'App\Http\Controllers\Api\HomepageController@auto
 Route::get('cast/detail', 'App\Http\Controllers\Api\CastController@show');
 Route::get('casts', 'App\Http\Controllers\Api\CastController@index')->name('casts');
 Route::get('cast/makeCacheCast', 'App\Http\Controllers\Api\CastController@makeCacheCast');
+Route::get('cast/checkCastOfMovie', 'App\Http\Controllers\Api\CastController@checkCastOfMovie');

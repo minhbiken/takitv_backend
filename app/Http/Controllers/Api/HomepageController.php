@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
-use PhpParser\Node\Expr\Cast;
 
 class HomepageController extends Controller
 {
@@ -220,7 +219,6 @@ class HomepageController extends Controller
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         $items = $this->searchService->getItems($query);
-        //$topWeeks = $this->tvshowService->getTopWeeks();
         $topWeeks = $this->searchService->getTopWeeks();
         $data = [
             "total" => $total,

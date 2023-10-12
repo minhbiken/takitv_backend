@@ -177,9 +177,9 @@ class HelperService {
 
     public function getOutLink() {
         $outlink = env('OUTLINK', '');
-        $data = @file_get_contents($outlink);
-        if( $http_response_header[0] == 'HTTP/1.1 200 OK' ) {
-            return $data;
+        $response = Http::get($outlink);
+        if( $response->ok()) {
+            return $response;
         } else {
             //push notification
             return '';
