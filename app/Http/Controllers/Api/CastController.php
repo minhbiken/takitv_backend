@@ -271,7 +271,6 @@ class CastController extends Controller
         $dataMovies =  DB::select($queryMovie);
         //check cast right or wrong
         $dataWrong = [];
-        $listCasts = [];
         foreach ( $dataMovies as $dataMovie ) {
             //get first cast 
             if( $dataMovie->casts != '' || $dataMovie->tmdb_id != '' ) {
@@ -291,27 +290,9 @@ class CastController extends Controller
                         $name = str_replace("\">", "", $name);
                         
                         if ( $dataCast[0]->post_title != strip_tags(html_entity_decode($name[0])) ) {
-                            foreach( $castsOfMovie as $key => $castMovie ) {
-                                $query = "SELECT p.post_title FROM wp_posts p
-                                WHERE ((p.post_type = 'person' AND (p.post_status = 'publish'))) AND p.ID=".$castMovie['id'];
-                                $cast =  DB::select($query);
-                                if( count($cast) > 0 ) {
-                                    var_dump($cast[0]->post_title);
-                                    print_r("<br>");
-                                    var_dump($name[$key]);
-                                    print_r("<br>");
-                                    if( $cast[0]->post_title = $name[$key] ) {
-
-                                    }
-                                }
-                            }
-                            for($i = 0; $i < 6; $i++) {
-                                array_push($listCasts, strip_tags(html_entity_decode($name[$i])));
-                            }
                             $wrong = [
                                 'movie_id' => $dataMovie->ID,
                                 'tmdb_id' => $dataMovie->tmdb_id,
-                                'list_cast' => $listCasts
                             ];
                             array_push($dataWrong, $wrong);
                         }
@@ -321,7 +302,6 @@ class CastController extends Controller
                 }
             }
         }
-        die;
         Storage::disk('local')->put($limitFrom.'_'.$limitTo.'movie_wrong_person.json', json_encode($dataWrong));  
         return ("Ok!");
     }
@@ -370,14 +350,5 @@ class CastController extends Controller
         }
         Storage::disk('local')->put($limitFrom.'_'.$limitTo.'tv_show_wrong_person.json', json_encode($dataWrong));  
         return ("Ok!");
-    }
-
-    public function updatePersonMovie(Request $request) {
-        $file = $request->get('file', '');
-        $movies = json_decode(Storage::disk('local')->get($file), true);
-        foreach( $movies as $movie) {
-            
-        }   
-        return "Ok!";
     }
 }
