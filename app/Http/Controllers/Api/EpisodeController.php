@@ -90,15 +90,18 @@ class EpisodeController extends Controller
                         $castDatas = $unserializeCasts;
                         $castDatas = array_values(array_unique($castDatas, SORT_REGULAR));
                         //get data of person
-                        $idCasts = array_column($castDatas, 'id');
-                        $idCasts = join(",", $idCasts);
-                        $queryCasts = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p
-                        LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
-                        WHERE p.ID in ( " . $idCasts .  " ) and p.post_status = 'publish' ORDER BY p.post_date LIMIT 5;";
-                        $casts = DB::select($queryCasts);
+                        $castDatas = array_slice($castDatas, 0, 5, true);
+                        foreach ( $castDatas as $castData ) {
+                            $queryCasts = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p
+                            LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
+                            WHERE p.ID=".$castData['id']." and p.post_status = 'publish' ORDER BY p.post_date LIMIT 5;";
+                            $cast = DB::select($queryCasts);
+                            if( count($cast) > 0 ) {
+                                array_push($casts, $cast[0]);
+                            }
+                        }
                     }
                 }
-
                 $querySeasonEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, pm.meta_value, pm.meta_key, pm.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID WHERE p.ID=" . $tvShowId . " AND pm.meta_key='_seasons' ORDER BY p.ID ASC LIMIT 1;";
                 $tvshowTitleData = DB::select($querySeasonEpisode);
                 $tvshowTitle = $tvshowTitleData[0]->post_title;
