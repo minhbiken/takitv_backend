@@ -61,7 +61,6 @@ class EpisodeController extends Controller
         $where = $where . $whereTitle;
         $movies = [];
         $query = $select . $where;
-
         $dataPost = DB::select($query);
         
         $tvshowTitle = '';

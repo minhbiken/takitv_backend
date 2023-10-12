@@ -24,7 +24,7 @@ class SearchService {
         $chanel = '';
         $seasonNumber = '';
         $episodeNumber = '';
-
+        $slug = '';
         $postIds = \array_map(fn($item) => $item->ID, $datas);
         $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
         foreach( $datas as $data ) {     
@@ -77,6 +77,7 @@ class SearchService {
                         
                         if( count($dataEpisoTitle) > 0 ) {
                             $link = 'episode/' . $dataEpisoTitle[0]->post_title;
+                            $slug = $dataEpisoTitle[0]->post_title;
                         }
                     }
                 } else {
@@ -89,7 +90,7 @@ class SearchService {
                 'postType'  => $data->post_type,
                 'id' => $data->ID,
                 'title' => $data->post_title,
-                'slug' => $data->post_name,
+                'slug' => $slug,
                 'originalTitle' => $data->original_title,
                 'link' => $link,
                 'chanelImage' => $chanel,

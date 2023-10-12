@@ -360,4 +360,14 @@ class CastController extends Controller
         }
         return "Ok!";
     }
+
+    public function updateCastOfTvShow(Request $request) {
+        $file = $request->get('file', '');
+        $movieList = json_decode(Storage::disk('local')->get($file), true);
+        //print_r(count($movieList)); die;        
+        foreach( $movieList as $movie) {
+            Http::get(route('cast.import',  ['movieId' => $movie['movie_id'], 'tmdbId' => $movie['tmdb_id'], 'postType' => 'tv_show']));
+        }
+        return "Ok!";
+    }
 }
