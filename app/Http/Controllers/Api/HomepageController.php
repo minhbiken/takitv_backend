@@ -220,7 +220,8 @@ class HomepageController extends Controller
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         $items = $this->searchService->getItems($query);
-        $topWeeks = $this->tvshowService->getTopWeeks();
+        //$topWeeks = $this->tvshowService->getTopWeeks();
+        $topWeeks = $this->searchService->getTopWeeks();
         $data = [
             "total" => $total,
             "perPage" => $perPage,
