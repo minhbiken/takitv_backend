@@ -208,7 +208,7 @@ class MovieService {
         $data = [];
         $sql = "SELECT meta_value FROM wp_postmeta WHERE post_id = {$postId} AND meta_key = '_cast' LIMIT 1";
         $castsMeta = DB::selectOne($sql);
-        $casts = empty($castsMeta) ? [] : \unserialize($castsMeta->meta_value);
+        $casts = empty($castsMeta) ? [] : @\unserialize($castsMeta->meta_value);
         if (empty($casts)) {
             return $data;
         }
