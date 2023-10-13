@@ -187,7 +187,7 @@ class CastController extends Controller
             $data = [
                 "total" => $total,
                 "perPage" => $perPage,
-                "cast" => $cast
+                "data" => $cast
             ];
         }
         return response()->json($data, Response::HTTP_OK);
