@@ -117,6 +117,7 @@ class CastController extends Controller
         WHERE ( p.post_name= '" . $slug .  "' OR p.post_name= '". $newSlug ."' )";
         $dataCast = DB::select($queryCast);
         $cast = [];
+        $data = [];
         if( count($dataCast) > 0 ) {
             $data = $dataCast[0];
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
@@ -186,9 +187,9 @@ class CastController extends Controller
             $cast['items'] = $items;
             $data = [
                 "total" => $total,
-                "perPage" => $perPage,
-                "data" => $cast
+                "perPage" => $perPage
             ];
+            $data = array_merge($data, $cast);
         }
         return response()->json($data, Response::HTTP_OK);
     }
