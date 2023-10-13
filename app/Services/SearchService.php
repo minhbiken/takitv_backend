@@ -26,6 +26,7 @@ class SearchService {
         $episodeNumber = '';
         $slug = '';
         $link = '';
+        $year = '';
         $postIds = \array_map(fn($item) => $item->ID, $datas);
         $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
         foreach( $datas as $data ) {     
@@ -33,6 +34,17 @@ class SearchService {
                 $postName = urldecode($data->post_name);
                 $link = 'movie/' . $postName;
                 $slug = $postName;
+
+                $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $data->ID ." AND meta_key='_movie_release_date' ";
+                $dataMeta = DB::select($queryMeta);
+                if( count($dataMeta) > 0 ) {
+                    if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMeta[0]->meta_value)) {
+                        $newDataReleaseDate = explode('-', $dataMeta[0]->meta_value);
+                        $year = $newDataReleaseDate[0];
+                    } else {
+                        $year = $dataMeta[0]->meta_value > 0 ? date('Y', $dataMeta[0]->meta_value) : date('Y');
+                    }
+                }
             } else if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
@@ -95,6 +107,7 @@ class SearchService {
                 'slug' => $slug,
                 'originalTitle' => $data->original_title,
                 'link' => $link,
+                'year' => $year,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber

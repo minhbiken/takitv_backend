@@ -164,7 +164,10 @@ class CastController extends Controller
             } else if( $orderBy == 'titleDesc' ) {
                 $order = "ORDER BY p.post_title DESC ";
             } else if($orderBy == 'date' ) {
-                $order = "ORDER BY p.post_date DESC ";
+                $selectYear = "SELECT IF(pm.meta_value REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$', DATE_FORMAT(pm.meta_value, '%Y'), DATE_FORMAT(FROM_UNIXTIME(pm.meta_value), '%Y')) as year , 
+                p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key='_movie_release_date' ";
+                $select = $selectYear;
+                $order = "ORDER BY year DESC ";
             } else if($orderBy == 'rating') {
                 $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
                 $select = $select . $selectRating;
@@ -182,7 +185,7 @@ class CastController extends Controller
             //query limit
             $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
-
+            
             $items = $this->searchService->getItems($query);
             $cast['items'] = $items;
             $data = [
