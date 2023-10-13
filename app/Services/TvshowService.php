@@ -84,6 +84,7 @@ class TvshowService {
         $episodeTitle = '';
         $episodeName = '';
         $tvShowSlug = '';
+        $episodeNumber = '';
         foreach ( $dataItems as $dataItem ) {
             $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataOriginalTitle = DB::select($queryOriginalTitle);
