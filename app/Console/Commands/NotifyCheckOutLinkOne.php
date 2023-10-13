@@ -3,15 +3,15 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Telegram\Bot\Laravel\Facades\Telegram;
-class NotifyCheckDomain extends Command
+
+class NotifyCheckOutLinkOne extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'notify:domain';
+    protected $signature = 'notify:outlinkone';
 
     /**
      * The console command description.
@@ -28,7 +28,7 @@ class NotifyCheckDomain extends Command
     public function handle()
     {
         //check domain
-        $listDomains = config('constants.domainChecks');
+        $listDomains = config('constants.domainOutlink1');
         foreach ( $listDomains as $domain ) {
             $wait = 10; // wait Timeout In Seconds
             $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);

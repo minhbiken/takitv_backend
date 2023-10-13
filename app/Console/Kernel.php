@@ -11,7 +11,8 @@ class Kernel extends ConsoleKernel
         Commands\PersonGeneratorCommand::class,
         Commands\RollBackImportPerson::class,
         Commands\AutoImportPerson::class,
-        Commands\NotifyCheckDomain::class
+        Commands\NotifyCheckDomain::class,
+        Commands\NotifyCheckOutLinkOne::class
     ];
     /**
      * Define the application's command schedule.
@@ -22,6 +23,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('notify:domain')->everyFiveMinutes();
+        $schedule->command('notify:outlinkone')->everyFiveMinutes();
     }
 
     /**
