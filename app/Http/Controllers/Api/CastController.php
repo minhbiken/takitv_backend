@@ -123,39 +123,41 @@ class CastController extends Controller
                 'id' => $data->id,
                 'slug' => $newSlug,
                 'name' => $data->name,
-                'src' => $newSrc,
-                'tv_show' => $data->tv_show,
-                'movie' => $data->movie,
+                'src' => $newSrc
             ];
             //get tv-show
-            $tvShow = unserialize($cast['tv_show']);
-            $tvShowData = [];
+            $tvShow = unserialize( $data->tv_show);
+            $items = [];
+            $tvShows = [];
             if( $tvShow != '' && count($tvShow) > 0 ) {
                 foreach( $tvShow as  $tvShowId) {
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
                     if( count($this->tvshowService->getItems($select)) > 0 ) {
-                        $tvShowData[] = $this->tvshowService->getItems($select)[0];
+                        array_push($items, $this->tvshowService->getItems($select)[0]);
+                        $tvShows[] = $this->tvshowService->getItems($select)[0];
                     }
                 }
             }
-            $cast['tv_show'] = $tvShowData;
             
             //get movie
-            $movies = unserialize($cast['movie']);
-            $movie = [];
+            $movieDatas = [];
+            $movies = unserialize($data->movie);
             if( $movies != '' && count($movies) > 0 ) {
                 foreach( $movies as  $movieId) {
                     $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
                     FROM wp_posts p 
                     WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) AND p.ID=". $movieId;
                     if( count($this->movieService->getItems($select)) > 0 ) {
-                        $movie[] = $this->movieService->getItems($select)[0];
+                        array_push($items, $this->movieService->getItems($select)[0]);
+                        $movieDatas[] = $this->movieService->getItems($select)[0];
                     }
                 }
             }
-            $cast['movie'] = $movie;
+            $cast['tv_show'] = $tvShows;
+            $cast['movie'] = $movieDatas;
+            $cast['items'] = $items;
         }
         return response()->json($cast, Response::HTTP_OK);
     }
