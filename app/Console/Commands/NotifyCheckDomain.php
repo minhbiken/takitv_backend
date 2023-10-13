@@ -31,10 +31,14 @@ class NotifyCheckDomain extends Command
         //check domain
         $listDomains = config('constants.domainChecks');
         foreach ( $listDomains as $domain ) {
-            $wait = 1; // wait Timeout In Seconds
+            $wait = 10; // wait Timeout In Seconds
             $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
             if (!$fp) {
-                $text = "Ping $domain ==> ERROR: $errCode - $errStr";
+                if ( $errCode == '10060' ) {
+                    $text = "Ping $domain ==> Timeout over 10s";
+                } else {
+                    $text = "Ping $domain ==> ERROR: $errCode - $errStr";
+                }
                 Telegram::sendMessage([
                     'chat_id' => env('TELEGRAM_CHANNEL_ID', '-4061154988'),
                     'parse_mode' => 'HTML',

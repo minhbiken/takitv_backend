@@ -528,12 +528,17 @@ class HomepageController extends Controller
 
     public function testPing(Request $request) {
         $domain = $request->get('domain', '');
-        $wait = 1; // wait Timeout In Seconds
+        $wait = 10; // wait Timeout In Seconds
 
         $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
         if (!$fp) {
-            echo "Ping $domain ==> ";
-            echo "ERROR: $errCode - $errStr";
+            if ( $errCode == '10060' ) {
+                echo "Ping $domain ==> ";
+                echo "Timeout over 10s";
+            } else {
+                echo "Ping $domain ==> ";
+                echo "ERROR: $errCode - $errStr";
+            }
         }
     }
 }
