@@ -25,13 +25,15 @@ class SearchService {
         $seasonNumber = '';
         $episodeNumber = '';
         $slug = '';
+        $link = '';
         $postIds = \array_map(fn($item) => $item->ID, $datas);
         $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
         foreach( $datas as $data ) {     
-            $postName = urldecode($data->post_name);
-            $link = 'movie/' . $postName;
-
-            if( $data->post_type == 'tv_show'  ) {
+            if ( $data->post_type == 'movie' ) {
+                $postName = urldecode($data->post_name);
+                $link = 'movie/' . $postName;
+                $slug = $postName;
+            } else if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                 WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";

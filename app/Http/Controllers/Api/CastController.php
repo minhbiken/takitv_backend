@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
+use App\Services\HelperService;
 use App\Services\MovieService;
 use App\Services\TvshowService;
+use App\Services\SearchService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -18,13 +19,15 @@ class CastController extends Controller
     protected $imageUrlUpload;
     protected $tvshowService;
     protected $helperService;
-    protected $movieService;    
-    public function __construct(HelperService $helperService, MovieService $movieService, TvshowService $tvshowService)
+    protected $movieService;
+    protected $searchService;
+    public function __construct(HelperService $helperService, MovieService $movieService, TvshowService $tvshowService, SearchService $searchService)
     {
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
         $this->helperService = $helperService;
         $this->movieService = $movieService;
         $this->tvshowService = $tvshowService;
+        $this->searchService = $searchService;
     }
 
     public function index(Request $request) {
@@ -126,40 +129,68 @@ class CastController extends Controller
                 'src' => $newSrc
             ];
             //get tv-show
-            $tvShow = unserialize( $data->tv_show);
+            $tvShow = unserialize($data->tv_show);
+            $ids = [];
             $items = [];
-            $tvShows = [];
             if( $tvShow != '' && count($tvShow) > 0 ) {
                 foreach( $tvShow as  $tvShowId) {
-                    $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
-                    FROM wp_posts p 
-                    WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) AND p.ID=". $tvShowId;
-                    if( count($this->tvshowService->getItems($select)) > 0 ) {
-                        array_push($items, $this->tvshowService->getItems($select)[0]);
-                        $tvShows[] = $this->tvshowService->getItems($select)[0];
-                    }
+                    array_push($ids, $tvShowId);
                 }
             }
             
             //get movie
-            $movieDatas = [];
             $movies = unserialize($data->movie);
             if( $movies != '' && count($movies) > 0 ) {
                 foreach( $movies as  $movieId) {
-                    $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified 
-                    FROM wp_posts p 
-                    WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) AND p.ID=". $movieId;
-                    if( count($this->movieService->getItems($select)) > 0 ) {
-                        array_push($items, $this->movieService->getItems($select)[0]);
-                        $movieDatas[] = $this->movieService->getItems($select)[0];
-                    }
+                    array_push($ids, $movieId);
                 }
             }
-            $cast['tv_show'] = $tvShows;
-            $cast['movie'] = $movieDatas;
+
+            //sorting items
+            $page = $request->get('page', '1');
+            $orderBy = $request->get('orderBy', '');
+            $perPage = $request->get('limit', env('PAGE_LIMIT'));
+
+            $ids = join(",", $ids);
+            
+            $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p ";
+            $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') AND p.ID IN ( " . $ids . " )";
+
+            if( $orderBy == '' ) {
+                $order = "ORDER BY p.post_date DESC ";
+            } else if( $orderBy == 'titleAsc' ) {
+                $order = "ORDER BY p.post_title ASC ";
+            } else if( $orderBy == 'titleDesc' ) {
+                $order = "ORDER BY p.post_title DESC ";
+            } else if($orderBy == 'date' ) {
+                $order = "ORDER BY p.post_date DESC ";
+            } else if($orderBy == 'rating') {
+                $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
+                $select = $select . $selectRating;
+                $order = "ORDER BY mp.all_time_stats DESC ";
+            } else {
+                $order = "ORDER BY p.post_date DESC ";
+            }
+
+            $query = $select . $where . $order;
+            $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+            $queryTotal = $selectTotal . $where;
+            $dataTotal = DB::select($queryTotal);
+            $total = $dataTotal[0]->total;
+
+            //query limit
+            $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+            $query = $query . $limit;
+
+            $items = $this->searchService->getItems($query);
             $cast['items'] = $items;
+            $data = [
+                "total" => $total,
+                "perPage" => $perPage,
+                "cast" => $cast
+            ];
         }
-        return response()->json($cast, Response::HTTP_OK);
+        return response()->json($data, Response::HTTP_OK);
     }
 
     public function topWeek() {
@@ -174,11 +205,14 @@ class CastController extends Controller
     public function getItems($query) {
         $sliders = [];
         $slug = '';
+        $linkSlider = '';
         $sliderDatas = DB::select($query);
+        $year = '';
         foreach ( $sliderDatas as $sliderData ) {
-            $titleSlider = $sliderData->post_title; 
-            $linkSlider = 'movie/' . $sliderData->post_title;
-            $year = '';
+            $titleSlider = $sliderData->post_title;
+            if ($sliderData->post_type == 'movie') {
+                $linkSlider = 'movie/' . $sliderData->post_title;
+                $year = '';
             $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
             $dataMetas = DB::select($queryMeta);
             if( count($dataMetas) > 0 ) {
@@ -198,8 +232,7 @@ class CastController extends Controller
                                     left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
                                     left join wp_terms t on tx.term_id = t.term_id
                 where t.name != 'featured' AND t.name != '' AND p.ID = ". $sliderData->ID .";";
-            
-            if( $sliderData->post_type == 'tv_show' ) {
+            } else if( $sliderData->post_type == 'tv_show' ) {
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 $episodeData = $dataEpisode[0]->meta_value;
