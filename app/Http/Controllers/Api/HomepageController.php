@@ -525,4 +525,15 @@ class HomepageController extends Controller
         // Return a response to acknowledge receipt of the update.
         return response()->json(['status' => 'Update received']);
     }
+
+    public function testPing(Request $request) {
+        $domain = $request->get('domain', '');
+        $wait = 1; // wait Timeout In Seconds
+
+        $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
+        if (!$fp) {
+            echo "Ping $domain ==> ";
+            echo "ERROR: $errCode - $errStr";
+        }
+    }
 }
