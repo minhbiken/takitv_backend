@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
         Commands\RollBackImportPerson::class,
         Commands\AutoImportPerson::class,
         Commands\NotifyCheckDomain::class,
-        Commands\NotifyCheckOutLinkOne::class
+        Commands\NotifyCheckOutLinkOne::class,
+        Commands\NotifyCheckOutLinkTwo::class,
+        Commands\NotifyCheckOutLinkThree::class,
+        Commands\NotifyCheckOutLinkFour::class,
+        Commands\NotifyCheckOutLinkFive::class
     ];
     /**
      * Define the application's command schedule.
@@ -24,6 +28,10 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('notify:domain')->everyFiveMinutes();
         $schedule->command('notify:outlinkone')->everyFiveMinutes();
+        $schedule->command('notify:outlinktwo')->everyFiveMinutes();
+        $schedule->command('notify:outlinkthree')->everyFiveMinutes();
+        $schedule->command('notify:outlinkfour')->everyFiveMinutes();
+        $schedule->command('notify:outlinkfive')->everyFiveMinutes();
     }
 
     /**
