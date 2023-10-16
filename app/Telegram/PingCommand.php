@@ -43,7 +43,7 @@ class PingCommand extends Command {
                     $text = "Ping $domain ==> Success";
                 }
                 Telegram::sendMessage([
-                    'chat_id' => env('TELEGRAM_CHANNEL_ID', '-4061154988'),
+                    'chat_id' => '-4012828427',
                     'parse_mode' => 'HTML',
                     'text' => $text
                 ]);
