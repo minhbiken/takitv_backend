@@ -47,6 +47,7 @@ class PingCommand extends Command {
                     'parse_mode' => 'HTML',
                     'text' => $text
                 ]);
+                break;
             }
         }
 
