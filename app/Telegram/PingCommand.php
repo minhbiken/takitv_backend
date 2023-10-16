@@ -15,9 +15,7 @@ class PingCommand extends Command {
     */
     protected string $description = "Ping Domain";
 
-    /** @var array Holds parsed command arguments */
-    protected array $arguments = ['domain'];
-
+    protected string $pattern = '{domain}';
 
     /**
     * @inheritdoc
@@ -25,13 +23,14 @@ class PingCommand extends Command {
     public function handle()
     {
         $commands = $this->getTelegram()->getCommands();
-
         // Build the list
         $response = '';
         foreach ($commands as $name => $command) {
             if ( $name == 'ping' ) {
-                $domain = $this->getArguments();
-                $domain = $domain[0];
+                $domain = $this->argument(
+                    'domain',
+                    ''
+                );
                 $wait = 10; // wait Timeout In Seconds
                 $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
                 if (!$fp) {
@@ -43,12 +42,7 @@ class PingCommand extends Command {
                 } else {
                     $text = "Ping $domain ==> Success";
                 }
-                Telegram::sendMessage([
-                    'chat_id' => '-4012828427',
-                    'parse_mode' => 'HTML',
-                    'text' => $text
-                ]);
-                break;
+                $response = $text;
             }
         }
 

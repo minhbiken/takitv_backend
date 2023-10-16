@@ -35,6 +35,8 @@ return [
             'has_custom_certificate' => 'false',
             //'certificate_path' => env('TELEGRAM_CERTIFICATE_PATH', 'yourbot_public.pem'),
             'webhook_url' => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
+            'retry_after' => 1,
+            'max_tries' => 1,
             'commands' => [
                 Telegram\Bot\Commands\HelpCommand::class,
                 //App\Telegram\StartCommand::class,
