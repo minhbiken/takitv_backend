@@ -16,7 +16,8 @@ class Kernel extends ConsoleKernel
         Commands\NotifyCheckOutLinkTwo::class,
         Commands\NotifyCheckOutLinkThree::class,
         Commands\NotifyCheckOutLinkFour::class,
-        Commands\NotifyCheckOutLinkFive::class
+        Commands\NotifyCheckOutLinkFive::class,
+        Commands\NotifyTelegram::class
     ];
     /**
      * Define the application's command schedule.

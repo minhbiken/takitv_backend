@@ -513,17 +513,27 @@ class HomepageController extends Controller
 
     public function updatedActivity() {
         $activity = Telegram::getUpdates();
-        dd($activity);
+        $lastestActivity = end($activity);
+        if( isset($lastestActivity) ) {
+            $text = $lastestActivity->getMessage()->text;
+            preg_match('/\/ping /', $text, $matches, PREG_OFFSET_CAPTURE);
+            if( isset($matches[0][0]) && $matches[0][0] == '/ping ' ) {
+                $domainRoot = explode(' ', $text);
+                $domain = $domainRoot[1];
+                $this->handlePing($domain);
+            }
+        }
+        die("Ok!");
     }
 
-    public function handleWebhook(Request $request) {
-        // Get the incoming update data from Telegram.
-        $request->all();
-
-        // Process the update as needed (e.g., reply to messages, handle callbacks).
-
-        // Return a response to acknowledge receipt of the update.
-        return response()->json(['status' => 'Update received']);
+    public function handleWebhook() {
+        $activity = Telegram::getWebhookUpdate();
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $response = Telegram::setWebhook([
+            'url' => "https://backend.kokoatv.net/api/$token/webhook",
+            'certificate' => env('TELEGRAM_CERTIFICATE_PATH')
+        ]);
+        die($response);
     }
 
     public function testPing(Request $request) {
@@ -541,4 +551,24 @@ class HomepageController extends Controller
             }
         }
     }
+
+    public function handlePing($domain='') {
+        $wait = 10; // wait Timeout In Seconds
+        $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
+        if (!$fp) {
+            if ( $errCode == '10060' ) {
+                $text = "Ping $domain ==> Timeout over 10s";
+            } else {
+                $text = "Ping $domain ==> ERROR: $errCode - $errStr";
+            }
+        } else {
+            $text = "Ping $domain ==> Success";
+        }
+        Telegram::sendMessage([
+            'chat_id' => env('TELEGRAM_CHANNEL_ID', '-4061154988'),
+            'parse_mode' => 'HTML',
+            'text' => $text
+        ]);
+    }
+
 }
