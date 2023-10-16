@@ -36,7 +36,8 @@ return [
             'certificate_path' => env('TELEGRAM_CERTIFICATE_PATH', 'yourbot_public.pem'),
             'webhook_url' => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
             'commands' => [
-                App\Console\Commands\NotifyTelegram::class
+                Telegram\Bot\Commands\HelpCommand::class,
+                //App\Console\Commands\NotifyTelegram::class
             ],
         ],
 

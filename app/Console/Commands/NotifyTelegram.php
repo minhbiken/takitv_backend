@@ -1,24 +1,20 @@
 <?php
 
 namespace App\Console\Commands;
-
-use Illuminate\Console\Command;
 use Telegram\Bot\Laravel\Facades\Telegram;
+use Telegram\Bot\Commands\Command;
 class NotifyTelegram extends Command
 {
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'telegram:domain';
+    * @var string Command Name
+    */
+    protected $name = "help";
 
     /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Telegram health check domain ';
+    * @var string Command Description
+    */
+    protected $description = "Start Command to get you started";
+
 
     /**
      * Execute the console command.
