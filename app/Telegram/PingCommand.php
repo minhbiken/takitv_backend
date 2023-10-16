@@ -30,8 +30,7 @@ class PingCommand extends Command {
         $response = '';
         foreach ($commands as $name => $command) {
             if ( $name == 'ping' ) {
-                $domain = $this->getArguments();
-                $domain = $domain[0];
+                $domain = $this->argument('domain');
                 $wait = 10; // wait Timeout In Seconds
                 $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
                 if (!$fp) {
