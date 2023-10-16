@@ -196,7 +196,7 @@ class HelperService {
         $outlink = env('OUTLINKSTEP2', '');
         $response = Http::get($outlink, [ 'key' => 123456, 'post_id' => $postId ]);
         if( $response->ok() ) {
-            return $response;
+            return json_decode($response);
         } else {
             $text = $outlink . ' not working';
             Telegram::sendMessage([

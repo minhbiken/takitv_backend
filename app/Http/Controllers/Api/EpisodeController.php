@@ -52,7 +52,8 @@ class EpisodeController extends Controller
         $watch = $request->get('watch', '');
         if( $watch != '' ) {
             $outLink = $this->helperService->getKokoatvLink($watch);
-            return response()->json($outLink, Response::HTTP_OK);
+            $item['watchLinks'] = $outLink->link;
+            return response()->json($item, Response::HTTP_OK);
         } else {
             $title = $request->get('title', '');
             $newTitle = urlencode($title);
