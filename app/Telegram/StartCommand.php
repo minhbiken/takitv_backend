@@ -5,19 +5,19 @@ use Telegram\Bot\Actions;
 use Telegram\Bot\Commands\Command;
 
 class StartCommand extends Command {
-        /**
-     * @var string Command Name
-     */
-    protected $name = "start";
+    /**
+    * @var string Command Name
+    */
+    protected string $name = "start";
 
     /**
-     * @var string Command Description
-     */
-    protected $description = "Start Command to get you started";
+    *  @var string Command Description
+    */
+    protected string $description = "Start Command to get you started";
 
     /**
-     * @inheritdoc
-     */
+    * @inheritdoc
+    */
     public function handle()
     {
         // This will send a message using `sendMessage` method behind the scenes to

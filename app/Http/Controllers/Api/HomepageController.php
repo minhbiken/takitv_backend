@@ -514,7 +514,6 @@ class HomepageController extends Controller
     public function updatedActivity() {
         $activity = Telegram::getUpdates();
         $lastestActivity = end($activity);
-        
         if( isset($lastestActivity) ) {
             $text = $lastestActivity->getMessage()->text;
             preg_match('/\/ping /', $text, $matches, PREG_OFFSET_CAPTURE);
