@@ -177,58 +177,57 @@ class MovieController extends Controller
      */
     public function show(Request $request)
     {
-        $slug = $request->get('slug', '');
-        if (empty($slug)) {
-            return response()->json([], Response::HTTP_BAD_REQUEST);
-        }
-        $sql = "SELECT ID as id, post_title as title, post_content as description FROM wp_posts WHERE post_type = 'movie' AND post_status = 'publish' AND post_name = '" . \urlencode($slug) . "' LIMIT 1;";
-        $data = DB::selectOne($sql);
-
-        if (empty($data)) {
-            return response()->json([], Response::HTTP_NOT_FOUND);
-        }
-        $postId = (int) $data->id;
-
-        $genres = $this->movieService->getMoviesGenres([$postId]);
-        $genreSlugs = empty($genres) ? [] : \array_map((fn($genre) => $genre['slug']), $genres[$postId]);
-          
-
-        $outLink = $this->helperService->getOutLink();
-        if ( $outLink != '' ) {
-            $outlink =  $outLink . '?pid=' . $data->id;
+        $watch = $request->get('watch', '');
+        if( $watch != '' ) {
+            $outLink = $this->helperService->getKokoatvLink($watch);
+            return response()->json($outLink, Response::HTTP_OK);
         } else {
-            $outlink = '';
+            $slug = $request->get('slug', '');
+            if (empty($slug)) {
+                return response()->json([], Response::HTTP_BAD_REQUEST);
+            }
+            $sql = "SELECT ID as id, post_title as title, post_content as description FROM wp_posts WHERE post_type = 'movie' AND post_status = 'publish' AND post_name = '" . \urlencode($slug) . "' LIMIT 1;";
+            $data = DB::selectOne($sql);
+
+            if (empty($data)) {
+                return response()->json([], Response::HTTP_NOT_FOUND);
+            }
+            $postId = (int) $data->id;
+
+            $genres = $this->movieService->getMoviesGenres([$postId]);
+            $genreSlugs = empty($genres) ? [] : \array_map((fn($genre) => $genre['slug']), $genres[$postId]);
+            
+
+            $outLink = $this->helperService->getOutLink();
+            if ( $outLink != '' ) {
+                $outlink =  $outLink . '?pid=' . $data->id;
+            } else {
+                $outlink = '';
+            }
+            
+            //get 8 movies related
+            $movieRelateds = $this->movieService->getRelatedMovies($postId, $genreSlugs);
+            $relatedMovieIds = \array_map(fn($item) => $item->id, $movieRelateds);
+            $metaData = $this->movieService->getMoviesMetadata(\array_merge([$postId], $relatedMovieIds));
+            
+            $relatedMovieGenres = $this->movieService->getMoviesGenres($relatedMovieIds);
+            foreach ($movieRelateds as &$item) {
+                $postIds[] = $item->id;
+                $item = \get_object_vars($item) + [
+                    'genres' => $relatedMovieGenres[$item->id] ?? [],
+                ] + $metaData[$item->id] ?? [];
+            }
+
+            $casts = $this->movieService->getCastsOfPost($postId);
+
+            $movie = \get_object_vars($data) + ($metaData[$data->id] ?? []) + [
+                'genres' => $genres[$postId] ?? [],
+                'outlink' => $outlink,
+                'relateds' => $movieRelateds,
+                'casts' => $casts
+            ];
+
+            return response()->json($movie, Response::HTTP_OK);
         }
-
-        $newOutlink = '';
-        $kokoatvLink = $this->helperService->getKokoatvLink($data->id);
-        if ( $kokoatvLink != '' ) {
-            $newOutlink =  $kokoatvLink;
-        }
-        
-        //get 8 movies related
-        $movieRelateds = $this->movieService->getRelatedMovies($postId, $genreSlugs);
-        $relatedMovieIds = \array_map(fn($item) => $item->id, $movieRelateds);
-        $metaData = $this->movieService->getMoviesMetadata(\array_merge([$postId], $relatedMovieIds));
-        
-        $relatedMovieGenres = $this->movieService->getMoviesGenres($relatedMovieIds);
-        foreach ($movieRelateds as &$item) {
-            $postIds[] = $item->id;
-            $item = \get_object_vars($item) + [
-                'genres' => $relatedMovieGenres[$item->id] ?? [],
-            ] + $metaData[$item->id] ?? [];
-        }
-
-        $casts = $this->movieService->getCastsOfPost($postId);
-
-        $movie = \get_object_vars($data) + ($metaData[$data->id] ?? []) + [
-            'genres' => $genres[$postId] ?? [],
-            'outlink' => $outlink,
-            'newOutlink' => $newOutlink,
-            'relateds' => $movieRelateds,
-            'casts' => $casts
-        ];
-
-        return response()->json($movie, Response::HTTP_OK);
     }
 }
