@@ -533,6 +533,7 @@ class HomepageController extends Controller
             'url' => "https://backend.kokoatv.net/api/$token/webhook",
             'certificate' => env('TELEGRAM_CERTIFICATE_PATH')
         ]);
+        Telegram::commandsHandler(true);
         die($response);
     }
 
