@@ -8,12 +8,16 @@ class PingCommand extends Command {
     /**
     * @var string Command Name
     */
-    protected string $name = "ping {argument*}";
+    protected string $name = "ping";
 
     /**
     *  @var string Command Description
     */
     protected string $description = "Ping Domain";
+
+    protected string $pattern = '{domain}
+    {domain: \d+}';
+
 
     /**
     * @inheritdoc
@@ -26,8 +30,7 @@ class PingCommand extends Command {
         $response = '';
         foreach ($commands as $name => $command) {
             if ( $name == 'ping' ) {
-                $argument = $this->argument('argument', '');            
-                $domain = $argument[0];
+                $domain = $this->argument('domain', '');            
                 $wait = 10; // wait Timeout In Seconds
                 $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
                 if (!$fp) {
