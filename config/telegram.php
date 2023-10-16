@@ -32,7 +32,8 @@ return [
     'bots' => [
         'mybot' => [
             'token' => env('TELEGRAM_BOT_TOKEN', '6460501463:AAHk9WEQNEWC-OIcggepLYXmaYdUtfdQ-QI'),
-            'certificate_path' => env('TELEGRAM_CERTIFICATE_PATH', 'yourbot_public.pem'),
+            'has_custom_certificate' => 'false',
+            //'certificate_path' => env('TELEGRAM_CERTIFICATE_PATH', 'yourbot_public.pem'),
             'webhook_url' => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
             'commands' => [
                 Telegram\Bot\Commands\HelpCommand::class,
