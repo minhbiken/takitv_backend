@@ -15,8 +15,8 @@ class PingCommand extends Command {
     */
     protected string $description = "Ping Domain";
 
-    protected string $pattern = '{domain}
-    {domain: \d+}';
+    /** @var array Holds parsed command arguments */
+    protected array $arguments = ['domain'];
 
 
     /**
@@ -30,7 +30,8 @@ class PingCommand extends Command {
         $response = '';
         foreach ($commands as $name => $command) {
             if ( $name == 'ping' ) {
-                $domain = $this->argument('domain', '');            
+                $domain = $this->getArguments();
+                $domain = $domain[0];
                 $wait = 10; // wait Timeout In Seconds
                 $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
                 if (!$fp) {
