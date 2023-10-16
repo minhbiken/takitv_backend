@@ -200,6 +200,12 @@ class MovieController extends Controller
             $outlink = '';
         }
 
+        $newOutlink = '';
+        $kokoatvLink = $this->helperService->getKokoatvLink($data->id);
+        if ( $kokoatvLink != '' ) {
+            $newOutlink =  $kokoatvLink;
+        }
+        
         //get 8 movies related
         $movieRelateds = $this->movieService->getRelatedMovies($postId, $genreSlugs);
         $relatedMovieIds = \array_map(fn($item) => $item->id, $movieRelateds);
@@ -218,6 +224,7 @@ class MovieController extends Controller
         $movie = \get_object_vars($data) + ($metaData[$data->id] ?? []) + [
             'genres' => $genres[$postId] ?? [],
             'outlink' => $outlink,
+            'newOutlink' => $newOutlink,
             'relateds' => $movieRelateds,
             'casts' => $casts
         ];

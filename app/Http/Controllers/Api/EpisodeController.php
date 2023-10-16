@@ -131,6 +131,12 @@ class EpisodeController extends Controller
                     $outlink = '';
                 }
 
+                $newOutlink = '';
+                $kokoatvLink = $this->helperService->getKokoatvLink($dataSeason->id);
+                if ( $kokoatvLink != '' ) {
+                    $newOutlink =  $kokoatvLink;
+                }
+
                 $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
                                     LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $tvshowTitleData[0]->ID .";";
                 $dataSrcMeta = DB::select($querySrcMeta);
@@ -158,6 +164,7 @@ class EpisodeController extends Controller
                     'src' => $src,
                     'srcSet' => $srcSet,
                     'outlink' => $outlink,
+                    'newOutlink' => $newOutlink,
                     'postDateGmt' => $dataSeason->post_date_gmt,
                     'postDate' => $dataSeason->post_date,
                     'seasonName' => $seasonName,

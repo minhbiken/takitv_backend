@@ -192,6 +192,22 @@ class HelperService {
         }
     }
 
+    public function getKokoatvLink(int $postId) {
+        $outlink = env('OUTLINKSTEP2', '');
+        $response = Http::get($outlink, [ 'key' => 123456, 'post_id' => $postId ]);
+        if( $response->ok() ) {
+            return $response;
+        } else {
+            $text = $outlink . ' not working';
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+            return '';
+        }
+    }
+
     public function clearCastDupplicate($items) {
         foreach($items as $item) {
             foreach($items as $newItem) {
