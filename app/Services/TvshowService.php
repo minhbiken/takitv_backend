@@ -222,16 +222,20 @@ class TvshowService {
                     $queryEpiso = "SELECT p.ID, p.post_title, p.post_name, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
                     $dataEpiso = DB::select($queryEpiso);
                     if( count($dataEpiso) > 0 ) {
+                        $queryThumb = "SELECT meta_value, meta_key, post_id FROM wp_postmeta WHERE meta_key='_thumbnail_id' AND post_id=". $dataEpiso[0]->ID;
+                        $dataThumb = DB::select($queryThumb);
+                        $thumbnails = $this->getTvShowThumbnail((int) $dataThumb[0]->meta_value);
                         $episodes[] = [
                             'id' => $episodeSubData,
                             'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
                             'slug' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_name : '',
+                            'src' => $thumbnails['src'],
+                            'srcSet' => $thumbnails['srcSet'],
                             'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
                             'postDate' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date : '',
                         ];
                     }
                 }
-                
                 $seasons[] = [
                     'name' => $episodeSeasonData['name'],
                     'year' => $episodeSeasonData['year'],
@@ -382,5 +386,39 @@ class TvshowService {
             $sliders['title'] = $queryRandom['title'];
         }
         return $sliders;
+    }
+
+    /**
+     * @param int $postmetaId
+     * @return array
+     */
+    private function getTvShowThumbnail(int $postmetaId) {
+        $data = [
+            'src' => '',
+            'srcSet' => ''
+        ];
+        $sql = 'SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ' . $postmetaId . ' AND meta_key IN (\'_wp_attached_file\', \'_wp_attachment_metadata\') ORDER BY meta_id DESC LIMIT 2';
+        $metaData = DB::select($sql);
+        foreach ($metaData as $value) {
+            if ($value->meta_key == '_wp_attached_file') {
+                $data['src'] = $this->imageUrlUpload . $value->meta_value;
+            }
+            elseif ($value->meta_key == '_wp_attachment_metadata') {
+                $srcSetVal = \unserialize($value->meta_value);
+                if (!isset($monthYear)) {
+                    $monthYear = \substr($srcSetVal['file'], 0, (\strpos($srcSetVal['file'], 'image_webp') !== false) ? 19 : 8);
+                }
+
+                $srcSet = $this->imageUrlUpload . $srcSetVal['file'] . ' ' . $srcSetVal['width'] . 'w';
+                if (isset($srcSetVal['sizes'])) {
+                    foreach ($srcSetVal['sizes'] as $size) {
+                        $srcSet .= ', ' . $this->imageUrlUpload . $monthYear . $size['file'] . ' ' . $size['width'] . 'w';
+                    }
+                }
+                $data['srcSet'] = $srcSet;
+            }
+        }
+
+        return $data;
     }
 }
