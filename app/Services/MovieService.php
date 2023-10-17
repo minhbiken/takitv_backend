@@ -92,7 +92,7 @@ class MovieService {
                         ];
                     }
                 }
-                $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
+                //$srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
 
                 $link = 'movie/' . $dataItem->post_name;
                 $movie = [

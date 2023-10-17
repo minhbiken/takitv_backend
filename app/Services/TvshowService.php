@@ -181,7 +181,7 @@ class TvshowService {
                 $link = 'episode/' . $episodeTitle;                
             }
             
-            $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
+            //$srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
             $item = [
                 'id' => $dataItem->ID,
                 'year' => $releaseDate,
