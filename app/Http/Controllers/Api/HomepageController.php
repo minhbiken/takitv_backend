@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
-
+use Telegram\Bot\Laravel\Facades\Telegram;
 class HomepageController extends Controller
 {
 
@@ -39,8 +39,8 @@ class HomepageController extends Controller
      */
     public function index()
     {
-        if( Cache::has('homepage')) {
-            $homepage = Cache::get('homepage');
+        if( Cache::has('home_page')) {
+            $homepage = Cache::get('home_page');
             $sliderRandoms = $this->tvshowService->getTvShowRandom();
             $homepage['otts']['ottTitle'] = $sliderRandoms['title'];
             $homepage['otts']['ottSliders'] = $sliderRandoms['items'];
@@ -95,94 +95,18 @@ class HomepageController extends Controller
             ];
             
             //Get 12 movies 
-            $movies = [];
-            $queryMovie = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p WHERE  ((p.post_type = 'movie' AND (p.post_status = 'publish'))) ORDER BY p.post_date DESC LIMIT 12";
-            $dataMovies = DB::select($queryMovie);
-
-            $movieNewests = [];
-            $srcSet = [];
-            $originalTitleMovie = '';
-            $movieRunTime = '';
-            foreach ( $dataMovies as $key => $dataMovie ) {
-                $queryMetaMovie = "SELECT meta_value, meta_key FROM wp_postmeta WHERE post_id = ". $dataMovie->ID .";";
-
-                $querySrcMetaMovie = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                                LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataMovie->ID .";";
-                $dataSrcMetaMovie = DB::select($querySrcMetaMovie);
-
-                $srcMovie = $this->imageUrlUpload.$dataSrcMetaMovie[0]->meta_value;
-
-                $srcSet = $this->helperService->getAttachmentsByPostId($dataMovie->ID);
-                
-                $releaseDate = '';
-                $dataMetaMovies = DB::select($queryMetaMovie);
-                foreach($dataMetaMovies as $dataMetaMovie) {
-                    if( $dataMetaMovie->meta_key == '_movie_release_date' ) {
-                        if (preg_match("/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/", $dataMetaMovie->meta_value)) {
-                            $newDataReleaseDate = explode('-', $dataMetaMovie->meta_value);
-                            $releaseDate = $newDataReleaseDate[0];
-                        } else {
-                            $releaseDate = $dataMetaMovie->meta_value > 0 ? date('Y', $dataMetaMovie->meta_value) : '';
-                        }
-                    }
-                    
-                    if( $dataMetaMovie->meta_key == '_movie_run_time' ) {
-                        $movieRunTime = $dataMetaMovie->meta_value;
-                    }
-
-                    if( $dataMetaMovie->meta_key == '_movie_original_title' ) {
-                        $originalTitleMovie = $dataMetaMovie->meta_value;
-                    }
-                }
-                
-                $queryTaxonomyMovie = "SELECT t.name, t.slug FROM `wp_posts` p
-                            left join wp_term_relationships t_r on t_r.object_id = p.ID
-                            left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-                            left join wp_terms t on tx.term_id = t.term_id
-                            where t.name != 'featured' AND t.name != '' AND p.ID = ". $dataMovie->ID .";";
-
-                $dataTaxonomyMovies = DB::select($queryTaxonomyMovie);
-
-                $genreMovies = [];
-                foreach( $dataTaxonomyMovies as $dataTaxonomyMovie ) {
-                    $genreMovies[] = [
-                        'name' => $dataTaxonomyMovie->name,
-                        'link' =>  $dataTaxonomyMovie->slug
-                    ];
-                }
-
-                //Get 8 movies newlest
-                if( $key < 8 ) {
-                    $movieNewests[] = [
-                        'id' => $dataMovie->ID,
-                        'year' => $releaseDate,
-                        'genres' => $genreMovies,
-                        'title' => $dataMovie->post_title,
-                        'originalTitle' => $originalTitleMovie,
-                        'description' => $dataMovie->post_content,
-                        'src' => $srcMovie,
-                        'srcSet' => $srcSet,
-                        'duration' => $movieRunTime
-                    ];
-                }
-                
-                $movies[] = [
-                    'id' => $dataMovie->ID,
-                    'year' => $releaseDate,
-                    'genres' => $genreMovies,
-                    'title' => $dataMovie->post_title,
-                    'originalTitle' => $originalTitleMovie,
-                    'description' => $dataMovie->post_content,
-                    'src' => $srcMovie,
-                    'srcSet' => $srcSet,
-                    'duration' => $movieRunTime
-                ];
-            }
-
-            $topWeeks = $this->movieService->getTopWeeks();
+            $queryMovie = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM wp_posts p WHERE p.post_type = 'movie' AND p.post_status = 'publish' ORDER BY p.post_date DESC LIMIT 12";
+            $movies = DB::select($queryMovie);
+            
+            $queryTopWeek = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_most_popular` mp
+                LEFT JOIN wp_posts p ON p.ID = mp.post_id
+                WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
+                ORDER BY mp.7_day_stats DESC
+                LIMIT 5";
+            $topWeeks = DB::select($queryTopWeek);
 
             //Get movies newest of Korea for slider in bottom
-            $queryKoreaMovie = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+            $queryKoreaMovie = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_posts` p
             LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
             LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
             LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
@@ -190,8 +114,35 @@ class HomepageController extends Controller
             ORDER BY p.post_date DESC
             LIMIT 8;";
 
-            $movieKoreas = $this->movieService->getItems($queryKoreaMovie);
+            $movieKoreas = DB::select($queryKoreaMovie);
+
+            $movieIds = \array_map(fn($movie) => (int) $movie->id, $movies);
+            $topWeekMovieIds = \array_map(fn($movie) => (int) $movie->id, $topWeeks);
+            $movieKoreaIds = \array_map(fn($movie) => (int) $movie->id, $movieKoreas);
+            $allMovieIds = \array_unique(\array_merge($movieIds, $topWeekMovieIds, $movieKoreaIds));
+            $hasThumbnailMovieIds = \array_unique(\array_merge($movieIds, $movieKoreaIds));
+
+            $moviesMetadata = $this->movieService->getMoviesMetadata($hasThumbnailMovieIds);
+            $moviesMetadataTopWeek = $this->movieService->getMoviesMetadata($topWeekMovieIds, ['_movie_release_date']);
+            $genres = $this->movieService->getMoviesGenres($allMovieIds);
+            foreach ($movies as &$item) {
+                $item = \get_object_vars($item);
+                $item['genres'] = $genres[(int) $item['id']] ?? [];
+                $item += $moviesMetadata[(int) $item['id']];
+            }
+
+            foreach ($movieKoreas as &$item) {
+                $item = \get_object_vars($item);
+                $item['genres'] = $genres[(int) $item['id']] ?? [];
+                $item += $moviesMetadata[(int) $item['id']];
+            }
             
+            foreach ($topWeeks as &$item) {
+                $item = \get_object_vars($item);
+                $item['genres'] = $genres[(int) $item['id']] ?? [];
+                $item += $moviesMetadataTopWeek[(int) $item['id']];
+            }
+
             $homepage = [
                 'sliders' => $sliders,
                 'otts' => [
@@ -209,10 +160,10 @@ class HomepageController extends Controller
                 'moviesCarousel' => $movieKoreas,
                 'movieNewests' => [
                     'topWeeks' => $topWeeks,
-                    'movieNewests' => $movieNewests
+                    'movieNewests' => \array_slice($movies, 0 , 8)
                 ],
             ];
-            Cache::forever('homepage', $homepage);
+            Cache::forever('home_page', $homepage);
         }
         
         return response()->json($homepage, Response::HTTP_OK);
@@ -224,7 +175,7 @@ class HomepageController extends Controller
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
         $orderBy = $request->get('orderBy', '');
 
-        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p ";
         $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
 
         if( $title != '' ) {
@@ -268,7 +219,7 @@ class HomepageController extends Controller
         $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         $items = $this->searchService->getItems($query);
-        $topWeeks = $this->tvshowService->getTopWeeks();
+        $topWeeks = $this->searchService->getTopWeeks();
         $data = [
             "total" => $total,
             "perPage" => $perPage,
@@ -332,7 +283,7 @@ class HomepageController extends Controller
     }
 
     public function putGmtTime() {
-        $this->clearCache();
+        //$this->clearCache();
         Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:i:s'));
     }
 
@@ -559,4 +510,65 @@ class HomepageController extends Controller
         Artisan::call('person:auto '. $movieId . ' ' . $tmdbId . ' ' . $postType);
         return "Ok!";
     }
+
+    public function updatedActivity() {
+        $activity = Telegram::getUpdates();
+        $lastestActivity = end($activity);
+        if( isset($lastestActivity) ) {
+            $text = $lastestActivity->getMessage()->text;
+            preg_match('/\/ping /', $text, $matches, PREG_OFFSET_CAPTURE);
+            if( isset($matches[0][0]) && $matches[0][0] == '/ping ' ) {
+                $domainRoot = explode(' ', $text);
+                $domain = $domainRoot[1];
+                $this->handlePing($domain);
+            }
+        }
+        die("Ok!");
+    }
+
+    public function handleWebhook() {
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $response = Telegram::setWebhook([
+            'url' => "https://backend.kokoatv.net/api/$token/webhook",
+            'has_custom_certificate' => false
+        ]);
+        Telegram::commandsHandler(true);
+        die($response);
+    }
+
+    public function testPing(Request $request) {
+        $domain = $request->get('domain', '');
+        $wait = 10; // wait Timeout In Seconds
+
+        $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
+        if (!$fp) {
+            if ( $errCode == '10060' ) {
+                echo "Ping $domain ==> ";
+                echo "Timeout over 10s";
+            } else {
+                echo "Ping $domain ==> ";
+                echo "ERROR: $errCode - $errStr";
+            }
+        }
+    }
+
+    public function handlePing($domain='') {
+        $wait = 10; // wait Timeout In Seconds
+        $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
+        if (!$fp) {
+            if ( $errCode == '10060' ) {
+                $text = "Ping $domain ==> Timeout over 10s";
+            } else {
+                $text = "Ping $domain ==> ERROR: $errCode - $errStr";
+            }
+        } else {
+            $text = "Ping $domain ==> Success";
+        }
+        Telegram::sendMessage([
+            'chat_id' => env('TELEGRAM_CHANNEL_ID', '-4061154988'),
+            'parse_mode' => 'HTML',
+            'text' => $text
+        ]);
+    }
+
 }

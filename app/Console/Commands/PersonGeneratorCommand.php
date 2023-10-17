@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
 use App\Models\PostMeta;
+use Illuminate\Support\Facades\Artisan;
 class PersonGeneratorCommand extends Command
 {
     /**
@@ -194,7 +195,7 @@ class PersonGeneratorCommand extends Command
             Storage::disk('local')->put('rollback_person_meta.json', json_encode($personMetaListRollback));         
             Storage::delete($file);
             DB::commit();
-            
+            Artisan::call('cache:clear');
             //send output to the console
             $this->info('Success!');
         } catch (\Exception $e) {

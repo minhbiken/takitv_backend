@@ -136,16 +136,18 @@ class TvshowController extends Controller
      * @param  string  $title
      * @return \Illuminate\Http\Response
      */
-    public function show($title = '', Request $request)
+    public function show(Request $request)
     {
-        $titleTvshow = $request->get('title', '');
+        $titleTvshow = $request->get('slug', '');
+        $newtitleTvshow = urlencode($titleTvshow);
         $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
         $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND p.post_title='". $titleTvshow ."'  LIMIT 1; ";
+        $whereTitle = " AND p.post_name='". $newtitleTvshow ."' LIMIT 1; ";
 
         $where = $where . $whereTitle;
         $movies = [];
-        
+        $tvShowSlug = '';
+
         $dataPost = DB::select($select . $where);
         $link = '';
         if (count($dataPost) == 0) {
@@ -163,7 +165,8 @@ class TvshowController extends Controller
         foreach( $dataTaxonomys as $dataTaxonomy ) {
             $genres[] = [
                 'name' => $dataTaxonomy->name,
-                'link' =>  $dataTaxonomy->slug
+                'link' => $dataTaxonomy->slug,
+                'slug' => $dataTaxonomy->slug
             ];
             $slug[] = "'" . $dataTaxonomy->name . "'";
         }
@@ -215,7 +218,7 @@ class TvshowController extends Controller
             $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
         }
 
-        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
         $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
         $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -223,13 +226,15 @@ class TvshowController extends Controller
         $dataEpisoTitle = DB::select($queryTitle);
         
         if( count($dataEpisoTitle) > 0 ) {
-            $link = 'episode/' . $dataEpisoTitle[0]->post_title."/";
+            $link = 'episode/' . $dataEpisoTitle[0]->post_title ."/";
+            $tvShowSlug = $dataEpisoTitle[0]->post_name;
         }
 
         $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
+            'slug' => $tvShowSlug,
             'originalTitle' => $dataSeason->original_title,
             'description' => $dataSeason->post_content,
             'genres' => $genres,
@@ -351,7 +356,7 @@ class TvshowController extends Controller
                         $chanel = env('IMAGE_PLACEHOLDER');
                     }
 
-                    $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+                    $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
                     $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                     $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -360,6 +365,7 @@ class TvshowController extends Controller
                     
                     if( count($dataEpisoTitle) > 0 ) {
                         $link = 'episode/' . $dataEpisoTitle[0]->post_title;
+                        $episodeName = $dataEpisoTitle[0]->post_name;
                     }
                 }
 
@@ -374,7 +380,8 @@ class TvshowController extends Controller
                 foreach( $dataTaxonomys as $dataTaxonomy ) {
                     $genres[] = [
                         'name' => $dataTaxonomy->name,
-                        'link' =>  $dataTaxonomy->slug
+                        'link' => $dataTaxonomy->slug,
+                        'slug' => $dataTaxonomy->slug
                     ];
                 }
 
@@ -391,6 +398,7 @@ class TvshowController extends Controller
                     'src' => $src,
                     'srcSet' => $srcSet,
                     'link' => $link,
+                    'slug' => $episodeName,
                     'outlink' => $outlink,
                     'chanelImage' => $chanel,
                     'seasonNumber' => $seasonNumber,

@@ -22,7 +22,7 @@ class TvshowService {
         } else {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
-        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
+        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
@@ -42,7 +42,7 @@ class TvshowService {
         } else {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
-        $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats, p.post_status FROM wp_posts p
+        $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats, p.post_status FROM wp_posts p
                         LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
@@ -82,6 +82,9 @@ class TvshowService {
         $src= '';
         $originalTitle = '';
         $episodeTitle = '';
+        $episodeName = '';
+        $tvShowSlug = '';
+        $episodeNumber = '';
         foreach ( $dataItems as $dataItem ) {
             $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataItem->ID . " LIMIT 1;";
             $dataOriginalTitle = DB::select($queryOriginalTitle);
@@ -135,7 +138,8 @@ class TvshowService {
             foreach( $dataTaxonomys as $key => $dataTaxonomy ) {
                 $genres[$key] = [
                     'name' => $dataTaxonomy->name,
-                    'link' =>  $dataTaxonomy->slug
+                    'link' =>  $dataTaxonomy->slug,
+                    'slug' =>  $dataTaxonomy->slug
                 ];
             }
 
@@ -163,7 +167,7 @@ class TvshowService {
                 $chanel = env('IMAGE_PLACEHOLDER');
             }
 
-            $selectTitleEpisode = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
+            $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
             $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
             $whereTitleSub = " AND p.ID='". $episodeId ."' ";
 
@@ -172,15 +176,18 @@ class TvshowService {
             
             if( count($dataEpisoTitle) > 0 ) {
                 $episodeTitle = $dataEpisoTitle[0]->post_title;
+                $tvShowSlug = $dataEpisoTitle[0]->post_name;
+                $episodeName = $dataEpisoTitle[0]->post_name;
                 $link = 'episode/' . $episodeTitle;                
             }
             
-            $srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
+            //$srcSet = $this->helperService->getAttachmentsByPostId($dataItem->ID);
             $item = [
                 'id' => $dataItem->ID,
                 'year' => $releaseDate,
                 'genres' => $genres,
                 'tvshowTitle' => $dataItem->post_title,
+                'tvShowSlug' => $tvShowSlug,
                 'title' => $episodeTitle,
                 'episodeId' => $episodeId,
                 'originalTitle' => $originalTitle,
@@ -188,6 +195,7 @@ class TvshowService {
                 'src' => $src,
                 'srcSet' => $srcSet,
                 'link' => $link,
+                'slug' => $episodeName,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
@@ -211,18 +219,29 @@ class TvshowService {
                 arsort($episodeDatas);
                 $episodes = [];
                 foreach ( $episodeDatas as $episodeSubData ) {
-                    $queryEpiso = "SELECT p.ID, p.post_title, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
+                    $queryEpiso = "SELECT p.ID, p.post_title, p.post_name, p.post_date_gmt, p.post_date FROM wp_posts p WHERE ((p.post_type = 'episode' AND (p.post_status = 'publish'))) AND p.ID = ". $episodeSubData ." LIMIT 1;";
                     $dataEpiso = DB::select($queryEpiso);
                     if( count($dataEpiso) > 0 ) {
+                        $queryThumb = "SELECT meta_value, meta_key, post_id FROM wp_postmeta WHERE meta_key='_thumbnail_id' AND post_id=". $dataEpiso[0]->ID;
+                        $dataThumb = DB::select($queryThumb);
+                        $thumbnails = [
+                            'src' => '',
+                            'srcSet' => ''
+                        ];
+                        if ( count($dataThumb) > 0) {
+                            $thumbnails = $this->getTvShowThumbnail((int) $dataThumb[0]->meta_value);
+                        }
                         $episodes[] = [
                             'id' => $episodeSubData,
                             'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
+                            'slug' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_name : '',
+                            'src' => $thumbnails['src'],
+                            'srcSet' => $thumbnails['srcSet'],
                             'postDateGmt' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date_gmt : '',
                             'postDate' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_date : '',
                         ];
                     }
                 }
-                
                 $seasons[] = [
                     'name' => $episodeSeasonData['name'],
                     'year' => $episodeSeasonData['year'],
@@ -295,6 +314,7 @@ class TvshowService {
         $sliders = [];
         $sliderDatas = DB::select($query);
         $src = '';
+        $slug = '';
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT * FROM `wp_postmeta` pm 
             LEFT JOIN wp_posts p ON p.ID = pm.post_id 
@@ -305,7 +325,8 @@ class TvshowService {
                 $src = $dataResult[0]->meta_value;
             }
 
-            $titleSlider = $sliderData->post_title; 
+            $titleSlider = $sliderData->post_title;
+            $slug = $sliderData->post_name;
             $linkSlider = 'movie/' . $sliderData->post_title;
             $seasonNumber = '';
             $episodeNumber = '';
@@ -338,7 +359,7 @@ class TvshowService {
 
                 $episodeId = end($lastSeason['episodes']);
                 
-                $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
+                $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt FROM wp_posts p ";
                 $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
                 $whereTitle = " AND p.ID='". $episodeId ."' ";
     
@@ -348,6 +369,7 @@ class TvshowService {
                 
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
+                    $slug = $dataEpisoSlider[0]->post_name;
                 }
 
                 $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
@@ -360,12 +382,49 @@ class TvshowService {
                 'year' => $year,
                 'title' => $titleSlider,
                 'link' => $linkSlider,
+                'slug' => $sliderData->post_name,
                 'src' => $this->imageUrlUpload.$src,
+                'slug' => $slug,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
+                'post_type' => $sliderData->post_type
             ];
             $sliders['title'] = $queryRandom['title'];
         }
         return $sliders;
+    }
+
+    /**
+     * @param int $postmetaId
+     * @return array
+     */
+    private function getTvShowThumbnail(int $postmetaId) {
+        $data = [
+            'src' => '',
+            'srcSet' => ''
+        ];
+        $sql = 'SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ' . $postmetaId . ' AND meta_key IN (\'_wp_attached_file\', \'_wp_attachment_metadata\') ORDER BY meta_id DESC LIMIT 2';
+        $metaData = DB::select($sql);
+        foreach ($metaData as $value) {
+            if ($value->meta_key == '_wp_attached_file') {
+                $data['src'] = $this->imageUrlUpload . $value->meta_value;
+            }
+            elseif ($value->meta_key == '_wp_attachment_metadata') {
+                $srcSetVal = \unserialize($value->meta_value);
+                if (!isset($monthYear)) {
+                    $monthYear = \substr($srcSetVal['file'], 0, (\strpos($srcSetVal['file'], 'image_webp') !== false) ? 19 : 8);
+                }
+
+                $srcSet = $this->imageUrlUpload . $srcSetVal['file'] . ' ' . $srcSetVal['width'] . 'w';
+                if (isset($srcSetVal['sizes'])) {
+                    foreach ($srcSetVal['sizes'] as $size) {
+                        $srcSet .= ', ' . $this->imageUrlUpload . $monthYear . $size['file'] . ' ' . $size['width'] . 'w';
+                    }
+                }
+                $data['srcSet'] = $srcSet;
+            }
+        }
+
+        return $data;
     }
 }
