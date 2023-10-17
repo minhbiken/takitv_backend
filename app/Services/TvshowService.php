@@ -224,7 +224,13 @@ class TvshowService {
                     if( count($dataEpiso) > 0 ) {
                         $queryThumb = "SELECT meta_value, meta_key, post_id FROM wp_postmeta WHERE meta_key='_thumbnail_id' AND post_id=". $dataEpiso[0]->ID;
                         $dataThumb = DB::select($queryThumb);
-                        $thumbnails = $this->getTvShowThumbnail((int) $dataThumb[0]->meta_value);
+                        $thumbnails = [
+                            'src' => '',
+                            'srcSet' => ''
+                        ];
+                        if ( count($dataThumb) > 0) {
+                            $thumbnails = $this->getTvShowThumbnail((int) $dataThumb[0]->meta_value);
+                        }
                         $episodes[] = [
                             'id' => $episodeSubData,
                             'title' => count($dataEpiso) > 0 ? $dataEpiso[0]->post_title : '',
