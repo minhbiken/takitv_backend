@@ -77,7 +77,6 @@ class HelperService {
                 if( count($dataEpisoSlider) > 0 ) {
                     $linkSlider = 'episode/' . $dataEpisoSlider[0]->post_title;
                     $dataEpisodeName = $dataEpisoSlider[0]->post_name;
-                    $titleSlider = $dataEpisoSlider[0]->post_title;
                 }
 
                 $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
