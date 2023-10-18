@@ -83,6 +83,8 @@ class HelperService {
                 $dataEpisodeNumber = DB::select($queryEpisodeNumber);
                 $episodeNumber = $dataEpisodeNumber[0]->meta_value;
 
+                $titleSlider = $titleSlider . ' ' .  $seasonNumber;
+
             }
             //$srcSet = $this->getAttachmentsByPostId($sliderData->ID);
             $sliders[] = [
