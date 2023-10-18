@@ -94,7 +94,7 @@ class EpisodeController extends Controller
                     $queryCast = "SELECT meta_value FROM wp_postmeta WHERE post_id=" . $tvShowId . " AND meta_key='_cast' LIMIT 1;";
                     $dataCast = DB::select($queryCast);
                     if( count($dataCast) > 0 && $dataCast[0]->meta_value != '' ) {
-                        $unserializeCasts = unserialize($dataCast[0]->meta_value);
+                        $unserializeCasts = @unserialize($dataCast[0]->meta_value);
                         if($unserializeCasts != '' && count($unserializeCasts) > 0) {
                             $castDatas = $unserializeCasts;
                             $castDatas = array_values(array_unique($castDatas, SORT_REGULAR));
