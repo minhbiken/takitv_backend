@@ -90,8 +90,9 @@ class SearchService {
                         $dataEpisoTitle = DB::select($queryTitle);
                         
                         if( count($dataEpisoTitle) > 0 ) {
-                            $link = 'episode/' . $dataEpisoTitle[0]->post_title;
-                            $slug = $dataEpisoTitle[0]->post_title;
+                            $episodeName = urldecode($dataEpisoTitle[0]->post_name);
+                            $link = 'episode/' . $episodeName;
+                            $slug = $episodeName;
                         }
                     }
                 } else {
