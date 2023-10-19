@@ -108,7 +108,7 @@ class MovieController extends Controller
             } else {
                 $queryByType =  "AND (t.slug = " . $genre . " OR t.name = " . $genre . "   )" ;
             }
-            $queryTopWeek = "SELECT p.ID as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
+            $queryTopWeek = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
             LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
             LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
             LEFT JOIN wp_terms t ON t.term_id = tx.term_id
@@ -117,7 +117,7 @@ class MovieController extends Controller
             ORDER BY mp.7_day_stats DESC
             LIMIT 5";
 
-            $queryPopular = "SELECT p.ID as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
+            $queryPopular = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
             LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
             LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
             LEFT JOIN wp_terms t ON t.term_id = tx.term_id
@@ -125,7 +125,7 @@ class MovieController extends Controller
             WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != '' " . $queryByType . " AND (p.post_status = 'publish')
             ORDER BY mp.7_day_stats DESC
             LIMIT 6";
-            
+
             $populars = DB::select($queryPopular);
             $topWeeks = DB::select($queryTopWeek);
 
