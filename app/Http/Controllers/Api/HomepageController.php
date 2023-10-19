@@ -106,10 +106,11 @@ class HomepageController extends Controller
             $topWeeks = DB::select($queryTopWeek);
 
             //Get movies newest of Korea for slider in bottom
+            $encodedSlug = urlencode('한국영화');
             $queryKoreaMovie = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_posts` p
             LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
             LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-            LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
+            LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = '" . $encodedSlug . "'
             WHERE t.name != 'featured' AND t.name != ''
             ORDER BY p.post_date DESC
             LIMIT 8;";
