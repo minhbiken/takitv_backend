@@ -230,10 +230,20 @@ class MovieService {
      * @param array $postIds
      * @return array
      */
-    public function getMoviesGenres(array $postIds) {
+    public function getMoviesGenres(array $postIds, string $genre='') {
         $data = [];
 
-        $sql = 'SELECT a.object_id, c.name, c.slug FROM wp_term_relationships a LEFT JOIN wp_term_taxonomy b ON a.term_taxonomy_id = b.term_taxonomy_id LEFT JOIN wp_terms c ON b.term_id = c.term_id WHERE a.object_id IN (' . \implode(',', $postIds) . ') AND b.taxonomy = \'movie_genre\' AND c.name != \'featured\' AND c.name != \'\'';
+        if( $genre == '' ) {
+            $queryByType = '';
+        } else {
+            $queryByType =  "AND (c.slug = " . $genre . " OR c.name = " . $genre . "   )" ;
+        }
+
+        $sql = 'SELECT a.object_id, c.name, c.slug 
+        FROM wp_term_relationships a 
+        LEFT JOIN wp_term_taxonomy b ON a.term_taxonomy_id = b.term_taxonomy_id 
+        LEFT JOIN wp_terms c ON b.term_id = c.term_id 
+        WHERE a.object_id IN (' . \implode(',', $postIds) . ') AND b.taxonomy = \'movie_genre\' AND c.name != \'featured\' AND c.name != \'\'' . $queryByType;
         $queryData = DB::select($sql);
         foreach ($queryData as $value) {
             if (!isset($data[$value->object_id])) {
