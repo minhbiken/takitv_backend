@@ -68,7 +68,6 @@ class TvshowController extends Controller
                 }
                 $where = $where . $whereType;
             }
-    
             if( $genre != '' ) {
                 $genre = explode(',', $genre);
                 foreach($genre as $key => $g) {

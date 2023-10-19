@@ -126,18 +126,16 @@ class TvshowService {
                 }
             }
 
-            if( $type == '' ) {
+            if( $type == '' || in_array($type , config('constants.categoryTvshowKoreas')) || in_array($type , config('constants.chanelList')) ) {
                 $queryByType = '';
             } else {
                 $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
             }
-
             $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                         LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
                         LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre' 
                         LEFT JOIN wp_terms t on tx.term_id = t.term_id
                         WHERE t.name != 'featured' AND t.name != '' ";
-
             $queryTaxonomy = $queryTaxonomy .  $queryByType;
             $queryTaxonomy = $queryTaxonomy . " AND p.ID = ". $dataItem->ID ." ORDER BY t.name ASC;";
             $dataTaxonomys = DB::select($queryTaxonomy);
@@ -150,7 +148,6 @@ class TvshowService {
                     'slug' =>  $dataTaxonomy->slug
                 ];
             }
-
             $constantChanelList = config('constants.chanelList');
             if( in_array($type, $constantChanelList) ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
