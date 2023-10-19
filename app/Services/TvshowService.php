@@ -30,8 +30,7 @@ class TvshowService {
                         WHERE p.post_type = 'tv_show' " . $queryByType . " AND (p.post_status = 'publish')
                         ORDER BY mp.7_day_stats DESC
                         LIMIT 5;";
-                        
-        $dataTopWeek = $this->getItems($queryTopWeek);
+        $dataTopWeek = $this->getItems($queryTopWeek, $type);
         return $dataTopWeek;
     }
 
@@ -127,11 +126,20 @@ class TvshowService {
                 }
             }
 
+            if( $type == '' ) {
+                $queryByType = '';
+            } else {
+                $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
+            }
+
             $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
                         LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
                         LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre' 
                         LEFT JOIN wp_terms t on tx.term_id = t.term_id
-                        WHERE t.name != 'featured' AND t.name != '' AND p.ID = ". $dataItem->ID ." ORDER BY t.name ASC;";
+                        WHERE t.name != 'featured' AND t.name != '' ";
+
+            $queryTaxonomy = $queryTaxonomy .  $queryByType;
+            $queryTaxonomy = $queryTaxonomy . " AND p.ID = ". $dataItem->ID ." ORDER BY t.name ASC;";
             $dataTaxonomys = DB::select($queryTaxonomy);
 
             $genres = [];
