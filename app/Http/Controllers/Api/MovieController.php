@@ -57,7 +57,7 @@ class MovieController extends Controller
             if( $genre != '' ) {
                 $genre = explode(',', $genre);
                 foreach($genre as $key => $g) {
-                    $genre[$key] = "'" . "$g" . "'";
+                    $genre[$key] = "'" . \urlencode($g) . "'";
                 }
                 $genre = join(",", $genre);
                 $queryGenre = "SELECT tr.object_id FROM wp_terms t
