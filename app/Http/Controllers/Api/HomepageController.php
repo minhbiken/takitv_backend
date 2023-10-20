@@ -284,7 +284,7 @@ class HomepageController extends Controller
     }
 
     public function putGmtTime() {
-        //$this->clearCache();
+        $this->clearCache();
         Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:i:s'));
     }
 

@@ -25,6 +25,7 @@ class HelperService {
         $episodeNumber = '';
         $year = '';
         $linkSlider = '';
+        $postType = '';
         $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
             $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
@@ -38,6 +39,7 @@ class HelperService {
             $dataEpisodeName = $sliderData->post_name;
             $linkSlider = 'movie/' . $sliderData->post_title;
             
+            if( $sliderData->post_type == 'movie' ) $postType = 'movie';
 
             $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
             $dataMetas = DB::select($queryMeta);
@@ -54,7 +56,8 @@ class HelperService {
                 }
             }
             if( $sliderData->post_type == 'tv_show' ) {
-                
+
+                $postType = 'tv_show';
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 
@@ -99,6 +102,7 @@ class HelperService {
                 'srcSet' => $srcSet,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
+                'postType' => $postType
             ];
         }
         return $sliders;
