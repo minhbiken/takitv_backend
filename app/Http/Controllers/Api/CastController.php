@@ -82,14 +82,15 @@ class CastController extends Controller
         //clear cast dupplicate
         $this->helperService->clearCastDupplicate($items);
         $items = DB::select($query);
-        $newSrc = '';
-        foreach ($items as $item) {
+        foreach ($items as $key => $item) {
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
             //check no image
+            $newSrc = '';
             if( empty($item->src) ) {
                 $urlTmdb = "https://www.themoviedb.org/search/person?query=" . $item->slug;
                 $contentTmdb = @file_get_contents($urlTmdb);
                 preg_match("/<img loading=\"lazy\" class=\"profile\" src=\"(.*)\" srcset=\"(.*)\" alt=\"$item->name\">/", $contentTmdb, $result);
+
                 if( isset($result[1]) ) {
                     $imageSrc = $result[1];
                     if( !empty($imageSrc) ) {
@@ -107,10 +108,9 @@ class CastController extends Controller
                 $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
                 $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
             }
-            
-            $casts[] = [
+            $casts[$key] = [
                 'id' => $item->id,
-                'slug' => $newSlug,
+                'slug' => urlencode($newSlug),
                 'name' => $item->name,
                 'src' =>  $newSrc
             ];
@@ -131,13 +131,14 @@ class CastController extends Controller
     public function show(Request $request) 
     {
         $slug = $request->get('slug', '');
-        $newSlug = urlencode($slug);
+        $newSlug = addslashes($slug);
         $queryCast = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src, wp_tv_show.meta_value as tv_show, wp_movie.meta_value as movie
         FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
         LEFT JOIN wp_postmeta wp_tv_show ON wp_tv_show.post_id = p.ID AND wp_tv_show.meta_key = '_tv_show_cast'
         LEFT JOIN wp_postmeta wp_movie ON wp_movie.post_id = p.ID AND wp_movie.meta_key = '_movie_cast'
-        WHERE ( p.post_name= '" . $slug .  "' OR p.post_name= '". $newSlug ."' )";
+        WHERE ( p.post_name= '". $newSlug ."' )";
+        
         $dataCast = DB::select($queryCast);
         $cast = [];
         $data = [];
