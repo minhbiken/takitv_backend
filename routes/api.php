@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('homepage', 'Api\HomepageController')->only(['index'])->middleware([IfModifiedSince::class, LastModified::class]);
 Route::apiResource('movies', 'Api\MovieController')->only(['show']);
 Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show'])->middleware([IfModifiedSince::class, LastModified::class]);
-Route::apiResource('episode', 'Api\EpisodeController')->only(['show'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
 Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->middleware([IfModifiedSince::class, LastModified::class]);
 Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage')->middleware([IfModifiedSince::class, LastModified::class]);
 
