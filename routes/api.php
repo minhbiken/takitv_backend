@@ -22,7 +22,7 @@ Route::apiResource('episode', 'Api\EpisodeController')->only(['show'])->middlewa
 Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->middleware([IfModifiedSince::class, LastModified::class]);
 Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage')->middleware([IfModifiedSince::class, LastModified::class]);
 
-Route::get('movies', 'App\Http\Controllers\Api\MovieController@index')->middleware([IfModifiedSince::class, LastModified::class]);
+Route::get('movies', 'App\Http\Controllers\Api\MovieController@index')->middleware([IfModifiedSince::class, LastModified::class])->name('movies.index');
 
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
