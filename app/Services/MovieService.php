@@ -121,7 +121,7 @@ class MovieService {
      * @param array $fields
      * @return array
      */
-    public function getMoviesMetadata(array $postIds, array $fields = []) {
+    public function getMoviesMetadata(array $postIds = [], array $fields = []) {
         $data = [];
 
         if (empty($fields)) {
@@ -131,6 +131,10 @@ class MovieService {
                 '_movie_original_title', 
                 '_thumbnail_id'
             ];
+        }
+
+        if (empty($postId)) {
+            return [];
         }
 
         $queryMeta = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $postIds) . ') AND meta_key IN (\'' . \implode('\',\'', $fields) . '\') GROUP BY post_id, meta_key LIMIT ' . (\count($postIds) * \count($fields));
