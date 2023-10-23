@@ -14,6 +14,7 @@ use App\Services\SearchService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
+use App\Models\PostMeta;
 class CastController extends Controller
 {
     protected $imageUrlUpload;
@@ -36,12 +37,12 @@ class CastController extends Controller
         $orderBy = $request->get('orderBy', '');
         $search = $request->get('search', '');
 
-        $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p 
+        $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src, wp.meta_id FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
-        $where = " WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != '' ";
+        $where = " WHERE p.post_status = 'publish' AND p.post_type='person' ";
 
         if( $orderBy == '' ) {
-            $order = "ORDER BY p.post_title DESC ";
+            $order = "ORDER BY wp.meta_value DESC ";
         } else if( $orderBy == 'nameAsc' ) {
             $order = "ORDER BY p.post_title ASC ";
         } else if( $orderBy == 'nameDesc' ) {
@@ -81,10 +82,32 @@ class CastController extends Controller
         //clear cast dupplicate
         $this->helperService->clearCastDupplicate($items);
         $items = DB::select($query);
+        $newSrc = '';
         foreach ($items as $item) {
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
-            $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
-            $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+            //check no image
+            if( empty($item->src) ) {
+                $urlTmdb = "https://www.themoviedb.org/search/person?query=" . $item->slug;
+                $contentTmdb = @file_get_contents($urlTmdb);
+                preg_match("/<img loading=\"lazy\" class=\"profile\" src=\"(.*)\" srcset=\"(.*)\" alt=\"$item->name\">/", $contentTmdb, $result);
+                if( isset($result[1]) ) {
+                    $imageSrc = $result[1];
+                    if( !empty($imageSrc) ) {
+                        $newImageSrc = str_replace('w90_and_h90_face', 'w300_and_h450_bestv2', $imageSrc);
+                        $newImageSrc = "https://www.themoviedb.org" . $newImageSrc;
+                        $newSrc = $newImageSrc;
+                        $newImagePerson = new PostMeta();
+                        $newImagePerson->post_id = $item->id;
+                        $newImagePerson->meta_key = '_person_image_custom';
+                        $newImagePerson->meta_value = $newSrc;
+                        $newImagePerson->save();
+                    }
+                }
+            } else {
+                $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
+                $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+            }
+            
             $casts[] = [
                 'id' => $item->id,
                 'slug' => $newSlug,
@@ -118,11 +141,33 @@ class CastController extends Controller
         $dataCast = DB::select($queryCast);
         $cast = [];
         $data = [];
+        $newSrc = '';
         if( count($dataCast) > 0 ) {
             $data = $dataCast[0];
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
-            $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
-            $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+
+            //check no image
+            if( empty($data->src) ) {
+                $urlTmdb = "https://www.themoviedb.org/search/person?query=" . $data->slug;
+                $contentTmdb = @file_get_contents($urlTmdb);
+                preg_match("/<img loading=\"lazy\" class=\"profile\" src=\"(.*)\" srcset=\"(.*)\" alt=\"$data->name\">/", $contentTmdb, $result);
+                if( isset($result[1]) ) {
+                    $imageSrc = $result[1];
+                    if( !empty($imageSrc) ) {
+                        $newImageSrc = str_replace('w90_and_h90_face', 'w300_and_h450_bestv2', $imageSrc);
+                        $newImageSrc = "https://www.themoviedb.org" . $newImageSrc;
+                        $newSrc = $newImageSrc;
+                        $newImagePerson = new PostMeta();
+                        $newImagePerson->post_id = $data->id;
+                        $newImagePerson->meta_key = '_person_image_custom';
+                        $newImagePerson->meta_value = $newSrc;
+                        $newImagePerson->save();
+                    }
+                }
+            } else {
+                $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
+                $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+            }
             $cast = [
                 'id' => $data->id,
                 'slug' => $newSlug,
