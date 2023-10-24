@@ -400,6 +400,130 @@ class TvshowService {
     }
 
     /**
+     * Return array with format [postId => ['originalTitle', 'seasonNumber', 'lastEpisodeId', 'src', 'srcSet']]
+     * @param array $postIds
+     * @param array $fields
+     * @return array
+     */
+    public function getTvShowsMetaData(array $postIds = [], array $fields = []) {
+        $data = [];
+
+        if (empty($fields)) {
+            $fields = [
+                '_original_title',
+                '_thumbnail_id',
+                '_seasons'
+            ];
+        }
+
+        $queryMeta = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $postIds) . ') AND meta_key IN (\'' . \implode('\',\'', $fields) . '\') GROUP BY post_id, meta_key LIMIT ' . (\count($postIds) * \count($fields));
+        $metaData = DB::select($queryMeta);
+
+        foreach ($metaData as $value) {
+            $postId = (int) $value->post_id;
+            if (!\array_key_exists($postId, $data)) {
+                $data[$postId] = [];
+            }
+            
+            if ($value->meta_key == '_original_title') {
+                $data[$postId]['originalTitle'] = $value->meta_value;
+            }
+            elseif ($value->meta_key == '_seasons') {
+                $seasons = \unserialize($value->meta_value);
+                $lastSeason = \end($seasons);
+                $data[$postId]['seasonNumber'] = $lastSeason['name'];
+                $lastEpisodeId = (int) \end($lastSeason['episodes']);
+                $data[$postId]['lastEpisodeId'] = $lastEpisodeId;
+            }
+            elseif ($value->meta_key == '_thumbnail_id') {
+                $thumbnails = $this->getTvShowThumbnail((int) $value->meta_value);
+                $data[$postId] += $thumbnails;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return array with format [id => ['title', 'episodeNumber', 'slug']]
+     * @param array $episodeIds
+     * @return array
+     */
+    public function getEpisodeMetadata(array $episodeIds) {
+        $sql = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $episodeIds) . ') AND meta_key = \'_episode_number\' LIMIT ' . (\count($episodeIds));
+        $data = [];
+
+        foreach (DB::select($sql) as $value) {
+            $episodeId = (int) $value->post_id;
+            $data[$episodeId] = [
+                'episodeNumber' => $value->meta_value
+            ] + $this->getEpisodeTitleAndSlug($episodeId);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return array with format postId => [['name', 'slug'], ['name', 'slug']]
+     * @param array $tvShowIds
+     * @return array
+     */
+    public function getTvshowsGenres(array $tvShowIds) {
+        $data = [];
+
+        $sql = 'SELECT a.object_id , c.name, c.slug 
+            FROM wp_term_relationships a 
+            LEFT JOIN wp_term_taxonomy b ON a.term_taxonomy_id = b.term_taxonomy_id 
+            LEFT JOIN wp_terms c ON b.term_id = c.term_id 
+            WHERE a.object_id IN (' . \implode(',', $tvShowIds) . ') AND b.taxonomy = \'tv_show_genre\' AND c.name != \'featured\' AND c.name != \'\'';
+        $queryData = DB::select($sql);
+        foreach ($queryData as $value) {
+            if (!isset($data[$value->object_id])) {
+                $data[$value->object_id] = [];
+            }
+            $data[(int) $value->object_id][] = [
+                'name' => $value->name,
+                'slug' => $value->slug
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $tvshowIds
+     * @param string $type
+     * @return string
+     */
+    public function getTvShowChannelImage(array $tvshowIds, string $type) {
+        $constantChanelList = config('constants.chanelList');
+        if( in_array($type, $constantChanelList) ) {
+            $sql = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+            LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+            RIGHT JOIN wp_terms t ON t.term_id = wt.term_id AND t.slug = '" . $type . "'
+            WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id IN (". \implode(',', $tvshowIds) . ") group by wp.object_id LIMIT " . count($tvshowIds) . ";";
+        } else {
+            $sql = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
+            LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
+            WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id IN (" . \implode(',', $tvshowIds) . ") group by wp.object_id LIMIT " . count($tvshowIds) . ";";
+        }
+
+        $data = [];
+        foreach (DB::select($sql) as $item) {
+            if (!empty($item->description)) {
+                $parts = \explode('src="', $item->description);
+                $parts = \explode('" alt', $parts[1]);
+                $chanel = 'https://image002.modooup.com' . $parts[0];
+            } else {
+                $chanel = env('IMAGE_PLACEHOLDER');
+            }
+            $data[$item->object_id] = $chanel;
+        }
+
+        return $data;
+    }
+
+    /**
      * @param int $postmetaId
      * @return array
      */
@@ -431,5 +555,15 @@ class TvshowService {
         }
 
         return $data;
+    }
+
+    /**
+     * @param int $episodeId
+     * @return string
+     */
+    private function getEpisodeTitleAndSlug(int $episodeId) {
+        $sql = "SELECT post_title as title, post_name as slug FROM wp_posts WHERE ID = {$episodeId}";
+        $result = DB::selectOne($sql);
+        return empty($result) ? [] : \get_object_vars($result);
     }
 }
