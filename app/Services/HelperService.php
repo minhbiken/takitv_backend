@@ -217,6 +217,7 @@ class HelperService {
 
     public function clearCastDupplicate($items) {
         foreach($items as $item) {
+            $itemDup = [];
             foreach($items as $newItem) {
                 $itemSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
                 $itemSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $itemSrc);
@@ -380,8 +381,16 @@ class HelperService {
                             }    
                         }
                     } 
+                } else if ( $itemSrc == $newItemSrc && (strlen($item->name) == strlen($newItem->name)) && $item->id != $newItem->id ) {
+                    array_push($itemDup, $item->id);
+                    break;
                 }
             }
+        }
+        foreach ( $itemDup as $itemD ) {
+            $postItemD = Post::find($itemD);
+            $postItemD->post_status = 'duplicate';
+            $postItemD->save();
         }
     }
 }

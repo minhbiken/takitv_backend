@@ -359,7 +359,7 @@ class HomepageController extends Controller
                 }
                 $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idNewPerson, 'meta_key' => $metaKey])->first();
                 if($dataMovie != '' && $dataMovie->meta_value != '' ) {
-                    $movies = unserialize($dataMovie->meta_value);
+                    $movies = @unserialize($dataMovie->meta_value);
                     //check exist and update movie of cast
                     if( !in_array($movieId, $movies) ) {
                         array_push($movies, $movieId);
@@ -449,7 +449,7 @@ class HomepageController extends Controller
                 array_push($personMetaListRollback, $metaPostMovie->meta_id);
             } else {
                 if( $dataMovieCast->meta_value != '') {
-                    $movieCasts = unserialize($dataMovieCast->meta_value);
+                    $movieCasts = @unserialize($dataMovieCast->meta_value);
                     //check exist and update movie of cast
                     foreach($movieCasts as $movieCast ) {
                         if( isset($movieCast['id']) && $movieCast['id'] != $idNewPerson ) {
