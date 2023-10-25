@@ -8,67 +8,85 @@ use Illuminate\Support\Facades\DB;
 use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
 class TvshowService {
+    
     protected $helperService;
     protected $imageUrlUpload;
+
     public function __construct(HelperService $helperService)
     {
         $this->helperService = $helperService;
         $this->imageUrlUpload = env('IMAGE_URL_UPLOAD');
     }
-    public function getTopWeeks($type='')
+    
+    /**
+     * @param string $type
+     * @return array
+     */
+    public function getTopWeeks(string $type = '')
     {
         if( $type == '' ) {
-            $queryByType = '';
+            $sql = 'SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id WHERE p.post_type = \'tv_show\' AND p.post_status = \'publish\' ORDER BY mp.7_day_stats DESC LIMIT 5';
+        }    
+        elseif ($type == 'ott-web') {
+            $sql = "SELECT p.ID AS id, p.post_title AS tvshowTitle, p.post_date as postDate FROM wp_posts p
+            LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+            LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+            LEFT JOIN wp_term_taxonomy tx ON tr.term_taxonomy_id = tx.term_taxonomy_id
+            WHERE p.post_type = 'tv_show' AND tx.parent = 280
+            ORDER BY mp.7_day_stats DESC LIMIT 5;";
         } else {
-            $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
+            $sql = "SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p
+            LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+            LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+            LEFT JOIN wp_term_taxonomy tx ON tr.term_taxonomy_id = tx.term_taxonomy_id
+            LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+            WHERE p.post_type = 'tv_show' AND t.slug = '{$type}' AND p.post_status = 'publish'
+            ORDER BY mp.7_day_stats DESC LIMIT 5;";
         }
-        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
-                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
-                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
-                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
-                        WHERE p.post_type = 'tv_show' " . $queryByType . " AND (p.post_status = 'publish')
-                        ORDER BY mp.7_day_stats DESC
-                        LIMIT 5;";
-        $dataTopWeek = $this->getItems($queryTopWeek, $type);
-        return $dataTopWeek;
+
+        return DB::select($sql);
     }
 
-    public function getTopMonths($type='')
+    /**
+     * @param string $type
+     * @return array
+     */
+    public function getTopMonths(string $type = '')
     {
         if( $type == '' ) {
-            $queryByType = '';
+            $sql = 'SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id WHERE p.post_type = \'tv_show\' AND p.post_status = \'publish\' ORDER BY mp.30_day_stats DESC LIMIT 5';
         } else {
-            $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
+            $sql = "SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p
+            LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+            LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+            LEFT JOIN wp_term_taxonomy tx ON tr.term_taxonomy_id = tx.term_taxonomy_id
+            LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+            WHERE p.post_type = 'tv_show' AND t.slug = '{$type}' AND p.post_status = 'publish'
+            ORDER BY mp.30_day_stats DESC LIMIT 5;";
         }
-        $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats, p.post_status FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
-                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
-                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
-                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
-                        WHERE p.post_type = 'tv_show' " . $queryByType . " AND (p.post_status = 'publish')
-                        ORDER BY mp.30_day_stats DESC
-                        LIMIT 5;";
 
-        $dataTopMonth = $this->getItems($queryTopMonth);
-        return $dataTopMonth;
+        return DB::select($sql);
     }
 
-    public function getPopulars($type='') {
+    /**
+     * @param string $type
+     * @return array
+     */
+    public function getPopulars(string $type = '')
+    {
         if( $type == '' ) {
-            $queryByType = '';
+            $sql = 'SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id WHERE p.post_type = \'tv_show\' AND p.post_status = \'publish\' ORDER BY mp.7_day_stats DESC LIMIT 5';
         } else {
-            $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
+            $sql = "SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p
+                LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+                LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
+                LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+                WHERE p.post_type = 'tv_show' AND t.slug = '{$type}' AND p.post_status = 'publish'
+                ORDER BY mp.7_day_stats DESC LIMIT 5;";
         }
-        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
-                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
-                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
-                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
-                        WHERE p.post_type = 'tv_show' " . $queryByType . " AND (p.post_status = 'publish')
-                        ORDER BY mp.7_day_stats DESC
-                        LIMIT 5;";
-        return $this->getItems($queryTopWeek, $type);
+        
+        return DB::select($sql);
     }
 
     public function getItems($query='', $type='') {
@@ -278,18 +296,6 @@ class TvshowService {
         return $where;
     }
 
-    public function getTopWeekOTT() {
-        $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
-                        LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
-                        LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
-                        LEFT JOIN wp_terms t ON t.term_id = tx.term_id
-                        WHERE p.post_type = 'tv_show' AND tx.parent = 280
-                        ORDER BY mp.7_day_stats DESC
-                        LIMIT 5;";
-        return $this->getItems($queryTopWeek);
-    }
-
     public function getTvShowRandom() {
         $queryKoreaSlider = "SELECT ID, post_title, post_name, post_type, post_date , IF(pm1.meta_value IS NOT NULL , CAST( pm1.meta_value AS UNSIGNED ) , 0 ) as sort_order,
                                     IF(pm2.meta_value IS NOT NULL , CAST( pm2.meta_value AS UNSIGNED ) , 0 ) as slide_img
@@ -400,21 +406,19 @@ class TvshowService {
     }
 
     /**
-     * Return array with format [postId => ['originalTitle', 'seasonNumber', 'lastEpisodeId', 'src', 'srcSet']]
+     * Return array with format [postId => ['originalTitle', 'seasonNumber, 'lastEpisode', 'src', 'srcSet']]
      * @param array $postIds
-     * @param array $fields
+     * @param array $thumbnailPostIds
      * @return array
      */
-    public function getTvShowsMetaData(array $postIds = [], array $fields = []) {
+    public function getTvShowsMetaData(array $postIds, $thumbnailPostIds)
+    {
         $data = [];
-
-        if (empty($fields)) {
-            $fields = [
-                '_original_title',
-                '_thumbnail_id',
-                '_seasons'
-            ];
-        }
+        $fields = [
+            '_original_title',
+            '_thumbnail_id',
+            '_seasons'
+        ];
 
         $queryMeta = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $postIds) . ') AND meta_key IN (\'' . \implode('\',\'', $fields) . '\') GROUP BY post_id, meta_key LIMIT ' . (\count($postIds) * \count($fields));
         $metaData = DB::select($queryMeta);
@@ -432,10 +436,18 @@ class TvshowService {
                 $seasons = \unserialize($value->meta_value);
                 $lastSeason = \end($seasons);
                 $data[$postId]['seasonNumber'] = $lastSeason['name'];
-                $lastEpisodeId = (int) \end($lastSeason['episodes']);
-                $data[$postId]['lastEpisodeId'] = $lastEpisodeId;
+                $idx = \count($lastSeason['episodes']) - 1;
+                do {
+                    $episodeId = (int) $lastSeason['episodes'][$idx];
+                    $lastEpisode = $this->getEpisodeTitleAndSlug($episodeId);
+                    $idx --;
+                } while ($idx >= 0 && empty($lastEpisode));
+                
+                if (!empty($lastEpisode)) {
+                    $data[$postId]['lastEpisode'] = $lastEpisode + ['id' => $episodeId];
+                }
             }
-            elseif ($value->meta_key == '_thumbnail_id') {
+            elseif ($value->meta_key == '_thumbnail_id' && \in_array($postId, $thumbnailPostIds)) {
                 $thumbnails = $this->getTvShowThumbnail((int) $value->meta_value);
                 $data[$postId] += $thumbnails;
             }
@@ -445,11 +457,12 @@ class TvshowService {
     }
 
     /**
-     * Return array with format [id => ['title', 'episodeNumber', 'slug']]
+     * Return array with format [id => ['episodeNumber']]
      * @param array $episodeIds
      * @return array
      */
-    public function getEpisodeMetadata(array $episodeIds) {
+    public function getEpisodeMetadata(array $episodeIds)
+    {
         $sql = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $episodeIds) . ') AND meta_key = \'_episode_number\' LIMIT ' . (\count($episodeIds));
         $data = [];
 
@@ -457,7 +470,7 @@ class TvshowService {
             $episodeId = (int) $value->post_id;
             $data[$episodeId] = [
                 'episodeNumber' => $value->meta_value
-            ] + $this->getEpisodeTitleAndSlug($episodeId);
+            ];
         }
 
         return $data;
@@ -468,9 +481,9 @@ class TvshowService {
      * @param array $tvShowIds
      * @return array
      */
-    public function getTvshowsGenres(array $tvShowIds) {
+    public function getTvshowsGenres(array $tvShowIds)
+    {
         $data = [];
-
         $sql = 'SELECT a.object_id , c.name, c.slug 
             FROM wp_term_relationships a 
             LEFT JOIN wp_term_taxonomy b ON a.term_taxonomy_id = b.term_taxonomy_id 
@@ -495,7 +508,8 @@ class TvshowService {
      * @param string $type
      * @return string
      */
-    public function getTvShowChannelImage(array $tvshowIds, string $type) {
+    public function getTvShowChannelImage(array $tvshowIds, string $type)
+    {
         $constantChanelList = config('constants.chanelList');
         if( in_array($type, $constantChanelList) ) {
             $sql = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
@@ -524,10 +538,22 @@ class TvshowService {
     }
 
     /**
+     * @param int $episodeId
+     * @return int|null
+     */
+    public function getTvShowId(int $episodeId)
+    {
+        $sql = "SELECT meta_value FROM wp_postmeta WHERE post_id = {$episodeId} AND meta_key='_tv_show_id' LIMIT 1";
+        $data = DB::selectOne($sql);
+        return $data ? (int) $data->meta_value : null;
+    }
+
+    /**
      * @param int $postmetaId
      * @return array
      */
-    private function getTvShowThumbnail(int $postmetaId) {
+    private function getTvShowThumbnail(int $postmetaId)
+    {
         $data = [
             'src' => '',
             'srcSet' => ''
@@ -561,9 +587,19 @@ class TvshowService {
      * @param int $episodeId
      * @return string
      */
-    private function getEpisodeTitleAndSlug(int $episodeId) {
-        $sql = "SELECT post_title as title, post_name as slug FROM wp_posts WHERE ID = {$episodeId}";
+    private function getEpisodeTitleAndSlug(int $episodeId)
+    {
+        $sql = "SELECT post_title as title, post_name as slug FROM wp_posts WHERE ID = {$episodeId} AND post_status = 'publish' LIMIT 1";
         $result = DB::selectOne($sql);
         return empty($result) ? [] : \get_object_vars($result);
+    }
+
+    /**
+     * @param int $tvShowId
+     * @return array
+     */
+    private function getEpisodes(int $tvShowId)
+    {
+        $sql = "";
     }
 }

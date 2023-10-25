@@ -32,15 +32,14 @@ class TvshowController extends Controller
         if( $perPage > env('PAGE_LIMIT') ) {
             $perPage = env('PAGE_LIMIT');
         }
-        $orderBy = $request->get('orderBy', '');
+        $orderBy = $request->get('orderBy', 'date');
         $type = $request->get('type', '');
         $genre = $request->get('genre', '');
 
-        if (false) {
-        // if ($page == 1 && ($orderBy == 'date' || $orderBy == '') && $genre == '' && Cache::has('tv_show_first_' . $type)) {
+        if ($page == 1 && $orderBy == 'date' && $genre == '' && Cache::has('tv_show_first_' . $type)) {
             $data = Cache::has('tv_show_first_' . $type);
         } else {
-            $select = "SELECT p.ID as id, p.post_title as title, p.post_date as postDate FROM wp_posts p ";
+            $select = "SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p ";
             $where = " WHERE p.post_type = 'tv_show' AND p.post_status = 'publish' ";
     
             if( $type != '' ) {
@@ -78,7 +77,7 @@ class TvshowController extends Controller
             }
             elseif ($orderBy == 'menuOrder') {
                 $order = "ORDER BY p.menu_order DESC ";
-            } else {
+            } else { // $orderBy == date or anything else
                 $order = "ORDER BY p.post_date DESC ";
             }
     
@@ -101,7 +100,7 @@ class TvshowController extends Controller
             $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
             $query = $query . $limit;
             $data = $this->getData($query, $type, $genre, $total, $perPage, $page);
-            if ( $page == 1 && ($orderBy == 'date' || $orderBy == '') && $genre == '') {
+            if ( $page == 1 && $orderBy == 'date' && $genre == '') {
                 Cache::forever('tv_show_first_' . $type, $data);
             }
         }
@@ -241,40 +240,81 @@ class TvshowController extends Controller
      * @param int $page
      * @return array
      */
-    private function getData(string $query, string $type, string $genre, int $total, int $perPage, int $page) {
-        $tvshows = DB::select($query);
-        
-        if( $type == 'ott-web' ) {
-            $topWeeks = $this->tvshowService->getTopWeekOTT();
-            $populars = $topWeeks;
-        } else {
-            if ($genre != '') {
-                $type = $genre;
-            }
-            $topWeeks = $this->tvshowService->getTopWeeks($type);
-            $populars = $this->tvshowService->getPopulars($type);
+    private function getData(string $query, string $type, string $genre, int $total, int $perPage, int $page)
+    {
+        $tvshowItems = DB::select($query);
+        if ($type != 'ott-web' && $genre != '') {
+            $type = $genre;
         }
+        $topWeekItems = $this->tvshowService->getTopWeeks($type);
+        $popularItems = $topWeekItems;
 
         //Process metadata and genres
-        $tvshowIds = \array_map(fn($item) => $item->id, $tvshows);
-        $tvshowMetaData = $this->tvshowService->getTvShowsMetaData($tvshowIds);
-        $lastEpisodeIds = \array_map(fn($item) => $item['lastEpisodeId'], $tvshowMetaData);
+        $allIds = \array_unique(\array_merge(
+            \array_map(fn($item) => $item->id, $tvshowItems),
+            \array_map(fn($item) => $item->id, $popularItems)
+        ));
+        
+        $tvshowMetaData = $this->tvshowService->getTvShowsMetaData($allIds, $allIds);
+        $lastEpisodeIds = \array_map(fn($item) => $item['lastEpisode']['id'], $tvshowMetaData);
         $episodeMetadata = $this->tvshowService->getEpisodeMetadata($lastEpisodeIds);
-        $genres = $this->tvshowService->getTvshowsGenres($tvshowIds);
-        $channelImages = $this->tvshowService->getTvShowChannelImage($tvshowIds, $type);
+        $channelImages = $this->tvshowService->getTvShowChannelImage($allIds, $type);
+        $genres = $this->tvshowService->getTvshowsGenres($allIds);
 
         $items = [];
-        foreach ($tvshows as $tvshow) {
-            $tvshowId = (int) $tvshow->id;
-            $lastEpisodeId = $tvshowMetaData[$tvshowId]['lastEpisodeId'];
-            unset($tvshowMetaData[$tvshowId]['lastEpisodeId']);
+        foreach ($tvshowItems as $item) {
+            $id = (int) $item->id;
+            if (!isset($tvshowMetaData[$id]['lastEpisode'])) {
+                continue;
+            }
+
+            $lastEpisode = $tvshowMetaData[$id]['lastEpisode'];
             $items[] = [
-                'id' => $lastEpisodeId,
-                'genres' => $genres[$tvshowId] ?? [],
-                'tvshowTitle' => $tvshow->title,
-                'postDate' => $tvshow->postDate,
-                'chanelImage' => $channelImages[$tvshowId] ?? env('IMAGE_PLACEHOLDER'),
-            ] + $episodeMetadata[$lastEpisodeId] + ($tvshowMetaData[$tvshowId] ?? []);
+                'genres' => $genres[$id] ?? [],
+                'tvshowTitle' => $item->tvshowTitle,
+                'postDate' => $item->postDate,
+                'chanelImage' => $channelImages[$id] ?? env('IMAGE_PLACEHOLDER'),
+                'originalTitle' => $tvshowMetaData[$id]['originalTitle'],
+                'seasonNumber' => $tvshowMetaData[$id]['seasonNumber'],
+                'src' => $tvshowMetaData[$id]['src'],
+                'srcSet' => $tvshowMetaData[$id]['srcSet']
+            ] + $lastEpisode + $episodeMetadata[$lastEpisode['id']];
+        }
+        
+        $topWeeks = [];
+        foreach ($topWeekItems as $item) {
+            $id = (int) $item->id;
+            if (!isset($tvshowMetaData[$id]['lastEpisode'])) {
+                continue;
+            }
+            $topWeeks[] = [
+                'genres' => $genres[$id] ?? [],
+                'tvshowTitle' => $item->tvshowTitle,
+                'postDate' => $item->postDate,
+                'chanelImage' => $channelImages[$id] ?? env('IMAGE_PLACEHOLDER'),
+                'originalTitle' => $tvshowMetaData[$id]['originalTitle'],
+                'seasonNumber' => $tvshowMetaData[$id]['seasonNumber'],
+                'src' => $tvshowMetaData[$id]['src'],
+                'srcSet' => $tvshowMetaData[$id]['srcSet']
+            ] + $lastEpisode + $episodeMetadata[$lastEpisode['id']];
+        }
+
+        $populars = [];
+        foreach ($popularItems as $item) {
+            $id = (int) $item->id;
+            if (!isset($tvshowMetaData[$id]['lastEpisode'])) {
+                continue;
+            }
+            $populars[] = [
+                'genres' => $genres[$id] ?? [],
+                'tvshowTitle' => $item->tvshowTitle,
+                'postDate' => $item->postDate,
+                'chanelImage' => $channelImages[$id] ?? env('IMAGE_PLACEHOLDER'),
+                'originalTitle' => $tvshowMetaData[$id]['originalTitle'],
+                'seasonNumber' => $tvshowMetaData[$id]['seasonNumber'],
+                'src' => $tvshowMetaData[$id]['src'],
+                'srcSet' => $tvshowMetaData[$id]['srcSet']
+            ] + $lastEpisode + $episodeMetadata[$lastEpisode['id']];
         }
 
         return [

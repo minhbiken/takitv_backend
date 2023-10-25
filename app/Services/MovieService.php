@@ -200,32 +200,6 @@ class MovieService {
     }
 
     /**
-     * @param int $postId
-     * @return array
-     */
-    public function getCastsOfPost(int $postId)
-    {
-        $data = [];
-        $sql = "SELECT meta_value FROM wp_postmeta WHERE post_id = {$postId} AND meta_key = '_cast' LIMIT 1";
-        $castsMeta = DB::selectOne($sql);
-        $casts = empty($castsMeta) ? [] : @\unserialize($castsMeta->meta_value);
-        if (empty($casts)) {
-            return $data;
-        }
-        
-        $newCasts = [];
-        $casts = array_slice($casts, 0, 5, true);
-        foreach($casts as $cast) {
-            $sql = "SELECT DISTINCT ID as id, post_name as slug, post_title as name FROM wp_posts WHERE ID=".$cast['id']." AND post_status = 'publish' LIMIT 1";
-            $dataCast = DB::select($sql);
-            if( count($dataCast) > 0 ) {
-                array_push($newCasts, $dataCast[0]);
-            }
-        }
-        return $newCasts;
-    }
-
-    /**
      * Return array with format postId => [['name', 'slug'], ['name', 'slug']]
      * @param array $postIds
      * @return array

@@ -59,54 +59,28 @@ class EpisodeController extends Controller
             }
             return response()->json($item, Response::HTTP_OK);
         } else {
-            $title = $request->get('title', '');
-            $newTitle = urlencode($title);
-    
+            $slug = $request->get('slug', '');
             $imageUrlUpload = env('IMAGE_URL_UPLOAD');
     
-            $select = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
-            $where = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-            $whereTitle = " AND (p.post_title='". $title ."' OR p.post_name='". $newTitle ."')";
+            $sql = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p WHERE p.post_name = '" . \urlencode($slug) . "' AND p.post_type = 'episode' AND p.post_status = 'publish' LIMIT 1";
     
-            $where = $where . $whereTitle;
-            $movies = [];
-            $query = $select . $where;
-            $dataPost = DB::select($query);
+            $data = DB::selectOne($sql);
+            if (empty($data)) {
+                return response()->make('', Response::HTTP_NOT_FOUND);
+            }
             
             $tvshowTitle = '';
             $tvshowSlug = '';
-            if (count($dataPost) == 0) {
-                return response()->json($movies, Response::HTTP_NOT_FOUND);
-            }
             //get all seasons and episode
             $src = '';
             $casts = [];
-            $queryGetIdTvShow = "SELECT post_id, meta_value, meta_key FROM wp_postmeta WHERE post_id=" . $dataPost[0]->ID .  " AND meta_key='_tv_show_id'";
-            $dataGetIdTvShow = DB::select($queryGetIdTvShow);
-            if( count($dataGetIdTvShow) > 0 ) {
-                $tvShowId = $dataGetIdTvShow[0]->meta_value;
-
-                //get casts of tv-show
-                $queryCast = "SELECT meta_value FROM wp_postmeta WHERE post_id=" . $tvShowId . " AND meta_key='_cast' LIMIT 1;";
-                $dataCast = DB::select($queryCast);
-                if( count($dataCast) > 0 && $dataCast[0]->meta_value != '' ) {
-                    $unserializeCasts = @unserialize($dataCast[0]->meta_value);
-                    if($unserializeCasts != '' && count($unserializeCasts) > 0) {
-                        $castDatas = $unserializeCasts;
-                        $castDatas = array_values(array_unique($castDatas, SORT_REGULAR));
-                        //get data of person
-                        $castDatas = array_slice($castDatas, 0, 5, true);
-                        foreach ( $castDatas as $castData ) {
-                            $queryCasts = "SELECT DISTINCT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p
-                            LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom'
-                            WHERE p.ID=".$castData['id']." and p.post_status = 'publish' ORDER BY p.post_date LIMIT 5;";
-                            $cast = DB::select($queryCasts);
-                            if( count($cast) > 0 ) {
-                                array_push($casts, $cast[0]);
-                            }
-                        }
-                    }
-                }
+            $tvShowId = $this->tvshowService->getTvShowId($data->ID);
+            if (!$tvShowId) {
+                return response()->make('', Response::HTTP_NOT_FOUND);
+            }
+            
+            if( $tvShowId ) {
+                $casts = $this->helperService->getCastsOfPost($tvShowId);
                 $querySeasonEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, pm.meta_value, pm.meta_key, pm.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID WHERE p.ID=" . $tvShowId . " AND pm.meta_key='_seasons' ORDER BY p.ID ASC LIMIT 1;";
                 $tvshowTitleData = DB::select($querySeasonEpisode);
                 $tvshowTitle = $tvshowTitleData[0]->post_title;

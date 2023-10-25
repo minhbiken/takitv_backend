@@ -235,7 +235,7 @@ class MovieController extends Controller
                 ] + $metaData[$item->id] ?? [];
             }
 
-            $casts = $this->movieService->getCastsOfPost($postId);
+            $casts = $this->helperService->getCastsOfPost($postId);
 
             $movie = \get_object_vars($data) + ($metaData[$data->id] ?? []) + [
                 'genres' => $genres[$postId] ?? [],
