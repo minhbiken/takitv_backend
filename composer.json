@@ -10,11 +10,8 @@
         "irazasyed/telegram-bot-sdk": "^3.13",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
-        "laravel/telescope": "^4.16",
         "laravel/tinker": "^2.7",
-        "predis/predis": "^2.2",
-        "rakutentech/laravel-request-docs": "^2.22",
-        "spatie/laravel-responsecache": "^7.4"
+        "predis/predis": "^2.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
