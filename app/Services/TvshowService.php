@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Services\HelperService;
-use Illuminate\Support\Facades\Cache;
+
 class TvshowService {
     
     protected $helperService;
@@ -408,10 +406,11 @@ class TvshowService {
     /**
      * Return array with format [postId => ['originalTitle', 'seasonNumber, 'lastEpisode', 'src', 'srcSet']]
      * @param array $postIds
-     * @param array $thumbnailPostIds
+     * @param array $hasThumbPostIds
+     * @param bool $getListSeasons
      * @return array
      */
-    public function getTvShowsMetaData(array $postIds, $thumbnailPostIds)
+    public function getTvShowsMetaData(array $postIds, ?array $hasThumbPostIds = null, bool $getListSeasons = false)
     {
         $data = [];
         $fields = [
@@ -419,6 +418,10 @@ class TvshowService {
             '_thumbnail_id',
             '_seasons'
         ];
+
+        if (\is_null($hasThumbPostIds)) {
+            $hasThumbPostIds = $postIds;
+        }
 
         $queryMeta = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $postIds) . ') AND meta_key IN (\'' . \implode('\',\'', $fields) . '\') GROUP BY post_id, meta_key LIMIT ' . (\count($postIds) * \count($fields));
         $metaData = DB::select($queryMeta);
@@ -436,18 +439,22 @@ class TvshowService {
                 $seasons = \unserialize($value->meta_value);
                 $lastSeason = \end($seasons);
                 $data[$postId]['seasonNumber'] = $lastSeason['name'];
-                $idx = \count($lastSeason['episodes']) - 1;
-                do {
-                    $episodeId = (int) $lastSeason['episodes'][$idx];
-                    $lastEpisode = $this->getEpisodeTitleAndSlug($episodeId);
-                    $idx --;
-                } while ($idx >= 0 && empty($lastEpisode));
-                
-                if (!empty($lastEpisode)) {
-                    $data[$postId]['lastEpisode'] = $lastEpisode + ['id' => $episodeId];
+                if ($getListSeasons) {
+                    $data[$postId]['seasons'] = $this->getTvShowSeasons($seasons);
+                } else {
+                    $idx = \count($lastSeason['episodes']) - 1;
+                    do {
+                        $episodeId = (int) $lastSeason['episodes'][$idx];
+                        $lastEpisode = $this->getEpisodeTitleAndSlug($episodeId);
+                        $idx --;
+                    } while ($idx >= 0 && empty($lastEpisode));
+                    
+                    if (!empty($lastEpisode)) {
+                        $data[$postId]['lastEpisode'] = $lastEpisode + ['id' => $episodeId];
+                    }
                 }
             }
-            elseif ($value->meta_key == '_thumbnail_id' && \in_array($postId, $thumbnailPostIds)) {
+            elseif ($value->meta_key == '_thumbnail_id' && \in_array($postId, $hasThumbPostIds)) {
                 $thumbnails = $this->getTvShowThumbnail((int) $value->meta_value);
                 $data[$postId] += $thumbnails;
             }
@@ -539,13 +546,12 @@ class TvshowService {
 
     /**
      * @param int $episodeId
-     * @return int|null
+     * @return object|null
      */
-    public function getTvShowId(int $episodeId)
+    public function getTvShowData(int $episodeId)
     {
-        $sql = "SELECT meta_value FROM wp_postmeta WHERE post_id = {$episodeId} AND meta_key='_tv_show_id' LIMIT 1";
-        $data = DB::selectOne($sql);
-        return $data ? (int) $data->meta_value : null;
+        $sql = "SELECT a.meta_value as id, b.post_name as slug, b.post_title as title, b.post_content as description FROM wp_postmeta a, wp_posts b WHERE a.meta_value = b.ID AND a.post_id = {$episodeId} AND a.meta_key='_tv_show_id' LIMIT 1";
+        return DB::selectOne($sql);
     }
 
     /**
@@ -595,11 +601,33 @@ class TvshowService {
     }
 
     /**
-     * @param int $tvShowId
+     * @param array $seasons
      * @return array
      */
-    private function getEpisodes(int $tvShowId)
+    private function getTvShowSeasons(array $seasons)
     {
-        $sql = "";
+        $data = [];
+        $episodeIds = \array_reduce($seasons, function($total, $season) {
+            $total = \array_merge($total, $season['episodes']);
+            return $total;
+        }, []);
+
+        $sql = "SELECT ID as id, post_title as title, post_name as slug, post_date as postDate FROM wp_posts where ID IN (" . \implode(',', $episodeIds) . ") AND post_status = 'publish'";
+        $results = DB::select($sql);
+        $results = \array_column($results, NULL, 'id');
+
+        foreach ($seasons as $season) {
+            $dataSeason['name'] = $season['name'];
+            $dataSeason['episodes'] = [];
+            foreach($season['episodes'] as $episode) {
+                if (\array_key_exists((int) $episode, $results)) {
+                    $dataSeason['episodes'][] = $results[(int) $episode];
+                }
+            }
+
+            $data[] = $dataSeason;
+        }
+
+        return $data;
     }
 }

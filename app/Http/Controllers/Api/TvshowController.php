@@ -255,7 +255,7 @@ class TvshowController extends Controller
             \array_map(fn($item) => $item->id, $popularItems)
         ));
         
-        $tvshowMetaData = $this->tvshowService->getTvShowsMetaData($allIds, $allIds);
+        $tvshowMetaData = $this->tvshowService->getTvShowsMetaData($allIds, null);
         $lastEpisodeIds = \array_map(fn($item) => $item['lastEpisode']['id'], $tvshowMetaData);
         $episodeMetadata = $this->tvshowService->getEpisodeMetadata($lastEpisodeIds);
         $channelImages = $this->tvshowService->getTvShowChannelImage($allIds, $type);
