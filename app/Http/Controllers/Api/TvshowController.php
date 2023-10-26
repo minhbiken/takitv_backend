@@ -183,7 +183,7 @@ class TvshowController extends Controller
      
         $episodeData = DB::select($queryEpisode);
         $episodeData = $episodeData[0]->meta_value;
-        $episodeData = @($episodeData);
+        $episodeData = @unserialize($episodeData);
         
         $lastSeason = end($episodeData);
         $episodeId = end($lastSeason['episodes']);
