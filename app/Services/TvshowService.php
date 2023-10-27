@@ -438,7 +438,7 @@ class TvshowService {
             elseif ($value->meta_key == '_seasons') {
                 $seasons = \unserialize($value->meta_value);
                 $lastSeason = \end($seasons);
-                $data[$postId]['seasonNumber'] = $lastSeason['name'];
+                $data[$postId]['seasonName'] = $lastSeason['name'];
                 if ($getListSeasons) {
                     $data[$postId]['seasons'] = $this->getTvShowSeasons($seasons);
                 } else {

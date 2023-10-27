@@ -275,7 +275,7 @@ class TvshowController extends Controller
                 'postDate' => $item->postDate,
                 'chanelImage' => $channelImages[$id] ?? env('IMAGE_PLACEHOLDER'),
                 'originalTitle' => $tvshowMetaData[$id]['originalTitle'],
-                'seasonNumber' => $tvshowMetaData[$id]['seasonNumber'],
+                'seasonName' => $tvshowMetaData[$id]['seasonName'],
                 'src' => $tvshowMetaData[$id]['src'],
                 'srcSet' => $tvshowMetaData[$id]['srcSet']
             ] + $lastEpisode + $episodeMetadata[$lastEpisode['id']];
@@ -287,13 +287,15 @@ class TvshowController extends Controller
             if (!isset($tvshowMetaData[$id]['lastEpisode'])) {
                 continue;
             }
+
+            $lastEpisode = $tvshowMetaData[$id]['lastEpisode'];
             $topWeeks[] = [
                 'genres' => $genres[$id] ?? [],
                 'tvshowTitle' => $item->tvshowTitle,
                 'postDate' => $item->postDate,
                 'chanelImage' => $channelImages[$id] ?? env('IMAGE_PLACEHOLDER'),
                 'originalTitle' => $tvshowMetaData[$id]['originalTitle'],
-                'seasonNumber' => $tvshowMetaData[$id]['seasonNumber'],
+                'seasonName' => $tvshowMetaData[$id]['seasonName'],
                 'src' => $tvshowMetaData[$id]['src'],
                 'srcSet' => $tvshowMetaData[$id]['srcSet']
             ] + $lastEpisode + $episodeMetadata[$lastEpisode['id']];
@@ -305,13 +307,15 @@ class TvshowController extends Controller
             if (!isset($tvshowMetaData[$id]['lastEpisode'])) {
                 continue;
             }
+
+            $lastEpisode = $tvshowMetaData[$id]['lastEpisode'];
             $populars[] = [
                 'genres' => $genres[$id] ?? [],
                 'tvshowTitle' => $item->tvshowTitle,
                 'postDate' => $item->postDate,
                 'chanelImage' => $channelImages[$id] ?? env('IMAGE_PLACEHOLDER'),
                 'originalTitle' => $tvshowMetaData[$id]['originalTitle'],
-                'seasonNumber' => $tvshowMetaData[$id]['seasonNumber'],
+                'seasonName' => $tvshowMetaData[$id]['seasonName'],
                 'src' => $tvshowMetaData[$id]['src'],
                 'srcSet' => $tvshowMetaData[$id]['srcSet']
             ] + $lastEpisode + $episodeMetadata[$lastEpisode['id']];
