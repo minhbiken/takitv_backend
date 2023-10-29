@@ -37,7 +37,7 @@ class TvshowController extends Controller
         $genre = $request->get('genre', '');
 
         if ($page == 1 && $orderBy == 'date' && $genre == '' && Cache::has('tv_show_first_' . $type)) {
-            $data = Cache::has('tv_show_first_' . $type);
+            $data = Cache::get('tv_show_first_' . $type);
         } else {
             $select = "SELECT p.ID as id, p.post_title as tvshowTitle, p.post_date as postDate FROM wp_posts p ";
             $where = " WHERE p.post_type = 'tv_show' AND p.post_status = 'publish' ";
@@ -116,119 +116,50 @@ class TvshowController extends Controller
      */
     public function show(Request $request)
     {
-        $titleTvshow = $request->get('slug', '');
-        $newtitleTvshow = urlencode($titleTvshow);
-        $select = "SELECT p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, p.post_modified FROM wp_posts p ";
-        $where = " WHERE  ((p.post_type = 'tv_show' AND (p.post_status = 'publish'))) ";
-        $whereTitle = " AND p.post_name='". $newtitleTvshow ."' LIMIT 1; ";
+        $slug = $request->get('slug', '');
+        $sql = "SELECT p.ID as id, p.post_title, p.post_content as description, p.post_date as postDate FROM wp_posts p WHERE p.post_type = 'tv_show' AND p.post_status = 'publish' AND p.post_name = '". \urlencode($slug) ."' LIMIT 1";
 
-        $where = $where . $whereTitle;
-        $movies = [];
-        $tvShowSlug = '';
-
-        $dataPost = DB::select($select . $where);
-        $link = '';
-        if (count($dataPost) == 0) {
-            return response()->json($movies, Response::HTTP_NOT_FOUND);
-        }
-        $queryTaxonomy = "SELECT t.name, t.slug FROM `wp_posts` p
-                        left join wp_term_relationships t_r on t_r.object_id = p.ID
-                        left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
-                        left join wp_terms t on tx.term_id = t.term_id
-                        where t.name != 'featured' AND t.name != '' AND p.ID = ". $dataPost[0]->ID .";";
-        $dataTaxonomys = DB::select($queryTaxonomy);
-
-        $genres = [];
-        $slug = [];
-        foreach( $dataTaxonomys as $dataTaxonomy ) {
-            $genres[] = [
-                'name' => $dataTaxonomy->name,
-                'link' => $dataTaxonomy->slug,
-                'slug' => $dataTaxonomy->slug
-            ];
-            $slug[] = "'" . $dataTaxonomy->name . "'";
+        $tvShow = DB::selectOne($sql);
+        if (!$tvShow) {
+            return response()->make('', Response::HTTP_NOT_FOUND);
         }
 
-        $dataSeason = $dataPost[0];
-    
-        $queryEpisode = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $dataSeason->ID . " LIMIT 1;";
-        $dataEpisode = DB::select($queryEpisode);
-        $seasons = $this->tvshowService->getSeasons($dataEpisode);
+        $genres = $this->tvshowService->getTvshowsGenres([$tvShow->id])[$tvShow->id] ?? [];
+        $metaData = $this->tvshowService->getTvShowsMetaData([$tvShow->id], null, true)[$tvShow->id] ?? [];
         
-        $querySrcMeta = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $dataSeason->ID .";";
-        $dataSrcMeta = DB::select($querySrcMeta);
-        $src = $this->imageUrlUpload.$dataSrcMeta[0]->meta_value;
-     
-        $episodeData = DB::select($queryEpisode);
-        $episodeData = $episodeData[0]->meta_value;
-        $episodeData = unserialize($episodeData);
-        
-        $lastSeason = end($episodeData);
-        $episodeId = end($lastSeason['episodes']);
+        //Seasons
+        $episodeIds = \array_reduce($metaData['seasons'], function($episodeIds, $season) {
+            $episodeIds = \array_merge($episodeIds, \array_map(fn($episode) => $episode->id, $season['episodes']));
+            return $episodeIds;
+        }, []);
 
-        //outlink only show in into
-        $outlink = env('OUTLINK');
-        $outlink = @file_get_contents($outlink);
-
-        if( $outlink == NULL ) $outlink = env('DEFAULT_OUTLINK');
-        $outlink =  $outlink . '?pid=' . $episodeId;
-
+        $seasons = $this->tvshowService->getEpisodeMetadata($episodeIds);
         //Get topweek
         $topWeeks = $this->tvshowService->getTopWeeks();
-
         //Get topmonth
         $topMonths = $this->tvshowService->getTopMonths();
+        //get 8 related tv shows
+        $genreSlugs = \array_column($genres, 'slug');
 
-        //get 8 movies related
-        $slug = join(",", $slug);
-
-        if ( $slug == '' ) {
-            $dataRelateds = [];
-        } else {
-            $arrayTvShowError = config('constants.tv_show_error');
-            $arrayTvShowError = join(",", $arrayTvShowError);
-            $queryTaxonomyRelated = "SELECT DISTINCT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM `wp_posts` p
+        $relatedSql = "SELECT DISTINCT p.ID as id, p.post_title as title, p.post_name as slug FROM `wp_posts` p
             left join wp_term_relationships t_r on t_r.object_id = p.ID
             left join wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'tv_show_genre'
             left join wp_terms t on tx.term_id = t.term_id
-            where t.name != 'featured' AND t.name != '' AND ( t.name IN ( ".$slug." ) OR t.slug IN ( ".$slug." ) )AND p.ID NOT IN ( " . $arrayTvShowError . " ) LIMIT 10";
-            $dataRelateds = $this->tvshowService->getItems($queryTaxonomyRelated);
-        }
+            where t.name != 'featured' AND t.slug IN ('" . join("','", $genreSlugs) . "') AND p.ID NOT IN (" . \join(",", config('constants.tv_show_error')) . ") LIMIT 10";
+        $relatedTvshows = DB::select($relatedSql);
 
-        $selectTitleEpisode = "SELECT p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date FROM wp_posts p ";
-        $whereTitleEpisode = " WHERE  ((p.post_type = 'episode' AND (p.post_status = 'publish'))) ";
-        $whereTitleSub = " AND p.ID='". $episodeId ."' ";
-
-        $queryTitle = $selectTitleEpisode . $whereTitleEpisode . $whereTitleSub;
-        $dataEpisoTitle = DB::select($queryTitle);
-        
-        if( count($dataEpisoTitle) > 0 ) {
-            $link = 'episode/' . $dataEpisoTitle[0]->post_title ."/";
-            $tvShowSlug = $dataEpisoTitle[0]->post_name;
-        }
-
-        $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
-        $movies = [
-            'id' => $dataSeason->ID,
-            'title' => $dataSeason->post_title,
-            'slug' => $tvShowSlug,
-            'originalTitle' => $dataSeason->original_title,
-            'description' => $dataSeason->post_content,
+        $data = [
+            'id' => $tvShow->id,
+            'title' => $tvShow->title,
+            'description' => $tvShow->description,
             'genres' => $genres,
-            'src' => $src,
-            'srcSet' => $srcSet,
-            'link' => $link,
-            'outlink' => $outlink,
-            'postDateGmt' => $dataSeason->post_date_gmt,
-            'postDate' => $dataSeason->post_date,
-            'seasons' => $seasons,
+            'postDate' => $tvShow->postDate,
             'topWeeks' => $topWeeks,
             'topMonths' => $topMonths,
-            'relateds' => $dataRelateds
-        ];
+            'relateds' => $relatedTvshows
+        ] + $metaData;
 
-        return response()->json($movies, Response::HTTP_OK);
+        return response()->json($data, Response::HTTP_OK);
     }
 
     /**
