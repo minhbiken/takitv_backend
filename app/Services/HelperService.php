@@ -189,12 +189,12 @@ class HelperService {
         if( $response->ok() ) {
             return $response;
         } else {
-            $text = $outlink . ' not working';
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]);
+            // $text = $outlink . ' not working';
+            // Telegram::sendMessage([
+            //     'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
+            //     'parse_mode' => 'HTML',
+            //     'text' => $text
+            // ]);
             return '';
         }
     }
@@ -205,12 +205,12 @@ class HelperService {
         if( $response->ok() ) {
             return json_decode($response);
         } else {
-            $text = $outlink . ' not working';
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]);
+            // $text = $outlink . ' not working';
+            // Telegram::sendMessage([
+            //     'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
+            //     'parse_mode' => 'HTML',
+            //     'text' => $text
+            // ]);
             return '';
         }
     }
