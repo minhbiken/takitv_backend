@@ -384,7 +384,7 @@ class TvshowController extends Controller
                     ];
                 }
 
-                $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+                //$srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
 
                 $movie = [
                     'id' => $data->ID,
