@@ -28,7 +28,11 @@ class SearchService {
         $link = '';
         $year = '';
         $postIds = \array_map(fn($item) => $item->ID, $datas);
-        $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
+        if( empty($postIds) ) {
+            $metadata = [];
+        } else {
+            $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
+        }
         foreach( $datas as $data ) {     
             if ( $data->post_type == 'movie' ) {
                 $postName = urldecode($data->post_name);
