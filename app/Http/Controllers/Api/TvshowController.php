@@ -383,8 +383,8 @@ class TvshowController extends Controller
                         'slug' => $dataTaxonomy->slug
                     ];
                 }
-
-                //$srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+                
+                $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
 
                 $movie = [
                     'id' => $data->ID,

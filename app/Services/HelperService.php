@@ -109,16 +109,15 @@ class HelperService {
     }
 
     public function getAttachmentsByPostId($id) {
-        $queryImage = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-        LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $id .";";
+        $queryImage = "SELECT pm.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
+        WHERE p.post_status = 'publish' and p.ID =". $id .";";
         $dataImage = DB::select($queryImage);
         if ( count($dataImage) > 0 ) {
             $imgUrl = $dataImage[0]->meta_value;
         } else {
             $imgUrl = '';
         }
-
-        $query = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_wp_attachment_metadata' AND post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'attachment' AND post_parent = " . $id . ") LIMIT 1;";
+        $query = 'SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ' . $dataImage[0]->meta_value . ' AND meta_key IN (\'_wp_attached_file\', \'_wp_attachment_metadata\') ORDER BY meta_id DESC LIMIT 2';
         $srcSet[$id] = [];
         $attachments = DB::select($query);
         if ( count($attachments) > 0 ) {
