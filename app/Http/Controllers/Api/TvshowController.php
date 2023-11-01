@@ -342,7 +342,7 @@ class TvshowController extends Controller
                         LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
                     }
-
+                                 
                     $dataChanel = DB::select($queryChanel);
 
                     if( count($dataChanel) > 0 ) {
@@ -350,7 +350,12 @@ class TvshowController extends Controller
                         $newChanel = explode('src="', $chanel);
                         $newChanel = explode('" alt', $newChanel[1]);
                         $newChanel = $newChanel[0];
-                        $chanel = 'https://image002.modooup.com' . $newChanel;
+
+                        if (preg_match("/kokoatv.net/i", $newChanel)) {
+                            $chanel = str_replace('kokoatv.net', 'image002.modooup.com', $newChanel);
+                        } else {
+                            $chanel = 'https://image002.modooup.com' . $newChanel;
+                        }
                     } else {
                         $chanel = env('IMAGE_PLACEHOLDER');
                     }
