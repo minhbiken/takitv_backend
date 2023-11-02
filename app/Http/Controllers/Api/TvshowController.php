@@ -351,7 +351,7 @@ class TvshowController extends Controller
                         $newChanel = explode('" alt', $newChanel[1]);
                         $newChanel = $newChanel[0];
 
-                        if (preg_match("/kokoatv.net/i", $newChanel)) {
+                        if (preg_match("/o.kokoatv.net/i", $newChanel)) {
                             $chanel = str_replace('o.kokoatv.net', 'image002.modooup.com', $newChanel);
                         } else if (preg_match("/kokoatv.net/i", $newChanel)) {
                             $chanel = str_replace('kokoatv.net', 'image002.modooup.com', $newChanel);
