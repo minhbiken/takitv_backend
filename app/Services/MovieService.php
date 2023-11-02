@@ -119,9 +119,10 @@ class MovieService {
      * Return array with format postId => ['year', 'duration', 'originalTitle', 'src', 'srcSet']
      * @param array $postIds
      * @param array $fields
+     * @param array $options
      * @return array
      */
-    public function getMoviesMetadata(array $postIds = [], array $fields = []) {
+    public function getMoviesMetadata(array $postIds = [], array $fields = [], array $options = []) {
         $data = [];
 
         if (empty($fields)) {
@@ -135,6 +136,9 @@ class MovieService {
 
         $queryMeta = 'SELECT post_id, meta_key, meta_value FROM wp_postmeta WHERE post_id IN (' . \implode(',', $postIds) . ') AND meta_key IN (\'' . \implode('\',\'', $fields) . '\') GROUP BY post_id, meta_key LIMIT ' . (\count($postIds) * \count($fields));
         $metaData = DB::select($queryMeta);
+
+        // Options
+        $thumbnailVerticalOnly = \in_array('thumbnailVerticalOnly', $options);
 
         foreach ($metaData as $value) {
             $postId = (int) $value->post_id;
@@ -157,7 +161,7 @@ class MovieService {
                 $data[$postId]['originalTitle'] = $value->meta_value;
             }
             elseif ($value->meta_key == '_thumbnail_id') {
-                $thumbnails = $this->getMovieThumbnail((int) $value->meta_value);
+                $thumbnails = $this->getMovieThumbnail((int) $value->meta_value, $thumbnailVerticalOnly);
                 $data[$postId] += $thumbnails;
             }
         }
@@ -167,9 +171,10 @@ class MovieService {
 
     /**
      * @param int $postmetaId
+     * @param bool $verticalOnly
      * @return array
      */
-    private function getMovieThumbnail(int $postmetaId) {
+    private function getMovieThumbnail(int $postmetaId, bool $verticalOnly = false) {
         $data = [
             'src' => '',
             'srcSet' => ''
@@ -189,7 +194,9 @@ class MovieService {
                 $srcSet = $this->imageUrlUpload . $srcSetVal['file'] . ' ' . $srcSetVal['width'] . 'w';
                 if (isset($srcSetVal['sizes'])) {
                     foreach ($srcSetVal['sizes'] as $size) {
-                        $srcSet .= ', ' . $this->imageUrlUpload . $monthYear . $size['file'] . ' ' . $size['width'] . 'w';
+                        if (!$verticalOnly || $size['height'] > $size['width']) {
+                            $srcSet .= ', ' . $this->imageUrlUpload . $monthYear . $size['file'] . ' ' . $size['width'] . 'w';
+                        }
                     }
                 }
                 $data['srcSet'] = $srcSet;

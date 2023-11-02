@@ -123,7 +123,7 @@ class HomepageController extends Controller
             $allMovieIds = \array_unique(\array_merge($movieIds, $topWeekMovieIds, $movieKoreaIds));
             $hasThumbnailMovieIds = \array_unique(\array_merge($movieIds, $movieKoreaIds));
 
-            $moviesMetadata = $this->movieService->getMoviesMetadata($hasThumbnailMovieIds);
+            $moviesMetadata = $this->movieService->getMoviesMetadata($hasThumbnailMovieIds, [], ['thumbnailVerticalOnly']);
             $moviesMetadataTopWeek = $this->movieService->getMoviesMetadata($topWeekMovieIds, ['_movie_release_date']);
             $genres = $this->movieService->getMoviesGenres($allMovieIds);
             foreach ($movies as &$item) {
