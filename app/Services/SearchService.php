@@ -28,6 +28,7 @@ class SearchService {
         $link = '';
         $year = '';
         $postIds = \array_map(fn($item) => $item->ID, $datas);
+        $originalTitle = '';
         if( empty($postIds) ) {
             $metadata = [];
         } else {
@@ -49,6 +50,10 @@ class SearchService {
                         $year = $dataMeta[0]->meta_value > 0 ? date('Y', $dataMeta[0]->meta_value) : date('Y');
                     }
                 }
+                $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_movie_original_title' AND post_id =". $data->ID . " LIMIT 1;";
+                $dataOriginalTitle = DB::select($queryOriginalTitle);
+                $originalTitle = $dataOriginalTitle[0]->meta_value;
+
             } else if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
@@ -110,13 +115,18 @@ class SearchService {
                     $episodeNumber = '';
                     $seasonNumber = '';
                 }
+
+                $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $data->ID . " LIMIT 1;";
+                $dataOriginalTitle = DB::select($queryOriginalTitle);
+                $originalTitle = $dataOriginalTitle[0]->meta_value;
+
             }
             $items[] = [
                 'postType'  => $data->post_type,
                 'id' => $data->ID,
                 'title' => $data->post_title,
                 'slug' => $slug,
-                'originalTitle' => $data->original_title,
+                'originalTitle' => $originalTitle,
                 'link' => $link,
                 'year' => $year,
                 'chanelImage' => $chanel,
