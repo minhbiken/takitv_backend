@@ -231,7 +231,7 @@ class TvshowController extends Controller
 
         //get original title
         $originalTitle = '';
-        $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataSeason[0]->ID . " LIMIT 1;";
+        $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataSeason->ID . " LIMIT 1;";
         $dataOriginalTitle = DB::select($queryOriginalTitle);
         if( count($dataOriginalTitle) > 0 ) {
             $originalTitle = $dataOriginalTitle[0]->meta_value;
