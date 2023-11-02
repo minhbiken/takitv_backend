@@ -52,7 +52,9 @@ class SearchService {
                 }
                 $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_movie_original_title' AND post_id =". $data->ID . " LIMIT 1;";
                 $dataOriginalTitle = DB::select($queryOriginalTitle);
-                $originalTitle = $dataOriginalTitle[0]->meta_value;
+                if( count($dataOriginalTitle) > 0 ) {
+                    $originalTitle = $dataOriginalTitle[0]->meta_value;
+                }
 
             } else if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
