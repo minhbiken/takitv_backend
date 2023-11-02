@@ -229,12 +229,20 @@ class TvshowController extends Controller
             $tvShowSlug = $dataEpisoTitle[0]->post_name;
         }
 
+        //get original title
+        $originalTitle = '';
+        $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataSeason[0]->ID . " LIMIT 1;";
+        $dataOriginalTitle = DB::select($queryOriginalTitle);
+        if( count($dataOriginalTitle) > 0 ) {
+            $originalTitle = $dataOriginalTitle[0]->meta_value;
+        }
+
         $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
             'slug' => $tvShowSlug,
-            'originalTitle' => $dataSeason->original_title,
+            'originalTitle' => $originalTitle,
             'description' => $dataSeason->post_content,
             'genres' => $genres,
             'src' => $src,
