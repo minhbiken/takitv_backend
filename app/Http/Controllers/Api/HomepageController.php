@@ -174,50 +174,52 @@ class HomepageController extends Controller
         $title = $request->get('title', '');
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
-        $orderBy = $request->get('orderBy', '');
+        $orderBy = $request->get('orderBy', 'date');
 
-        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p ";
-        $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
+        $titleNoWhitespace = \str_replace(' ', '', $title);
+        $select = "SELECT
+            p.ID,
+            p.post_name,
+            p.post_title,
+            p.post_type,
+            p.original_title,
+            tx.term_taxonomy_id as categoryId
+        from
+            wp_term_taxonomy tx
+        inner join wp_term_relationships tr on
+                tr.term_taxonomy_id = tx.term_taxonomy_id
+        inner join wp_posts p on
+                p.ID = tr.object_id";
+        
+        $where = " WHERE tx.taxonomy = 'category'
+            and p.post_type in ('tv_show', 'movie')
+            and p.post_status = 'publish'
+            and (REPLACE(p.post_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%' OR REPLACE(p.original_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%')";
 
-        if( $title != '' ) {
-            $s_rp = str_replace(" ","", $title);
-            $whereTitle = " AND ( p.post_title LIKE '%".$title."%' OR  
-            REPLACE(p.post_title, ' ', '') like '%".$s_rp."%' OR
-            p.original_title LIKE '%".$title."%' OR
-            REPLACE(p.original_title, ' ', '') like '%".$s_rp."%'
-        ) ";
-
-            $where = $where . $whereTitle;
-        }
-
-        if( $orderBy == '' ) {
-            $order = "ORDER BY p.post_date DESC ";
-        } else if( $orderBy == 'titleAsc' ) {
-            $order = "ORDER BY p.post_title ASC ";
-        } else if( $orderBy == 'titleDesc' ) {
-            $order = "ORDER BY p.post_title DESC ";
-        } else if($orderBy == 'date' ) {
-            $order = "ORDER BY p.post_date DESC ";
-        } else if($orderBy == 'rating') {
-            $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
-            $select = $select . $selectRating;
-            $order = "ORDER BY mp.all_time_stats DESC ";
-        } else if($orderBy == 'menuOrder') {
-            $order = "ORDER BY p.menu_order DESC ";
+        if ($orderBy == 'titleAsc') {
+            $order = " ORDER BY p.post_title ASC";
+        } elseif ($orderBy == 'titleDesc') {
+            $order = " ORDER BY p.post_title DESC";
         } else {
-            $order = "ORDER BY p.post_date DESC ";
+            $order = " ORDER BY p.post_date DESC";
         }
 
         //query all
         $query = $select . $where . $order;
 
-        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+        $selectTotal = "SELECT COUNT(*) as total from wp_term_taxonomy tx
+            inner join wp_term_relationships tr on
+                    tr.term_taxonomy_id = tx.term_taxonomy_id
+            inner join wp_posts p on
+                    p.ID = tr.object_id
+                and p.post_type = 'tv_show'
+                and p.post_status = 'publish'";
         $queryTotal = $selectTotal . $where;
         $dataTotal = DB::select($queryTotal);
         $total = $dataTotal[0]->total;
 
         //query limit
-        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+        $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         $items = $this->searchService->getItems($query);
         $topWeeks = $this->searchService->getTopWeeks();

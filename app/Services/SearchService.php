@@ -19,6 +19,7 @@ class SearchService {
     }
 
     public function getItems($query) {
+        $tvShowCategoryList = $this->getTvShowCategoryList();
         $items = [];
         $datas = DB::select($query);
         $chanel = '';
@@ -133,7 +134,8 @@ class SearchService {
                 'year' => $year,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
-                'episodeNumber' => $episodeNumber
+                'episodeNumber' => $episodeNumber,
+                'category' => ($data->post_type == 'tv_show' ? $this->getCategoryName($data->categoryId, $tvShowCategoryList) : '')
             ] + ($metadata[$data->ID] ?? []);
         }
         return $items;
@@ -285,6 +287,33 @@ class SearchService {
             $items[] = $item;
         }
         return $items;
+    }
+
+    /**
+     * @return array 
+     */
+    private function getTvShowCategoryList()
+    {
+        $sql = "select tx.term_taxonomy_id as categoryId, tx.parent parentCategoryId, t.name from wp_terms as t, wp_term_taxonomy as tx where t.term_id = tx.term_id and tx.taxonomy = 'category'";
+        return DB::select($sql);
+    }
+
+    /**
+     * @param int $id
+     * @param array $list
+     * @return string
+     */
+    private function getCategoryName(int $id, array $list)
+    {
+        $data = '';
+        foreach ($list as $item) {
+            if ($item->categoryId == $id) {
+                $data = $item->parentCategoryId ? $this->getCategoryName($item->parentCategoryId, $list) : $item->name;
+                break;
+            }
+        }
+
+        return $data;
     }
 
 }
