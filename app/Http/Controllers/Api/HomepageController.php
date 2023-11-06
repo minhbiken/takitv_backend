@@ -177,24 +177,21 @@ class HomepageController extends Controller
         $orderBy = $request->get('orderBy', 'date');
 
         $titleNoWhitespace = \str_replace(' ', '', $title);
-        $select = "SELECT
+        $select = "select
             p.ID,
             p.post_name,
             p.post_title,
             p.post_type,
             p.original_title,
-            tx.term_taxonomy_id as categoryId
-        from
-            wp_term_taxonomy tx
-        inner join wp_term_relationships tr on
-                tr.term_taxonomy_id = tx.term_taxonomy_id
-        inner join wp_posts p on
-                p.ID = tr.object_id";
+            group_concat(tx.term_taxonomy_id) as categories";
+        $from = " from
+            wp_posts p
+        left join wp_term_relationships tr on p.ID = tr.object_id
+        left join wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id and tx.taxonomy = 'category'";
         
-        $where = " WHERE tx.taxonomy = 'category'
-            and p.post_type in ('tv_show', 'movie')
+        $where = " WHERE p.post_type in ('tv_show', 'movie')
             and p.post_status = 'publish'
-            and (REPLACE(p.post_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%' OR REPLACE(p.original_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%')";
+            and (REPLACE(p.post_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%' OR REPLACE(p.original_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%') group by p.ID";
 
         if ($orderBy == 'titleAsc') {
             $order = " ORDER BY p.post_title ASC";
@@ -205,18 +202,12 @@ class HomepageController extends Controller
         }
 
         //query all
-        $query = $select . $where . $order;
+        $query = $select . $from . $where . $order;
 
-        $selectTotal = "SELECT COUNT(*) as total from wp_term_taxonomy tx
-            inner join wp_term_relationships tr on
-                    tr.term_taxonomy_id = tx.term_taxonomy_id
-            inner join wp_posts p on
-                    p.ID = tr.object_id
-                and p.post_type = 'tv_show'
-                and p.post_status = 'publish'";
+        $selectTotal = "SELECT p.ID" . $from;
         $queryTotal = $selectTotal . $where;
         $dataTotal = DB::select($queryTotal);
-        $total = $dataTotal[0]->total;
+        $total = \count($dataTotal);
 
         //query limit
         $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";

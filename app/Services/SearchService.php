@@ -124,6 +124,16 @@ class SearchService {
                 $originalTitle = $dataOriginalTitle[0]->meta_value;
 
             }
+            $categories = $data->post_type == 'tv_show' ? \array_map(fn($id) => $this->getCategoryName((int) $id, $tvShowCategoryList), \explode(',', $data->categories)) : [];
+            if (\in_array('OTT/Web' , $categories)) {
+                $category = 'OTT';
+            } elseif (\in_array('예능' , $categories)) {
+                $category = '예능';
+            } elseif ($categories) {
+                $category = $categories[0];
+            } else {
+                $category = '';
+            }
             $items[] = [
                 'postType'  => $data->post_type,
                 'id' => $data->ID,
@@ -135,7 +145,7 @@ class SearchService {
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
-                'category' => ($data->post_type == 'tv_show' ? $this->getCategoryName($data->categoryId, $tvShowCategoryList) : '')
+                'category' => $category,
             ] + ($metadata[$data->ID] ?? []);
         }
         return $items;
@@ -305,15 +315,21 @@ class SearchService {
      */
     private function getCategoryName(int $id, array $list)
     {
-        $data = '';
         foreach ($list as $item) {
             if ($item->categoryId == $id) {
-                $data = $item->parentCategoryId ? $this->getCategoryName($item->parentCategoryId, $list) : $item->name;
-                break;
+                if ($item->parentCategoryId) { //Will get parent name
+                    foreach ($list as $item2) {
+                        if ($item2->categoryId == $item->parentCategoryId) {
+                            return $item2->name;
+                        }
+                    }
+                } else {
+                    return $item->name;
+                }
             }
         }
 
-        return $data;
+        return '';
     }
 
 }
