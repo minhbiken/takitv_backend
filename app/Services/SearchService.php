@@ -19,6 +19,7 @@ class SearchService {
     }
 
     public function getItems($query) {
+        $tvShowCategoryList = $this->getTvShowCategoryList();
         $items = [];
         $datas = DB::select($query);
         $chanel = '';
@@ -28,7 +29,12 @@ class SearchService {
         $link = '';
         $year = '';
         $postIds = \array_map(fn($item) => $item->ID, $datas);
-        $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
+        $originalTitle = '';
+        if( empty($postIds) ) {
+            $metadata = [];
+        } else {
+            $metadata = $this->movieService->getMoviesMetadata($postIds, ['_thumbnail_id']);
+        }
         foreach( $datas as $data ) {     
             if ( $data->post_type == 'movie' ) {
                 $postName = urldecode($data->post_name);
@@ -45,6 +51,12 @@ class SearchService {
                         $year = $dataMeta[0]->meta_value > 0 ? date('Y', $dataMeta[0]->meta_value) : date('Y');
                     }
                 }
+                $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_movie_original_title' AND post_id =". $data->ID . " LIMIT 1;";
+                $dataOriginalTitle = DB::select($queryOriginalTitle);
+                if( count($dataOriginalTitle) > 0 ) {
+                    $originalTitle = $dataOriginalTitle[0]->meta_value;
+                }
+
             } else if( $data->post_type == 'tv_show'  ) {
                 $queryChanel = "SELECT wt.description, wp.object_id FROM `wp_term_relationships` wp
                 LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
@@ -56,7 +68,13 @@ class SearchService {
                     $newChanel = explode('src="', $chanel);
                     $newChanel = explode('" alt', $newChanel[1]);
                     $newChanel = $newChanel[0];
-                    $chanel = 'https://image002.modooup.com' . $newChanel;
+                    if (preg_match("/kokoatv.net/i", $newChanel)) {
+                        $chanel = str_replace('o.kokoatv.net', 'image002.modooup.com', $newChanel);
+                    } else if (preg_match("/kokoatv.net/i", $newChanel)) {
+                        $chanel = str_replace('kokoatv.net', 'image002.modooup.com', $newChanel);
+                    } else {
+                        $chanel = 'https://image002.modooup.com' . $newChanel;
+                    }
                 } else {
                     $chanel = env('IMAGE_PLACEHOLDER');
                 }
@@ -90,8 +108,9 @@ class SearchService {
                         $dataEpisoTitle = DB::select($queryTitle);
                         
                         if( count($dataEpisoTitle) > 0 ) {
-                            $link = 'episode/' . $dataEpisoTitle[0]->post_title;
-                            $slug = $dataEpisoTitle[0]->post_title;
+                            $episodeName = urldecode($dataEpisoTitle[0]->post_name);
+                            $link = 'episode/' . $episodeName;
+                            $slug = $episodeName;
                         }
                     }
                 } else {
@@ -99,18 +118,34 @@ class SearchService {
                     $episodeNumber = '';
                     $seasonNumber = '';
                 }
+
+                $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $data->ID . " LIMIT 1;";
+                $dataOriginalTitle = DB::select($queryOriginalTitle);
+                $originalTitle = $dataOriginalTitle[0]->meta_value;
+
+            }
+            $categories = $data->post_type == 'tv_show' ? \array_map(fn($id) => $this->getCategoryName((int) $id, $tvShowCategoryList), \explode(',', $data->categories)) : [];
+            if (\in_array('OTT/Web' , $categories)) {
+                $category = 'OTT';
+            } elseif (\in_array('예능' , $categories)) {
+                $category = '예능';
+            } elseif ($categories) {
+                $category = $categories[0];
+            } else {
+                $category = '';
             }
             $items[] = [
                 'postType'  => $data->post_type,
                 'id' => $data->ID,
                 'title' => $data->post_title,
                 'slug' => $slug,
-                'originalTitle' => $data->original_title,
+                'originalTitle' => $originalTitle,
                 'link' => $link,
                 'year' => $year,
                 'chanelImage' => $chanel,
                 'seasonNumber' => $seasonNumber,
-                'episodeNumber' => $episodeNumber
+                'episodeNumber' => $episodeNumber,
+                'category' => $category,
             ] + ($metadata[$data->ID] ?? []);
         }
         return $items;
@@ -224,7 +259,13 @@ class SearchService {
                 $newChanel = explode('src="', $chanel);
                 $newChanel = explode('" alt', $newChanel[1]);
                 $newChanel = $newChanel[0];
-                $chanel = 'https://image002.modooup.com' . $newChanel;
+                if (preg_match("/o.kokoatv.net/i", $newChanel)) {
+                    $chanel = str_replace('o.kokoatv.net', 'image002.modooup.com', $newChanel);
+                } else if (preg_match("/kokoatv.net/i", $newChanel)) {
+                    $chanel = str_replace('kokoatv.net', 'image002.modooup.com', $newChanel);
+                } else {
+                    $chanel = 'https://image002.modooup.com' . $newChanel;
+                }
             } else {
                 $chanel = env('IMAGE_PLACEHOLDER');
             }
@@ -256,6 +297,39 @@ class SearchService {
             $items[] = $item;
         }
         return $items;
+    }
+
+    /**
+     * @return array 
+     */
+    private function getTvShowCategoryList()
+    {
+        $sql = "select tx.term_taxonomy_id as categoryId, tx.parent parentCategoryId, t.name from wp_terms as t, wp_term_taxonomy as tx where t.term_id = tx.term_id and tx.taxonomy = 'category'";
+        return DB::select($sql);
+    }
+
+    /**
+     * @param int $id
+     * @param array $list
+     * @return string
+     */
+    private function getCategoryName(int $id, array $list)
+    {
+        foreach ($list as $item) {
+            if ($item->categoryId == $id) {
+                if ($item->parentCategoryId) { //Will get parent name
+                    foreach ($list as $item2) {
+                        if ($item2->categoryId == $item->parentCategoryId) {
+                            return $item2->name;
+                        }
+                    }
+                } else {
+                    return $item->name;
+                }
+            }
+        }
+
+        return '';
     }
 
 }

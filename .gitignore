@@ -16,4 +16,5 @@ yarn-error.log
 /.idea
 /.vscode
 .env
-/public/outlink/json
+/public/outlink/json/*
+/public/outlink_vuejs.php

@@ -106,10 +106,11 @@ class HomepageController extends Controller
             $topWeeks = DB::select($queryTopWeek);
 
             //Get movies newest of Korea for slider in bottom
+            $encodedSlug = urlencode('한국영화');
             $queryKoreaMovie = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_posts` p
             LEFT JOIN wp_term_relationships t_r on t_r.object_id = p.ID
             LEFT JOIN wp_term_taxonomy tx on t_r.term_taxonomy_id = tx.term_taxonomy_id AND tx.taxonomy = 'movie_genre'
-            LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = 'kmovie'
+            LEFT JOIN wp_terms t on tx.term_id = t.term_id AND t.slug = '" . $encodedSlug . "'
             WHERE t.name != 'featured' AND t.name != ''
             ORDER BY p.post_date DESC
             LIMIT 8;";
@@ -122,7 +123,7 @@ class HomepageController extends Controller
             $allMovieIds = \array_unique(\array_merge($movieIds, $topWeekMovieIds, $movieKoreaIds));
             $hasThumbnailMovieIds = \array_unique(\array_merge($movieIds, $movieKoreaIds));
 
-            $moviesMetadata = $this->movieService->getMoviesMetadata($hasThumbnailMovieIds);
+            $moviesMetadata = $this->movieService->getMoviesMetadata($hasThumbnailMovieIds, [], ['thumbnailVerticalOnly']);
             $moviesMetadataTopWeek = $this->movieService->getMoviesMetadata($topWeekMovieIds, ['_movie_release_date']);
             $genres = $this->movieService->getMoviesGenres($allMovieIds);
             foreach ($movies as &$item) {
@@ -173,50 +174,43 @@ class HomepageController extends Controller
         $title = $request->get('title', '');
         $page = $request->get('page', 1);
         $perPage = $request->get('limit', env('PAGE_LIMIT'));
-        $orderBy = $request->get('orderBy', '');
+        $orderBy = $request->get('orderBy', 'date');
 
-        $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p ";
-        $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') ";
+        $titleNoWhitespace = \str_replace(' ', '', $title);
+        $select = "select
+            p.ID,
+            p.post_name,
+            p.post_title,
+            p.post_type,
+            p.original_title,
+            group_concat(tx.term_taxonomy_id) as categories";
+        $from = " from
+            wp_posts p
+        left join wp_term_relationships tr on p.ID = tr.object_id
+        left join wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id and tx.taxonomy = 'category'";
+        
+        $where = " WHERE p.post_type in ('tv_show', 'movie')
+            and p.post_status = 'publish'
+            and (REPLACE(p.post_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%' OR REPLACE(p.original_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%') group by p.ID";
 
-        if( $title != '' ) {
-            $s_rp = str_replace(" ","", $title);
-            $whereTitle = " AND ( p.post_title LIKE '%".$title."%' OR  
-            REPLACE(p.post_title, ' ', '') like '%".$s_rp."%' OR
-            p.original_title LIKE '%".$title."%' OR
-            REPLACE(p.original_title, ' ', '') like '%".$s_rp."%'
-        ) ";
-
-            $where = $where . $whereTitle;
-        }
-
-        if( $orderBy == '' ) {
-            $order = "ORDER BY p.post_date DESC ";
-        } else if( $orderBy == 'titleAsc' ) {
-            $order = "ORDER BY p.post_title ASC ";
-        } else if( $orderBy == 'titleDesc' ) {
-            $order = "ORDER BY p.post_title DESC ";
-        } else if($orderBy == 'date' ) {
-            $order = "ORDER BY p.post_date DESC ";
-        } else if($orderBy == 'rating') {
-            $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
-            $select = $select . $selectRating;
-            $order = "ORDER BY mp.all_time_stats DESC ";
-        } else if($orderBy == 'menuOrder') {
-            $order = "ORDER BY p.menu_order DESC ";
+        if ($orderBy == 'titleAsc') {
+            $order = " ORDER BY p.post_title ASC";
+        } elseif ($orderBy == 'titleDesc') {
+            $order = " ORDER BY p.post_title DESC";
         } else {
-            $order = "ORDER BY p.post_date DESC ";
+            $order = " ORDER BY p.post_date DESC";
         }
 
         //query all
-        $query = $select . $where . $order;
+        $query = $select . $from . $where . $order;
 
-        $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
+        $selectTotal = "SELECT p.ID" . $from;
         $queryTotal = $selectTotal . $where;
         $dataTotal = DB::select($queryTotal);
-        $total = $dataTotal[0]->total;
+        $total = \count($dataTotal);
 
         //query limit
-        $limit = "LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
+        $limit = " LIMIT " . ( ( $page - 1 ) * $perPage ) . ", $perPage ;";
         $query = $query . $limit;
         $items = $this->searchService->getItems($query);
         $topWeeks = $this->searchService->getTopWeeks();
@@ -283,7 +277,7 @@ class HomepageController extends Controller
     }
 
     public function putGmtTime() {
-        //$this->clearCache();
+        $this->clearCache();
         Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:i:s'));
     }
 
@@ -358,7 +352,7 @@ class HomepageController extends Controller
                 }
                 $dataMovie =  PostMeta::select('meta_id','meta_value')->where(['post_id' => $idNewPerson, 'meta_key' => $metaKey])->first();
                 if($dataMovie != '' && $dataMovie->meta_value != '' ) {
-                    $movies = unserialize($dataMovie->meta_value);
+                    $movies = @unserialize($dataMovie->meta_value);
                     //check exist and update movie of cast
                     if( !in_array($movieId, $movies) ) {
                         array_push($movies, $movieId);
@@ -448,7 +442,7 @@ class HomepageController extends Controller
                 array_push($personMetaListRollback, $metaPostMovie->meta_id);
             } else {
                 if( $dataMovieCast->meta_value != '') {
-                    $movieCasts = unserialize($dataMovieCast->meta_value);
+                    $movieCasts = @unserialize($dataMovieCast->meta_value);
                     //check exist and update movie of cast
                     foreach($movieCasts as $movieCast ) {
                         if( isset($movieCast['id']) && $movieCast['id'] != $idNewPerson ) {

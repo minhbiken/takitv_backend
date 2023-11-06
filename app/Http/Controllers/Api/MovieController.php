@@ -57,13 +57,13 @@ class MovieController extends Controller
             if( $genre != '' ) {
                 $genre = explode(',', $genre);
                 foreach($genre as $key => $g) {
-                    $genre[$key] = "'" . "$g" . "'";
+                    $genre[$key] = "'" . \urlencode($g) . "'";
                 }
                 $genre = join(",", $genre);
                 $queryGenre = "SELECT tr.object_id FROM wp_terms t
                 left join wp_term_taxonomy tx on tx.term_id = t.term_id
                 left join wp_term_relationships tr on tr.term_taxonomy_id = tx.term_taxonomy_id
-                WHERE t.slug IN (". $genre .") OR t.name IN (". $genre .") ";
+                WHERE t.slug IN (". $genre .") ";
                 $where = $where . "AND p.ID IN ( ". $queryGenre ." ) ";    
             }
 
@@ -103,18 +103,29 @@ class MovieController extends Controller
             $query = $query . $limit;
             $items = DB::select($query);
 
-            $queryTopWeek = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_most_popular` mp
-                            LEFT JOIN wp_posts p ON p.ID = mp.post_id
-                            WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
-                            ORDER BY mp.7_day_stats DESC
-                            LIMIT 5";
-            $topWeeks = DB::select($queryTopWeek);
-            $queryPopular = "SELECT p.ID as id, p.post_name as slug, p.post_title title FROM `wp_most_popular` wp
-                            LEFT JOIN wp_posts p ON p.ID = wp.post_id 
-                            WHERE p.post_type = 'movie' AND wp.post_id != '' AND p.ID != ''
+            if( $genre == '' ) {
+                $queryByType = '';
+            } else {
+                $queryByType =  " AND t.slug IN (" . $genre . ") " ;
+            }
+            $queryTopWeek = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
+            LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+            LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
+            LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+            LEFT JOIN wp_posts p ON p.ID = mp.post_id
+            WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != '' " . $queryByType . " AND (p.post_status = 'publish')
+            ORDER BY mp.7_day_stats DESC
+            LIMIT 5";
 
-                            ORDER BY wp.`1_day_stats` DESC
-                            LIMIT 6";
+            $queryPopular = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
+            LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
+            LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
+            LEFT JOIN wp_terms t ON t.term_id = tx.term_id
+            LEFT JOIN wp_posts p ON p.ID = mp.post_id
+            WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != '' " . $queryByType . " AND (p.post_status = 'publish')
+            ORDER BY mp.7_day_stats DESC
+            LIMIT 6";
+            
             $populars = DB::select($queryPopular);
             $topWeeks = DB::select($queryTopWeek);
 
@@ -130,28 +141,29 @@ class MovieController extends Controller
 
             ));
             $noThmunbnailPostIds = \array_map(fn($item) => $item->id, $topWeeks);
+            if( empty($allPostIds) ) {
+                $item = [];
+            } else {
+                $genres = $this->movieService->getMoviesGenres($allPostIds, $genre);
+                $metaData = $this->movieService->getMoviesMetadata($thumbnailPostIds);
+                $metaDataTopWeeks = $this->movieService->getMoviesMetadata($noThmunbnailPostIds, ['_movie_release_date']);
+                foreach ($items as &$item) {
+                    $item = \get_object_vars($item);
+                    $item['genres'] = $genres[(int) $item['id']] ?? [];
+                    $item += $metaData[(int) $item['id']];
+                }
+                foreach ($populars as &$item) {
+                    $item = \get_object_vars($item);
+                    $item['genres'] = $genres[(int) $item['id']] ?? [];
+                    $item += $metaData[(int) $item['id']];
+                }
 
-            $genres = $this->movieService->getMoviesGenres($allPostIds);
-            $metaData = $this->movieService->getMoviesMetadata($thumbnailPostIds);
-            $metaDataTopWeeks = $this->movieService->getMoviesMetadata($noThmunbnailPostIds, ['_movie_release_date']);
-            foreach ($items as &$item) {
-                $item = \get_object_vars($item);
-                $item['genres'] = $genres[(int) $item['id']] ?? [];
-                $item += $metaData[(int) $item['id']];
+                foreach ($topWeeks as &$item) {
+                    $item = \get_object_vars($item);
+                    $item['genres'] = $genres[(int) $item['id']] ?? [];
+                    $item += $metaDataTopWeeks[(int) $item['id']];
+                }
             }
-
-            foreach ($populars as &$item) {
-                $item = \get_object_vars($item);
-                $item['genres'] = $genres[(int) $item['id']] ?? [];
-                $item += $metaData[(int) $item['id']];
-            }
-
-            foreach ($topWeeks as &$item) {
-                $item = \get_object_vars($item);
-                $item['genres'] = $genres[(int) $item['id']] ?? [];
-                $item += $metaDataTopWeeks[(int) $item['id']];
-            }
-
             $data = [
                 "total" => $total,
                 "perPage" => $perPage,

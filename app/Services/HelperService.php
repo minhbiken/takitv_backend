@@ -20,14 +20,16 @@ class HelperService {
         $srcSet = [];
         $src = '';
         $dataEpisodeName = '';
+        $titleSlider = '';
+        $seasonNumber = '';
+        $episodeNumber = '';
+        $year = '';
+        $linkSlider = '';
+        $postType = '';
         $sliderDatas = DB::select($query);
         foreach ( $sliderDatas as $sliderData ) {
-            // $dataQuery = "SELECT * FROM `wp_postmeta` pm 
-            // LEFT JOIN wp_posts p ON p.ID = pm.post_id 
-            // WHERE pm.meta_key = '_wp_attached_file' AND p.post_type = 'attachment' AND p.post_parent = " . $sliderData->ID . " ORDER BY p.post_date DESC LIMIT 1;";
-            
             $dataQuery = "SELECT am.meta_value FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key = '_thumbnail_id' 
-                            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
+            LEFT JOIN wp_postmeta am ON am.post_id = pm.meta_value AND am.meta_key = '_wp_attached_file' WHERE p.post_status = 'publish' and p.ID =". $sliderData->ID .";";
 
             $dataResult = DB::select($dataQuery);
             if( count($dataResult) > 0 ) {
@@ -36,9 +38,8 @@ class HelperService {
             $titleSlider = $sliderData->post_title;
             $dataEpisodeName = $sliderData->post_name;
             $linkSlider = 'movie/' . $sliderData->post_title;
-            $seasonNumber = '';
-            $episodeNumber = '';
-            $year = '';
+            
+            if( $sliderData->post_type == 'movie' ) $postType = 'movie';
 
             $queryMeta = "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id = ". $sliderData->ID .";";
             $dataMetas = DB::select($queryMeta);
@@ -54,9 +55,9 @@ class HelperService {
                     }
                 }
             }
-
             if( $sliderData->post_type == 'tv_show' ) {
-                
+
+                $postType = 'tv_show';
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 
@@ -84,8 +85,13 @@ class HelperService {
                 $queryEpisodeNumber = "SELECT meta_value FROM wp_postmeta WHERE meta_key = '_episode_number' AND post_id = " . $episodeId . ";";
                 $dataEpisodeNumber = DB::select($queryEpisodeNumber);
                 $episodeNumber = $dataEpisodeNumber[0]->meta_value;
+
+                if( $seasonNumber != '시즌 1' ) {
+                    $titleSlider = $titleSlider . ' ' .  $seasonNumber;
+                }
+
             }
-            $srcSet = $this->getAttachmentsByPostId($sliderData->ID);
+            //$srcSet = $this->getAttachmentsByPostId($sliderData->ID);
             $sliders[] = [
                 'id' => $sliderData->ID,
                 'year' => $year,
@@ -96,6 +102,7 @@ class HelperService {
                 'srcSet' => $srcSet,
                 'seasonNumber' => $seasonNumber,
                 'episodeNumber' => $episodeNumber,
+                'postType' => $postType
             ];
         }
         return $sliders;
@@ -110,7 +117,6 @@ class HelperService {
         } else {
             $imgUrl = '';
         }
-
         $query = "SELECT meta_value FROM `wp_postmeta` WHERE meta_key = '_wp_attachment_metadata' AND post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'attachment' AND post_parent = " . $id . ") LIMIT 1;";
         $srcSet[$id] = [];
         $attachments = DB::select($query);
@@ -182,12 +188,12 @@ class HelperService {
         if( $response->ok() ) {
             return $response;
         } else {
-            $text = $outlink . ' not working';
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]);
+            // $text = $outlink . ' not working';
+            // Telegram::sendMessage([
+            //     'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
+            //     'parse_mode' => 'HTML',
+            //     'text' => $text
+            // ]);
             return '';
         }
     }
@@ -198,17 +204,18 @@ class HelperService {
         if( $response->ok() ) {
             return json_decode($response);
         } else {
-            $text = $outlink . ' not working';
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]);
+            // $text = $outlink . ' not working';
+            // Telegram::sendMessage([
+            //     'chat_id' => env('TELEGRAM_CHANNEL_ID', '5968853987'),
+            //     'parse_mode' => 'HTML',
+            //     'text' => $text
+            // ]);
             return '';
         }
     }
 
     public function clearCastDupplicate($items) {
+        $itemDup = [];
         foreach($items as $item) {
             foreach($items as $newItem) {
                 $itemSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
@@ -373,8 +380,15 @@ class HelperService {
                             }    
                         }
                     } 
+                } else if (  $itemSrc == $newItemSrc && (strlen($item->name) == strlen($newItem->name)) && $item->id != $newItem->id ) {
+                    array_push($itemDup, $item->id);
                 }
             }
+        }
+        for ($i = 0; $i < count($itemDup)/2; $i++) {
+            $postItem = Post::find($itemDup[$i]);
+            $postItem->post_status = 'duplicate';
+            $postItem->save();
         }
     }
 }

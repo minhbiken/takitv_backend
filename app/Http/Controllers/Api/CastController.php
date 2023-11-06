@@ -14,6 +14,8 @@ use App\Services\SearchService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
+use App\Models\PostMeta;
+use App\Models\Post;
 class CastController extends Controller
 {
     protected $imageUrlUpload;
@@ -36,12 +38,12 @@ class CastController extends Controller
         $orderBy = $request->get('orderBy', '');
         $search = $request->get('search', '');
 
-        $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src FROM wp_posts p 
+        $select = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src, wp.meta_id FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' ";
-        $where = " WHERE p.post_status = 'publish' AND p.post_type='person' AND wp.meta_value != '' ";
+        $where = " WHERE p.post_status = 'publish' AND p.post_type='person' ";
 
         if( $orderBy == '' ) {
-            $order = "ORDER BY p.post_title DESC ";
+            $order = "ORDER BY wp.meta_value DESC ";
         } else if( $orderBy == 'nameAsc' ) {
             $order = "ORDER BY p.post_title ASC ";
         } else if( $orderBy == 'nameDesc' ) {
@@ -77,18 +79,141 @@ class CastController extends Controller
         $casts = [];
 
         $items = DB::select($query);
-
         //clear cast dupplicate
         $this->helperService->clearCastDupplicate($items);
         $items = DB::select($query);
-        foreach ($items as $item) {
+        foreach ($items as $key => $item) {
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $item->slug)) ? urldecode($item->slug) : $item->slug;
-            $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
-            $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
-            $casts[] = [
+            //check no image
+            $newSrc = '';
+            if( empty($item->src) ) {
+                $urlTmdb = "https://www.themoviedb.org/search/person?query=" . $item->name;
+                $contentTmdb = @file_get_contents($urlTmdb);
+                preg_match("/<img loading=\"lazy\" class=\"profile\" src=\"(.*)\" srcset=\"(.*)\" alt=\"$item->name\">/", $contentTmdb, $result);
+                if( isset($result[1]) ) {
+                    $imageSrc = $result[1];
+                    if( !empty($imageSrc) ) {
+                        $newImageSrc = str_replace('w90_and_h90_face', 'w300_and_h450_bestv2', $imageSrc);
+                        $newImageSrc = "https://www.themoviedb.org" . $newImageSrc;
+                        $newSrc = $newImageSrc;
+                        $newImagePerson = new PostMeta();
+                        $newImagePerson->post_id = $item->id;
+                        $newImagePerson->meta_key = '_person_image_custom';
+                        $newImagePerson->meta_value = $newSrc;
+                        $newImagePerson->save();
+                    }
+                }
+            } else {
+                $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $item->src);
+                $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+            }
+            
+            //check person name incorrect
+            $newName = $item->name;  
+            preg_match("/—/", $item->name, $match);
+            if(isset($match[0])) {
+                $newName = str_replace('—', '', $item->name);
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName;
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+
+            }
+            preg_match("/\[(.*)\]/", $item->name, $match2);
+            if(isset($match2[0])) {
+                $newName = explode('[', $item->name);
+                $newName = $newName[0];
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName[0];
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+            }
+            preg_match("/Self/", $item->name, $match3);
+            if(isset($match3[0])) {
+                $newName = explode('Self', $item->name);
+                $newName = $newName[0];
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName;
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+            }
+            
+            preg_match("/(.*) (.*)-(.*) (.*)-(.*)/", $item->name, $match4);
+            if(isset($match4[0])) {
+                $checker = $match4[3];
+                $count = strlen($checker);
+                $newName = $checker[0];
+                for( $i = 1; $i < $count; $i++ ) {
+                    if( ctype_upper($checker[$i]) ) {
+                        break;
+                    } else {
+                        $newName .= $checker[$i];
+                    }
+                }
+                $newName = $match4[1] . ' ' . $match4[2] . '-' . $newName;
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName;
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+            }
+            preg_match("/(.*) (.*)-(.*) (.*) (.*)/", $item->name, $match5);
+            if(isset($match5[0])) {
+                $checker = $match5[3];
+                $count = strlen($checker);
+                $newName = $checker[0];
+                for( $i = 1; $i < $count; $i++ ) {
+                    if( ctype_upper($checker[$i]) ) {
+                        break;
+                    } else {
+                        $newName .= $checker[$i];
+                    }
+                }
+                $newName = $match5[1] . ' ' . $match5[2] . '-' . $newName;
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName;
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+            }
+            preg_match("/(.*) (.*) (.*) (.*)/", $item->name, $match6);
+            if(isset($match6[0])) {
+                $checker = $match6[2];
+                $count = strlen($checker);
+                $newName = $checker[0];
+                for( $i = 1; $i < $count; $i++ ) {
+                    if( ctype_upper($checker[$i]) ) {
+                        break;
+                    } else {
+                        $newName .= $checker[$i];
+                    }
+                }
+                $newName = $match6[1] . '-' . $newName;
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName;
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+            }
+            preg_match("/(.*) (.*)-(.*)-(.*)/", $item->name, $match7);
+            if(isset($match7[0])) {
+                $checker = $match7[2];
+                $count = strlen($checker);
+                $newName = $checker[0];
+                for( $i = 1; $i < $count; $i++ ) {
+                    if( ctype_upper($checker[$i]) ) {
+                        break;
+                    } else {
+                        $newName .= $checker[$i];
+                    }
+                }
+                $newName = $match7[1] . '-' . $newName;
+                $changeName = Post::find($item->id);
+                $changeName->post_title = $newName;
+                $changeName->post_name = str_replace(' ', '-', strtolower($newName));
+                $changeName->save();
+            }
+            $casts[$key] = [
                 'id' => $item->id,
-                'slug' => $newSlug,
-                'name' => $item->name,
+                'slug' => urlencode($newSlug),
+                'name' => $newName,
                 'src' =>  $newSrc
             ];
         }
@@ -108,21 +233,44 @@ class CastController extends Controller
     public function show(Request $request) 
     {
         $slug = $request->get('slug', '');
-        $newSlug = urlencode($slug);
+        $newSlug = addslashes($slug);
         $queryCast = "SELECT p.ID as id, p.post_name as slug, p.post_title as name, wp.meta_value as src, wp_tv_show.meta_value as tv_show, wp_movie.meta_value as movie
         FROM wp_posts p 
         LEFT JOIN wp_postmeta wp ON wp.post_id = p.ID AND wp.meta_key = '_person_image_custom' 
         LEFT JOIN wp_postmeta wp_tv_show ON wp_tv_show.post_id = p.ID AND wp_tv_show.meta_key = '_tv_show_cast'
         LEFT JOIN wp_postmeta wp_movie ON wp_movie.post_id = p.ID AND wp_movie.meta_key = '_movie_cast'
-        WHERE ( p.post_name= '" . $slug .  "' OR p.post_name= '". $newSlug ."' )";
+        WHERE ( p.post_name= '". $newSlug ."' )";
+        
         $dataCast = DB::select($queryCast);
         $cast = [];
         $data = [];
+        $newSrc = '';
         if( count($dataCast) > 0 ) {
             $data = $dataCast[0];
             $newSlug = (preg_match("@^[a-zA-Z0-9%+-_]*$@", $data->slug)) ? urldecode($data->slug) : $data->slug;
-            $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
-            $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+
+            //check no image
+            if( empty($data->src) ) {
+                $urlTmdb = "https://www.themoviedb.org/search/person?query=" . $data->slug;
+                $contentTmdb = @file_get_contents($urlTmdb); 
+                preg_match("/<img loading=\"lazy\" class=\"profile\" src=\"(.*)\" srcset=\"(.*)\" alt=\"$data->name\">/", $contentTmdb, $result);
+                if( isset($result[1]) ) {
+                    $imageSrc = $result[1];
+                    if( !empty($imageSrc) ) {
+                        $newImageSrc = str_replace('w90_and_h90_face', 'w300_and_h450_bestv2', $imageSrc);
+                        $newImageSrc = "https://www.themoviedb.org" . $newImageSrc;
+                        $newSrc = $newImageSrc;
+                        $newImagePerson = new PostMeta();
+                        $newImagePerson->post_id = $data->id;
+                        $newImagePerson->meta_key = '_person_image_custom';
+                        $newImagePerson->meta_value = $newSrc;
+                        $newImagePerson->save();
+                    }
+                }
+            } else {
+                $newSrc = str_replace('w66_and_h66_face', 'w300_and_h450_bestv2', $data->src);
+                $newSrc = str_replace('w300_and_h450_bestv2e', '/w300_and_h450_bestv2', $newSrc);
+            }
             $cast = [
                 'id' => $data->id,
                 'slug' => $newSlug,
@@ -130,7 +278,7 @@ class CastController extends Controller
                 'src' => $newSrc
             ];
             //get tv-show
-            $tvShow = unserialize($data->tv_show);
+            $tvShow = @unserialize($data->tv_show);
             $ids = [];
             $items = [];
             if( $tvShow != '' && count($tvShow) > 0 ) {
@@ -140,7 +288,7 @@ class CastController extends Controller
             }
             
             //get movie
-            $movies = unserialize($data->movie);
+            $movies = @unserialize($data->movie);
             if( $movies != '' && count($movies) > 0 ) {
                 foreach( $movies as  $movieId) {
                     array_push($ids, $movieId);
@@ -241,7 +389,7 @@ class CastController extends Controller
                 $queryEpisode = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_seasons' AND post_id =". $sliderData->ID . " LIMIT 1;";
                 $dataEpisode = DB::select($queryEpisode);
                 $episodeData = $dataEpisode[0]->meta_value;
-                $episodeData = unserialize($episodeData);
+                $episodeData = @unserialize($episodeData);
                 $lastSeason = end($episodeData);
                 $episodeId = end($lastSeason['episodes']);
                 
@@ -315,7 +463,7 @@ class CastController extends Controller
             //get first cast 
             if( $dataMovie->casts != '' || $dataMovie->tmdb_id != '' ) {
                 try {
-                    $castsOfMovie = unserialize($dataMovie->casts);
+                    $castsOfMovie = @unserialize($dataMovie->casts);
                     $firstCast = $castsOfMovie[0]['id'];
                     //get title of first cast
                     $queryCast = "SELECT p.post_title FROM wp_posts p
@@ -362,7 +510,7 @@ class CastController extends Controller
             //get first cast 
             if( $dataMovie->casts != '' || $dataMovie->tmdb_id != '' ) {
                 try {
-                    $castsOfMovie = unserialize($dataMovie->casts);
+                    $castsOfMovie = @unserialize($dataMovie->casts);
                     $firstCast = $castsOfMovie[0]['id'];
                     //get title of first cast
                     $queryCast = "SELECT p.post_title FROM wp_posts p

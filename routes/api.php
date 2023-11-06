@@ -16,11 +16,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::apiResource('homepage', 'Api\HomepageController')->only(['index'])->middleware([IfModifiedSince::class, LastModified::class]);
-Route::apiResource('movies', 'Api\MovieController')->only(['index', 'show'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::apiResource('movies', 'Api\MovieController')->only(['show']);
 Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show'])->middleware([IfModifiedSince::class, LastModified::class]);
-Route::apiResource('episode', 'Api\EpisodeController')->only(['show'])->middleware([IfModifiedSince::class, LastModified::class]);
+Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
 Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->middleware([IfModifiedSince::class, LastModified::class]);
 Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage')->middleware([IfModifiedSince::class, LastModified::class]);
+
+Route::get('movies', 'App\Http\Controllers\Api\MovieController@index')->middleware([IfModifiedSince::class, LastModified::class])->name('movies.index');
 
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');

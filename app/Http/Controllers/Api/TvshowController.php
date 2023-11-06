@@ -68,7 +68,6 @@ class TvshowController extends Controller
                 }
                 $where = $where . $whereType;
             }
-    
             if( $genre != '' ) {
                 $genre = explode(',', $genre);
                 foreach($genre as $key => $g) {
@@ -184,7 +183,7 @@ class TvshowController extends Controller
      
         $episodeData = DB::select($queryEpisode);
         $episodeData = $episodeData[0]->meta_value;
-        $episodeData = unserialize($episodeData);
+        $episodeData = @unserialize($episodeData);
         
         $lastSeason = end($episodeData);
         $episodeId = end($lastSeason['episodes']);
@@ -230,12 +229,20 @@ class TvshowController extends Controller
             $tvShowSlug = $dataEpisoTitle[0]->post_name;
         }
 
+        //get original title
+        $originalTitle = '';
+        $queryOriginalTitle = "SELECT meta_key, meta_value FROM `wp_postmeta` WHERE meta_key = '_original_title' AND post_id =". $dataSeason->ID . " LIMIT 1;";
+        $dataOriginalTitle = DB::select($queryOriginalTitle);
+        if( count($dataOriginalTitle) > 0 ) {
+            $originalTitle = $dataOriginalTitle[0]->meta_value;
+        }
+
         $srcSet = $this->helperService->getAttachmentsByPostId($dataSeason->ID);
         $movies = [
             'id' => $dataSeason->ID,
             'title' => $dataSeason->post_title,
             'slug' => $tvShowSlug,
-            'originalTitle' => $dataSeason->original_title,
+            'originalTitle' => $originalTitle,
             'description' => $dataSeason->post_content,
             'genres' => $genres,
             'src' => $src,
@@ -292,7 +299,7 @@ class TvshowController extends Controller
                 $dataEpisode = DB::select($queryEpisode);
                 if( count($dataEpisode) > 0 ) {
                     $episodeData = $dataEpisode[0]->meta_value;
-                    $episodeData = unserialize($episodeData);
+                    $episodeData = @unserialize($episodeData);
                     
                     $lastSeason = end($episodeData);
                     $seasonNumber = $lastSeason['name'];     
@@ -343,7 +350,7 @@ class TvshowController extends Controller
                         LEFT JOIN wp_term_taxonomy wt ON wt.term_taxonomy_id = wp.term_taxonomy_id
                         WHERE wt.taxonomy = 'category' AND wt.description != '' AND wp.object_id = ". $data->ID .";";
                     }
-
+                                 
                     $dataChanel = DB::select($queryChanel);
 
                     if( count($dataChanel) > 0 ) {
@@ -351,7 +358,14 @@ class TvshowController extends Controller
                         $newChanel = explode('src="', $chanel);
                         $newChanel = explode('" alt', $newChanel[1]);
                         $newChanel = $newChanel[0];
-                        $chanel = 'https://image002.modooup.com' . $newChanel;
+
+                        if (preg_match("/o.kokoatv.net/i", $newChanel)) {
+                            $chanel = str_replace('o.kokoatv.net', 'image002.modooup.com', $newChanel);
+                        } else if (preg_match("/kokoatv.net/i", $newChanel)) {
+                            $chanel = str_replace('kokoatv.net', 'image002.modooup.com', $newChanel);
+                        } else {
+                            $chanel = 'https://image002.modooup.com' . $newChanel;
+                        }
                     } else {
                         $chanel = env('IMAGE_PLACEHOLDER');
                     }
@@ -384,8 +398,11 @@ class TvshowController extends Controller
                         'slug' => $dataTaxonomy->slug
                     ];
                 }
-
-                $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+                if( $data->ID == 13686 ) {
+                    $srcSet = [];
+                } else {
+                    $srcSet = $this->helperService->getAttachmentsByPostId($data->ID);
+                }
 
                 $movie = [
                     'id' => $data->ID,
