@@ -124,7 +124,7 @@ class SearchService {
                 $originalTitle = $dataOriginalTitle[0]->meta_value;
 
             }
-            $categories = $data->post_type == 'tv_show' ? \array_map(fn($id) => $this->getCategoryName((int) $id, $tvShowCategoryList), \explode(',', $data->categories)) : [];
+            $categories = \property_exists($data, 'categories') && $data->post_type == 'tv_show' ? \array_map(fn($id) => $this->getCategoryName((int) $id, $tvShowCategoryList), \explode(',', $data->categories)) : [];
             if (\in_array('OTT/Web' , $categories)) {
                 $category = 'OTT';
             } elseif (\in_array('예능' , $categories)) {
