@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Post;
 use App\Models\PostMeta;
 use Telegram\Bot\Laravel\Facades\Telegram;
+
 class HomepageController extends Controller
 {
 
@@ -267,22 +268,9 @@ class HomepageController extends Controller
         return "OK!";
     }
 
-    public function timeCheck() {
-        return "OK!";
-    }
-
-    public function makeCacheFirst() {
-        $this->helperService->makeCacheFirst();
-        return "OK!";
-    }
-
     public function putGmtTime() {
         $this->clearCache();
         Storage::disk('public')->put('gmtTime.txt', date('Y-m-d H:i:s'));
-    }
-
-    public function getGmtTime() {
-        return Storage::disk('public')->get('gmtTime.txt');
     }
 
     public function getMovieTMDBId(Request $request) {
@@ -476,24 +464,6 @@ class HomepageController extends Controller
         return "Ok!";
     }
 
-    public function deletePerson() {
-        $personList = json_decode(Storage::disk('local')->get('rollback_person.json'), true);
-        foreach( $personList as $person) {
-            $new = Post::find($person);
-            if( $new != '' ) {
-                $new->delete();
-            }
-        }
-        $personMetaList = json_decode(Storage::disk('local')->get('rollback_person_meta.json'), true);
-        foreach( $personMetaList as $personMeta) {
-            $newMeta = Post::find($personMeta);
-            if( $newMeta != '' ) {
-                $newMeta->delete();
-            }
-        }
-        return "Ok!";
-    }
-
     public function autoImportPerson(Request $request) {
         $movieId = $request->get('movieId', '0');
         $tmdbId = $request->get('tmdbId', '0');
@@ -528,22 +498,6 @@ class HomepageController extends Controller
         ]);
         Telegram::commandsHandler(true);
         die($response);
-    }
-
-    public function testPing(Request $request) {
-        $domain = $request->get('domain', '');
-        $wait = 10; // wait Timeout In Seconds
-
-        $fp = @fsockopen($domain, 80, $errCode, $errStr, $wait);
-        if (!$fp) {
-            if ( $errCode == '10060' ) {
-                echo "Ping $domain ==> ";
-                echo "Timeout over 10s";
-            } else {
-                echo "Ping $domain ==> ";
-                echo "ERROR: $errCode - $errStr";
-            }
-        }
     }
 
     public function handlePing($domain='') {

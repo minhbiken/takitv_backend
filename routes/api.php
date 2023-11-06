@@ -21,18 +21,14 @@ Route::apiResource('tvshows', 'Api\TvshowController')->only(['index', 'show'])->
 Route::apiResource('episode', 'Api\EpisodeController')->only(['show']);
 Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->middleware([IfModifiedSince::class, LastModified::class]);
 Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage')->middleware([IfModifiedSince::class, LastModified::class]);
-
 Route::get('movies', 'App\Http\Controllers\Api\MovieController@index')->middleware([IfModifiedSince::class, LastModified::class])->name('movies.index');
 
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
-Route::get('clearCacheTvShowHomePage', 'App\Http\Controllers\Api\HomepageController@clearCacheTvShowHomePage');
-
-Route::get('timeCheck', 'App\Http\Controllers\Api\HomepageController@timeCheck');
-Route::get('makeCacheFirst', 'App\Http\Controllers\Api\HomepageController@makeCacheFirst');
 
 Route::get('putGmtTime', 'App\Http\Controllers\Api\HomepageController@putGmtTime');
-Route::get('getGmtTime', 'App\Http\Controllers\Api\HomepageController@getGmtTime');
+
+
 Route::get('getMovieTMDBId', 'App\Http\Controllers\Api\HomepageController@getMovieTMDBId')->name('movie.tmdb');
 Route::get('getMovieLimit', 'App\Http\Controllers\Api\HomepageController@getMovieLimit');
 Route::get('getTvshowTMDBId', 'App\Http\Controllers\Api\HomepageController@getTvshowTMDBId')->name('tvshow.tmdb');
@@ -51,5 +47,3 @@ Route::post('{token}/webhook', 'App\Http\Controllers\Api\HomepageController@hand
 
 Route::get('cast/updateCastOfMovie', 'App\Http\Controllers\Api\CastController@updateCastOfMovie');
 Route::get('cast/updateCastOfTvShow', 'App\Http\Controllers\Api\CastController@updateCastOfTvShow');
-
-Route::get('testPing', 'App\Http\Controllers\Api\HomepageController@testPing');
