@@ -32,7 +32,7 @@ class AutoImportPerson extends Command
         $tmdbId = $argument[1];
         $postType = $argument[2];
         // Replace this with the actual command you want to run
-        $command = '/home/vuejs/backend/import_person.sh ' . $movieId . ' ' . $tmdbId . ' ' . $postType . '';
+        $command = '/home/vuejs/kokoatv.net/backend/import_person.sh ' . $movieId . ' ' . $tmdbId . ' ' . $postType . '';
  
         // Execute the Bash script
         $output = shell_exec($command);

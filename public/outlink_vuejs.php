@@ -10,11 +10,11 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 if( $_REQUEST['url'] != '' ){  
 	$arr_link = array(
-		'gamejuicy.com_post' => '10',
-		'kokoatv.net_post' => '5',
-		'dietwhen.com_post' => '5',
-		'apkoxa.com_post' => '75', 
-		'vuejs.kokoatv.net_post' =>'5',
+#		'gamejuicy.com_post' => '5',
+		'kokoatv.net_post' => '88',
+		'dietwhen.com_post' => '2',
+		'apkoxa.com_post' => '10', 
+		//'vuejs.kokoatv.net_post' =>'75',
 		//'justlink.tv_post' => '4',
 
 	); 
