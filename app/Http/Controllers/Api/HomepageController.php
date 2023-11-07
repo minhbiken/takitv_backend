@@ -269,6 +269,7 @@ class HomepageController extends Controller
     }
 
     public function putGmtTime() {
+        $this->clearCache();
         Cache::forever('gmtTime', date('Y-m-d H:i:s'));
     }
 
