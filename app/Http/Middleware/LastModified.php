@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use DateTime;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 
 class LastModified
@@ -20,8 +20,10 @@ class LastModified
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
-        $date = DateTime::createFromFormat('Y-m-d H:i:s', Storage::disk('public')->get('gmtTime.txt'));
-        $response->header('Last-Modified', $date->format('D, d M Y H:i:s \G\M\T'));
+        $date = DateTime::createFromFormat('Y-m-d H:i:s', Cache::get('gmtTime'));
+        if ($date) {
+            $response->header('Last-Modified', $date->format('D, d M Y H:i:s \G\M\T'));
+        }
         return $response;
     }
 }
