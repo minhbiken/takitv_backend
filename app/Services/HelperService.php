@@ -162,23 +162,23 @@ class HelperService {
         Http::get("http://localhost:3000/api/modified/");
 
         //make cache back-end
-        Http::get(route('homepage.index'));
-        Http::get(route('movies.index',  ['orderBy' => 'date', 'page' => 1]));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1]));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-drama']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-show']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-sisa']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'u-drama']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'ott-web']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'netflix']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'disney']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'apple-tv']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'tving']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'wavve']));
-        Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'amazon-prime-video']));
-        Http::get(route('casts',  ['page' => 1]));
-        Http::get(route('casts',  ['orderBy' => 'nameDesc', 'page' => 1]));
-        Http::get(route('casts',  ['orderBy' => 'nameAsc', 'page' => 1]));
+        // Http::get(route('homepage.index'));
+        // Http::get(route('movies.index',  ['orderBy' => 'date', 'page' => 1]));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1]));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-drama']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-show']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'k-sisa']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'u-drama']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'ott-web']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'netflix']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'disney']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'apple-tv']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'tving']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'wavve']));
+        // Http::get(route('tvshows.index',  ['orderBy' => 'date', 'page' => 1, 'type' => 'amazon-prime-video']));
+        // Http::get(route('casts',  ['page' => 1]));
+        // Http::get(route('casts',  ['orderBy' => 'nameDesc', 'page' => 1]));
+        // Http::get(route('casts',  ['orderBy' => 'nameAsc', 'page' => 1]));
         return true;
     }
 
