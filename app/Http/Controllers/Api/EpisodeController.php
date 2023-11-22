@@ -49,6 +49,7 @@ class EpisodeController extends Controller
      */
     public function show(Request $request)
     {
+        
         $watch = $request->get('watch', '');
         if( $watch != '' ) {
             $outLink = $this->helperService->getKokoatvLink($watch);
