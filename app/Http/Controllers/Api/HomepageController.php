@@ -192,7 +192,16 @@ class HomepageController extends Controller
         
         $where = " WHERE p.post_type in ('tv_show', 'movie')
             and p.post_status = 'publish'
-            and (REPLACE(p.post_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%' OR REPLACE(p.original_title, ' ', '') LIKE '%" . $titleNoWhitespace . "%') group by p.ID";
+            and (replace(p.post_title, ' ', '') like '%" . $titleNoWhitespace . "%'
+            or p.ID in (
+                select
+                    post_id
+                from
+                    wp_postmeta wp
+                where
+                    meta_key in ('_original_title', '_movie_original_title')
+                        and replace(meta_value, ' ', '') like '%" . $titleNoWhitespace . "%'
+            )) group by p.ID";
 
         if ($orderBy == 'titleAsc') {
             $order = " ORDER BY p.post_title ASC";
