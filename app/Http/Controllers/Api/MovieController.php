@@ -123,7 +123,7 @@ class MovieController extends Controller
             LEFT JOIN wp_terms t ON t.term_id = tx.term_id
             LEFT JOIN wp_posts p ON p.ID = mp.post_id
             WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != '' " . $queryByType . " AND (p.post_status = 'publish')
-            ORDER BY mp.7_day_stats DESC
+            ORDER BY mp.1_day_stats DESC
             LIMIT 6";
             
             $populars = DB::select($queryPopular);
