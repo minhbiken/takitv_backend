@@ -22,10 +22,10 @@ if( isset($_REQUEST['key']) && $_REQUEST['key'] == '123456' && isset($_REQUEST['
 	} 
 	if( !file_exists($fn) || ( file_exists($fn) && filesize($fn) > 0 )  ){
 		$servername = "localhost";
-		$username = "peekle";
-		$password = "gbR3IVfFtJyP5HFv";
+		$username = "o.kokoatv.net";
+		$password = "oiOweg8pr6HJ3rqC";
 #		$password = "drWzeIHB7r98zqxd";
-		$db = "peekle";
+		$db = "o.kokoatv.net";
 		$con = mysqli_connect($servername, $username, $password, $db);
 		if (mysqli_connect_errno()) {
 		  echo "Failed to connect to MySQL: " . mysqli_connect_error();
