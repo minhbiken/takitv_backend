@@ -10,11 +10,11 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 if( $_REQUEST['url'] != '' ){  
 	$arr_link = array(
-		'gamejuicy.com_post' => '10',
-		'kokoatv.net_post' => '5',
-		'dietwhen.com_post' => '5',
-		'apkoxa.com_post' => '75', 
-		'vuejs.kokoatv.net_post' =>'5',
+		'bmytv.com_post' => '100',
+		// 'kokoatv.net_post' => '5',
+		// 'dietwhen.com_post' => '5',
+		// 'apkoxa.com_post' => '75', 
+		// 'vuejs.kokoatv.net_post' =>'5',
 		//'justlink.tv_post' => '4',
 
 	); 
@@ -29,6 +29,16 @@ if( $_REQUEST['url'] != '' ){
 		if( is_array($list_post) && count($list_post) > 0 ) {
 			foreach ($list_post as $k => $v){
 				$arr_child['vuejs.kokoatv.net_post'][] = $v;
+			}
+		}
+	}
+
+	if( isset($arr_link['bmytv.com_post']) ) {
+		$list_post = @file_get_contents(__DIR__.'/outlink/list_kokoa.json');
+		$list_post = json_decode($list_post);
+		if( is_array($list_post) && count($list_post) > 0 ) {
+			foreach ($list_post as $k => $v){
+				$arr_child['bmytv.com_post'][] = $v;
 			}
 		}
 	}
