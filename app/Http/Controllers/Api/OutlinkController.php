@@ -19,7 +19,7 @@ class OutlinkController extends Controller
             return response()->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        $cacheKey = "outlink_$postId}";
+        $cacheKey = "outlink_$postId";
         if (Cache::has($cacheKey)) {
             $data = Cache::get($cacheKey);
         } else {
