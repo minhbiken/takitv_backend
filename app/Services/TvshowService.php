@@ -66,7 +66,7 @@ class TvshowService {
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
                         LEFT JOIN wp_terms t ON t.term_id = tx.term_id
                         WHERE p.post_type = 'tv_show' " . $queryByType . " AND (p.post_status = 'publish')
-                        ORDER BY mp.7_day_stats DESC
+                        ORDER BY mp.1_day_stats DESC
                         LIMIT 5;";
         return $this->getItems($queryTopWeek, $type);
     }
