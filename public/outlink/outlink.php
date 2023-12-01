@@ -112,9 +112,11 @@ if( isset($_REQUEST['key']) && $_REQUEST['key'] == '123456' && isset($_REQUEST['
 }else die("403 forbiden");
 
 function write_file_new_url($data,$link){
-	$myfile = fopen($link, "w+") or die("Unable to open file!");
-    $txt = $data;
-    fwrite($myfile, $txt);
-    fclose($myfile);
+	$myfile = fopen($link, "w+");
+	if ($myfile) {
+		$txt = $data;
+    	fwrite($myfile, $txt);
+    	fclose($myfile);
+	}
 }
 ?>

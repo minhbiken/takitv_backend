@@ -23,7 +23,7 @@ Route::get('search', 'App\Http\Controllers\Api\HomepageController@search')->midd
 Route::get('tvShowHomepage', 'App\Http\Controllers\Api\HomepageController@tvShowHomepage')->middleware([IfModifiedSince::class, LastModified::class]);
 
 Route::get('movies', 'App\Http\Controllers\Api\MovieController@index')->middleware([IfModifiedSince::class, LastModified::class])->name('movies.index');
-
+Route::get('/outlink', 'App\Http\Controllers\Api\OutlinkController@getOutlink');
 Route::get('clearCache', 'App\Http\Controllers\Api\HomepageController@clearCache');
 Route::get('clearCacheByKey/{key}', 'App\Http\Controllers\Api\HomepageController@clearCacheByKey');
 Route::get('clearCacheTvShowHomePage', 'App\Http\Controllers\Api\HomepageController@clearCacheTvShowHomePage');
