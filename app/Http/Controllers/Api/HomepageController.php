@@ -98,7 +98,7 @@ class HomepageController extends Controller
             $queryMovie = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM wp_posts p WHERE p.post_type = 'movie' AND p.post_status = 'publish' ORDER BY p.post_date DESC LIMIT 12";
             $movies = DB::select($queryMovie);
             
-            $queryTopWeek = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_most_popular` mp
+            $queryTopWeek = "SELECT p.ID as id, p.post_name as slug, p.post_title as title FROM `wp_most_popular_bmytv` mp
                 LEFT JOIN wp_posts p ON p.ID = mp.post_id
                 WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != ''
                 ORDER BY mp.7_day_stats DESC

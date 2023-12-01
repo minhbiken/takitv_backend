@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\MovieService;
 use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Symfony\Component\VarDumper\VarDumper;
 
 class MovieController extends Controller
@@ -76,7 +77,7 @@ class MovieController extends Controller
             } else if($orderBy == 'date' ) {
                 $order = "ORDER BY p.post_date DESC ";
             } else if($orderBy == 'rating') {
-                $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
+                $selectRating = "LEFT JOIN wp_most_popular_bmytv mp ON mp.post_id = p.ID";
                 $select = $select . $selectRating;
                 $order = "ORDER BY mp.all_time_stats DESC ";
             } else if($orderBy == 'menuOrder') {
@@ -108,7 +109,7 @@ class MovieController extends Controller
             } else {
                 $queryByType =  " AND t.slug IN (" . $genre . ") " ;
             }
-            $queryTopWeek = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
+            $queryTopWeek = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular_bmytv` mp
             LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
             LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
             LEFT JOIN wp_terms t ON t.term_id = tx.term_id
@@ -117,13 +118,13 @@ class MovieController extends Controller
             ORDER BY mp.7_day_stats DESC
             LIMIT 5";
 
-            $queryPopular = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular` mp
+            $queryPopular = "SELECT DISTINCT(p.ID) as id, p.post_name as slug, p.post_title as title, p.post_type, p.post_status FROM `wp_most_popular_bmytv` mp
             LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
             LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
             LEFT JOIN wp_terms t ON t.term_id = tx.term_id
             LEFT JOIN wp_posts p ON p.ID = mp.post_id
             WHERE p.post_type = 'movie' AND p.post_title != '' AND mp.post_id != '' AND p.ID != '' " . $queryByType . " AND (p.post_status = 'publish')
-            ORDER BY mp.7_day_stats DESC
+            ORDER BY mp.1_day_stats DESC
             LIMIT 6";
             
             $populars = DB::select($queryPopular);
@@ -190,6 +191,11 @@ class MovieController extends Controller
     public function show(Request $request)
     {
         $watch = $request->get('watch', '');
+        $countViewId = $request->get('countViewId', '');
+        if ($countViewId) {
+            Http::get('https://kokoatv.net/rest-api/popular/movie/' . $countViewId . '/');
+            return response()->json([], Response::HTTP_OK);
+        }
         if( $watch != '' ) {
             $outLink = $this->helperService->getKokoatvLink($watch);
             if( isset($outLink->link) && $outLink->link != '' ) {

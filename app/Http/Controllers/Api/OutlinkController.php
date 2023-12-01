@@ -24,10 +24,9 @@ class OutlinkController extends Controller
             $data = Cache::get($cacheKey);
         } else {
             $data = [];
-            $sql = "SELECT p.post_title, pm.meta_value, p.post_type, p.post_name FROM `wp_posts` as p INNER JOIN wp_postmeta as pm ON pm.post_id = p.ID and pm.meta_key IN ('_episode_url_link','_movie_url_link') WHERE p.ID = {$postId} LIMIT 1";
+            $sql = "SELECT pm.meta_value FROM `wp_posts` as p INNER JOIN wp_postmeta as pm ON pm.post_id = p.ID and pm.meta_key IN ('_episode_url_link','_movie_url_link') WHERE p.ID = {$postId} LIMIT 1";
             $result = DB::selectOne($sql);
             $links = $result->meta_value;
-            $title = $result->post_title;
 
             \preg_match_all('#(<Part \d>|)\bhttps?:\/\/[^\s()<>]+(?:\([\w\d]+\)|([^\s!"$%&()*+,\-./:;<=>?@[\]^`{|}~]|\/|[^\s!"\]$%&()*+<></]))#', $links, $matches);
             if (!empty($matches[0])) {
@@ -50,9 +49,7 @@ class OutlinkController extends Controller
                 asort($sortedLinks);
                 $sortedLinks = \array_keys($sortedLinks);
                 $data = [
-                    "title" => $title,
-                    "link"  => $sortedLinks,
-                    "backlink" => "https://kokoatv.net/{$result->post_type}/{$result->post_name}"
+                    "watchLinks"  => $sortedLinks
                 ];
 
                 Cache::forever($cacheKey, $data);

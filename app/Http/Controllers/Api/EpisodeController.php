@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Services\TvshowService;
 use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+
 class EpisodeController extends Controller
 {
     protected $imageUrlUpload;
@@ -50,6 +52,11 @@ class EpisodeController extends Controller
     public function show(Request $request)
     {
         $watch = $request->get('watch', '');
+        $countViewId = $request->get('countViewId', '');
+        if ($countViewId) {
+            Http::get('https://kokoatv.net/rest-api/popular/episode/' . $countViewId . '/');
+            return response()->json([], Response::HTTP_OK);
+        }
         if( $watch != '' ) {
             $outLink = $this->helperService->getKokoatvLink($watch);
             if( isset($outLink->link) && $outLink->link != '' ) {
