@@ -91,7 +91,7 @@ class TvshowController extends Controller
             } else if($orderBy == 'date' ) {
                 $order = "ORDER BY p.post_date DESC ";
             } else if($orderBy == 'rating') {
-                $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID ";
+                $selectRating = "LEFT JOIN wp_most_popular_bmytv mp ON mp.post_id = p.ID ";
                 $select = $select . $selectRating;
                 $order = "ORDER BY mp.all_time_stats DESC ";
             } else if($orderBy == 'menuOrder') {

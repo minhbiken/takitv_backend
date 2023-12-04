@@ -23,7 +23,7 @@ class TvshowService {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
         $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_most_popular_bmytv mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
                         LEFT JOIN wp_terms t ON t.term_id = tx.term_id
@@ -42,7 +42,7 @@ class TvshowService {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
         $queryTopMonth = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.post_name, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.30_day_stats, p.post_status FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_most_popular_bmytv mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
                         LEFT JOIN wp_terms t ON t.term_id = tx.term_id
@@ -61,7 +61,7 @@ class TvshowService {
             $queryByType =  "AND (t.slug = '" . $type . "' OR t.name = '" . $type . "'   )" ;
         }
         $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats, p.post_status FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_most_popular_bmytv mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
                         LEFT JOIN wp_terms t ON t.term_id = tx.term_id
@@ -286,7 +286,7 @@ class TvshowService {
 
     public function getTopWeekOTT() {
         $queryTopWeek = "SELECT DISTINCT(p.ID) as get_not_exist, p.ID, p.post_title, p.original_title, p.post_content, p.post_date_gmt, p.post_date, mp.7_day_stats FROM wp_posts p
-                        LEFT JOIN wp_most_popular mp ON p.ID = mp.post_id
+                        LEFT JOIN wp_most_popular_bmytv mp ON p.ID = mp.post_id
                         LEFT JOIN wp_term_relationships tr ON tr.object_id = mp.post_id
                         LEFT JOIN wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id
                         LEFT JOIN wp_terms t ON t.term_id = tx.term_id

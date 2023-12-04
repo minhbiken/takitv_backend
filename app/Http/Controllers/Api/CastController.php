@@ -317,7 +317,7 @@ class CastController extends Controller
                 $select = $selectYear;
                 $order = "ORDER BY year DESC ";
             } else if($orderBy == 'rating') {
-                $selectRating = "LEFT JOIN wp_most_popular mp ON mp.post_id = p.ID";
+                $selectRating = "LEFT JOIN wp_most_popular_bmytv mp ON mp.post_id = p.ID";
                 $select = $select . $selectRating;
                 $order = "ORDER BY mp.all_time_stats DESC ";
             } else {
@@ -346,7 +346,7 @@ class CastController extends Controller
     }
 
     public function topWeek() {
-        $queryTopWeek = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_type, p.post_date_gmt, p.post_date FROM `wp_most_popular` mp
+        $queryTopWeek = "SELECT p.ID, p.post_name, p.post_title, p.original_title, p.post_content, p.post_type, p.post_date_gmt, p.post_date FROM `wp_most_popular_bmytv` mp
                             LEFT JOIN wp_posts p ON p.ID = mp.post_id
                             WHERE p.post_title != '' AND mp.post_id != '' AND p.ID != '' AND p.post_status = 'publish'
                             ORDER BY mp.7_day_stats DESC

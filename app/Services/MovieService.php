@@ -124,6 +124,9 @@ class MovieService {
      */
     public function getMoviesMetadata(array $postIds = [], array $fields = [], array $options = []) {
         $data = [];
+        if (!$postIds) {
+            return $data;
+        }
 
         if (empty($fields)) {
             $fields = [
