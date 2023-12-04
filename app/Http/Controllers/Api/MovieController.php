@@ -194,7 +194,7 @@ class MovieController extends Controller
         $countViewId = $request->get('countViewId', '');
         if ($countViewId) {
             Http::get('https://kokoatv.net/rest-api/popular/movie/' . $countViewId . '/');
-            return response()->json([], Response::HTTP_OK);
+            return response()->json(['status' => 'OK'], Response::HTTP_OK);
         }
         if( $watch != '' ) {
             $outLink = $this->helperService->getKokoatvLink($watch);
