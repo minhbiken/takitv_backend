@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\HelperService;
+use App\Services\MovieService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
-use App\Services\MovieService;
-use App\Services\HelperService;
 use Illuminate\Support\Facades\Cache;
-use Symfony\Component\VarDumper\VarDumper;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class MovieController extends Controller
 {
@@ -190,6 +190,11 @@ class MovieController extends Controller
     public function show(Request $request)
     {
         $watch = $request->get('watch', '');
+        $countViewId = $request->get('countViewId', '');
+        if ($countViewId) {
+            Http::get('https://kokoatv.net/rest-api/popular/movie/' . $countViewId . '/');
+            return response()->json(['status' => 'OK'], Response::HTTP_OK);
+        }
         if( $watch != '' ) {
             $outLink = $this->helperService->getKokoatvLink($watch);
             if( isset($outLink->link) && $outLink->link != '' ) {
