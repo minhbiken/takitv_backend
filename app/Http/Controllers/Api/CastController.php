@@ -302,7 +302,7 @@ class CastController extends Controller
 
             $ids = join(",", $ids);
             
-            $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p ";
+            $select = "SELECT p.ID, p.post_name, p.post_title, p.post_type, p.original_title, group_concat(tx.term_taxonomy_id) as categories FROM wp_posts p left join wp_term_relationships tr on p.ID = tr.object_id left join wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id and tx.taxonomy = 'category'";
             $where = " WHERE p.post_status = 'publish' AND p.post_type IN ('tv_show', 'movie') AND p.ID IN ( " . $ids . " )";
 
             if( $orderBy == '' ) {
@@ -313,7 +313,7 @@ class CastController extends Controller
                 $order = "ORDER BY p.post_title DESC ";
             } else if($orderBy == 'date' ) {
                 $selectYear = "SELECT IF(pm.meta_value REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$', DATE_FORMAT(pm.meta_value, '%Y'), DATE_FORMAT(FROM_UNIXTIME(pm.meta_value), '%Y')) as year , 
-                p.ID, p.post_name, p.post_title, p.post_type, p.original_title FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key='_movie_release_date' ";
+                p.ID, p.post_name, p.post_title, p.post_type, p.original_title, group_concat(tx.term_taxonomy_id) as categories FROM wp_posts p LEFT JOIN wp_postmeta pm ON pm.post_id = p.ID AND pm.meta_key='_movie_release_date' left join wp_term_relationships tr on p.ID = tr.object_id left join wp_term_taxonomy tx on tr.term_taxonomy_id = tx.term_taxonomy_id and tx.taxonomy = 'category' ";
                 $select = $selectYear;
                 $order = "ORDER BY year DESC ";
             } else if($orderBy == 'rating') {
@@ -324,7 +324,7 @@ class CastController extends Controller
                 $order = "ORDER BY p.post_date DESC ";
             }
 
-            $query = $select . $where . $order;
+            $query = $select . $where . 'GROUP BY p.ID ' . $order;
             $selectTotal = "SELECT COUNT(p.ID) as total FROM wp_posts p ";
             $queryTotal = $selectTotal . $where;
             $dataTotal = DB::select($queryTotal);
