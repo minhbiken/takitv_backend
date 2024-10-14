@@ -502,7 +502,7 @@ class HomepageController extends Controller
     public function handleWebhook() {
         $token = env('TELEGRAM_BOT_TOKEN');
         $response = Telegram::setWebhook([
-            'url' => "https://backend.kokoatv.net/api/$token/webhook",
+            'url' => "https://backend.moviehqu.com/api/$token/webhook",
             'has_custom_certificate' => false
         ]);
         Telegram::commandsHandler(true);

@@ -356,10 +356,10 @@ class TvshowController extends Controller
                     $newChanel = explode('" alt', $newChanel[1]);
                     $newChanel = $newChanel[0];
 
-                    if (preg_match("/o.kokoatv.net/i", $newChanel)) {
-                        $chanel = str_replace('o.kokoatv.net', 'image002.modooup.com', $newChanel);
-                    } else if (preg_match("/kokoatv.net/i", $newChanel)) {
-                        $chanel = str_replace('kokoatv.net', 'image002.modooup.com', $newChanel);
+                    if (preg_match("/o.moviehqu.com/i", $newChanel)) {
+                        $chanel = str_replace('o.moviehqu.com', 'image002.modooup.com', $newChanel);
+                    } else if (preg_match("/moviehqu.com/i", $newChanel)) {
+                        $chanel = str_replace('moviehqu.com', 'image002.modooup.com', $newChanel);
                     } else {
                         $chanel = 'https://image002.modooup.com' . $newChanel;
                     }

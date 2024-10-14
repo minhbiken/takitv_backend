@@ -4,14 +4,14 @@ $backlink = "";
 //     $backlink = $_SERVER['HTTP_REFERER'];
 // }
 
-// if( strpos($backlink, "kokoatv.net") === false ){
+// if( strpos($backlink, "moviehqu.com") === false ){
 //     //die("403 forbiden"); 
 // }
   
 $data = NULL;
 if( (isset($_REQUEST['p']) && $_REQUEST['p'] != '') || (isset($_REQUEST['pid']) && $_REQUEST['pid'] != '') ){
     $pid = isset($_REQUEST['p'])?$_REQUEST['p']:$_REQUEST['pid'];
-    $url = "https://backend.kokoatv.net/outlink/outlink.php?key=123456&post_id=".$pid;
+    $url = "https://backend.moviehqu.com/outlink/outlink.php?key=123456&post_id=".$pid;
     $data = @file_get_contents($url);
     $data = json_decode($data);
     
@@ -20,13 +20,13 @@ if( (isset($_REQUEST['p']) && $_REQUEST['p'] != '') || (isset($_REQUEST['pid']) 
 if($data != NULL && is_object($data)){
 
     $backlink_r = $data->backlink;
-//  $backlink_r = "kokoatv.net";
+//  $backlink_r = "moviehqu.com";
 
     if( strpos($backlink, "streamk.tv") !== false ){
-        $backlink_r = str_replace("kokoatv.net", "streamk.tv", $backlink_r);
+        $backlink_r = str_replace("moviehqu.com", "streamk.tv", $backlink_r);
     }
-    if( strpos($backlink, "kokoatv.net") !== false ){
-        $backlink_r = str_replace("kokoatv.net", "kokoatv.net", $backlink_r);
+    if( strpos($backlink, "moviehqu.com") !== false ){
+        $backlink_r = str_replace("moviehqu.com", "moviehqu.com", $backlink_r);
     }
     $backlink = $backlink_r;
 
@@ -111,7 +111,7 @@ function is_mobile(){
             });
             $(ele).addClass("active"); 
             $("#video_player").attr("src",link+'?pid=<?php echo $pid; ?>');
-            //$("#video_player").attr("src",link+'?ref=kokoatv.net&pid=<?php echo $pid; ?>');
+            //$("#video_player").attr("src",link+'?ref=moviehqu.com&pid=<?php echo $pid; ?>');
 
             var ifrm_html = $("#playVideoUl").html(); 
             $("#video_player").remove();
@@ -331,8 +331,8 @@ function is_mobile(){
                             }
                         
                             ?> 
-                            <!-- <iframe src="<?php echo $first_link;?>?ref=kokoatv.net" class="test" width="100%" height="430" frameborder="0" scrolling="no" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" name="video_player" id="video_player"></iframe> -->
-                            <iframe src="<?php echo $first_link;?>?ref=kokoatv.net" class="test" width="100%" height="430" frameborder="0" scrolling="no" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" name="video_player" id="video_player"></iframe>
+                            <!-- <iframe src="<?php echo $first_link;?>?ref=moviehqu.com" class="test" width="100%" height="430" frameborder="0" scrolling="no" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" name="video_player" id="video_player"></iframe> -->
+                            <iframe src="<?php echo $first_link;?>?ref=moviehqu.com" class="test" width="100%" height="430" frameborder="0" scrolling="no" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" name="video_player" id="video_player"></iframe>
                         </div> 
                     </div>
                 </div> 
